@@ -108,43 +108,66 @@ const BookingForm = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!formData.price) {
-      setError("Please wait for the price calculation before submitting.");
-      return;
+  if (!formData.price) {
+    setError("Please wait for the price calculation before submitting.");
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  if (formData.arrivalDate < today) {
+    setError("Arrival date cannot be before today.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Prepare the reservation data
+    const reservationData = {
+      ...formData,
+      price: Number(formData.price),
+      adults: Number(formData.adults),
+      children: Number(formData.children),
+      deposit: Number(formData.deposit),
+      // Make sure dates are in the correct format
+      arrivalDate: formData.arrivalDate,
+      departureDate: formData.departureDate,
+      // Add any required fields that Smoobu expects
+      priceStatus: 1,
+      depositStatus: 1,
+      language: "en",
+    };
+
+    console.log("Submitting reservation:", reservationData);
+
+    const response = await api.post("/reservations", reservationData);
+
+    console.log("Booking response:", response.data);
+    setSuccessMessage("Booking created successfully!");
+    setError(null);
+
+    // Optionally reset form or redirect
+    // resetForm(); // If you want to reset the form
+    // or
+    // window.location.href = '/confirmation'; // If you want to redirect
+  } catch (err) {
+    console.error("Booking error:", err);
+    const errorMessage =
+      err.response?.data?.error ||
+      err.response?.data?.detail ||
+      "An error occurred while creating the booking.";
+    setError(errorMessage);
+
+    // Log detailed error information
+    if (err.response?.data) {
+      console.error("Error details:", err.response.data);
     }
-
-    const today = new Date().toISOString().split("T")[0];
-    if (formData.arrivalDate < today) {
-      setError("Arrival date cannot be before today.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await api.post("/reservations", {
-        ...formData,
-        price: Number(formData.price),
-        adults: Number(formData.adults),
-        children: Number(formData.children),
-        deposit: Number(formData.deposit),
-      });
-
-      console.log("Booking response:", response.data);
-      setSuccessMessage("Booking created successfully!");
-      setError(null);
-    } catch (err) {
-      console.error("Booking error:", err);
-      setError(
-        err.response?.data?.error ||
-          "An error occurred while creating the booking."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const renderPriceDetails = () => {
     if (!priceDetails) return null;
