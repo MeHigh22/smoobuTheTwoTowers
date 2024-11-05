@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const BookingForm = () => {
   const [formData, setFormData] = useState({
     arrivalDate: "",
     departureDate: "",
-    channelId: 70, // Default channel ID
-    apartmentId: "", // User will provide this
+    channelId: 2323525,
+    apartmentId: 1946276,
     arrivalTime: "",
     departureTime: "",
     firstName: "",
@@ -16,15 +16,112 @@ const BookingForm = () => {
     notice: "",
     adults: 1,
     children: 0,
-    price: 0,
+    price: "",
     priceStatus: 1,
     deposit: 0,
     depositStatus: 1,
     language: "en",
   });
-
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [dailyRates, setDailyRates] = useState({});
+
+  const fetchRates = async (apartmentId, startDate, endDate) => {
+    if (!apartmentId || !startDate || !endDate) return;
+
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `https://cors-anywhere.herokuapp.com/https://login.smoobu.com/api/rates`,
+        {
+          headers: {
+            "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+            "Content-Type": "application/json",
+          },
+          params: {
+            apartments: [apartmentId],
+            start_date: startDate,
+            end_date: endDate,
+          },
+        }
+      );
+
+      console.log("Rates response:", response.data);
+
+      // Store the daily rates for the apartment
+      if (response.data.data && response.data.data[apartmentId]) {
+        setDailyRates(response.data.data[apartmentId]);
+
+        // Calculate total price for the stay
+        const totalPrice = calculateTotalPrice(
+          response.data.data[apartmentId],
+          startDate,
+          endDate
+        );
+
+        setFormData((prevData) => ({
+          ...prevData,
+          price: totalPrice,
+        }));
+
+        setError(null);
+      } else {
+        setError("No rates found for the selected dates");
+        setFormData((prevData) => ({
+          ...prevData,
+          price: 0,
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching rates:", err);
+      setError("Could not fetch rates. Please try again later.");
+      setFormData((prevData) => ({
+        ...prevData,
+        price: 0,
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateTotalPrice = (rates, startDate, endDate) => {
+    if (!rates || !startDate || !endDate) return 0;
+
+    let totalPrice = 0;
+    let currentDate = new Date(startDate);
+    const endDateTime = new Date(endDate);
+
+    while (currentDate < endDateTime) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+      const dayRate = rates[dateStr];
+
+      if (dayRate && dayRate.price !== null && dayRate.available === 1) {
+        totalPrice += dayRate.price;
+      } else {
+        // If any day is unavailable or has no price, return 0
+        setError(
+          "Some dates in your selection are not available or don't have prices set"
+        );
+        return 0;
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return totalPrice;
+  };
+
+  // Fetch rates when dates change
+  useEffect(() => {
+    if (formData.arrivalDate && formData.departureDate) {
+      fetchRates(
+        formData.apartmentId,
+        formData.arrivalDate,
+        formData.departureDate
+      );
+    }
+  }, [formData.apartmentId, formData.arrivalDate, formData.departureDate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,210 +131,144 @@ const BookingForm = () => {
     }));
   };
 
- const handleSubmit = async (e) => {
-   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-   // Validate dates to ensure arrival date is not in the past
-   const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-   if (formData.arrivalDate < today) {
-     setError("Arrival date cannot be before today.");
-     return;
-   }
+    if (!formData.price) {
+      setError("Please wait for the price calculation before submitting.");
+      return;
+    }
 
-   const formDataToSubmit = {
-     arrivalDate: formData.arrivalDate,
-     departureDate: formData.departureDate,
-     channelId: formData.channelId,
-     apartmentId: formData.apartmentId,
-     arrivalTime: formData.arrivalTime,
-     departureTime: formData.departureTime,
-     firstName: formData.firstName,
-     lastName: formData.lastName,
-     email: formData.email,
-     phone: formData.phone,
-     notice: formData.notice,
-     adults: formData.adults,
-     children: formData.children,
-     price: formData.price,
-     priceStatus: formData.priceStatus,
-     deposit: formData.deposit,
-     depositStatus: formData.depositStatus,
-     language: formData.language,
-   };
+    const today = new Date().toISOString().split("T")[0];
+    if (formData.arrivalDate < today) {
+      setError("Arrival date cannot be before today.");
+      return;
+    }
 
-   try {
-     const response = await axios.post(
-       "https://cors-anywhere.herokuapp.com/https://login.smoobu.com/api/reservations",
-       formDataToSubmit,
-       {
-         headers: {
-           "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o", // Your Smoobu API Key
-           "Content-Type": "application/json",
-           "X-Requested-With": "XMLHttpRequest", // Required header
-         },
-       }
-     );
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        "https://cors-anywhere.herokuapp.com/https://login.smoobu.com/api/reservations",
+        {
+          ...formData,
+          price: Number(formData.price),
+          adults: Number(formData.adults),
+          children: Number(formData.children),
+          deposit: Number(formData.deposit),
+        },
+        {
+          headers: {
+            "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        }
+      );
 
-     console.log("Success:", response.data);
-     setSuccessMessage("Booking created successfully!");
-     setError(null); // Clear any previous errors
-   } catch (err) {
-     console.error("Error:", err.response ? err.response.data : err.message);
-     setError(err.response ? err.response.data.detail : "An error occurred");
-   }
- };
+      console.log("Booking response:", response.data);
+      setSuccessMessage("Booking created successfully!");
+      setError(null);
+    } catch (err) {
+      console.error("Booking error:", err);
+      setError(
+        err.response?.data?.detail ||
+          "An error occurred while creating the booking."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderDailyRates = () => {
+    if (
+      !formData.arrivalDate ||
+      !formData.departureDate ||
+      !Object.keys(dailyRates).length
+    ) {
+      return null;
+    }
+
+    const dates = [];
+    let currentDate = new Date(formData.arrivalDate);
+    const endDate = new Date(formData.departureDate);
+
+    while (currentDate < endDate) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+      dates.push({
+        date: dateStr,
+        rate: dailyRates[dateStr],
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return (
+      <div className="mt-4">
+        <h3 className="font-bold mb-2">Daily Rates:</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {dates.map(({ date, rate }) => (
+            <div key={date} className="text-sm">
+              {date}: {rate?.price || "N/A"}{" "}
+              {rate?.available === 1 ? "(Available)" : "(Unavailable)"}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-4">
       <h2>Create Booking</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-      <label>
-        Arrival Date:
-        <input
-          type="date"
-          name="arrivalDate"
-          value={formData.arrivalDate}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Departure Date:
-        <input
-          type="date"
-          name="departureDate"
-          value={formData.departureDate}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Channel ID:
-        <input
-          type="number"
-          name="channelId"
-          value={formData.channelId}
-          onChange={handleChange}
-        />
-      </label>
-      <label>
-        Apartment ID:
-        <input
-          type="number"
-          name="apartmentId"
-          value={formData.apartmentId}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Arrival Time:
-        <input
-          type="time"
-          name="arrivalTime"
-          value={formData.arrivalTime}
-          onChange={handleChange}
-        />
-      </label>
-      <label>
-        Departure Time:
-        <input
-          type="time"
-          name="departureTime"
-          value={formData.departureTime}
-          onChange={handleChange}
-        />
-      </label>
-      <label>
-        First Name:
-        <input
-          type="text"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Last Name:
-        <input
-          type="text"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Email:
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Phone:
-        <input
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Notice:
-        <textarea
-          name="notice"
-          value={formData.notice}
-          onChange={handleChange}
-        ></textarea>
-      </label>
-      <label>
-        Adults:
-        <input
-          type="number"
-          name="adults"
-          value={formData.adults}
-          onChange={handleChange}
-          min="1"
-        />
-      </label>
-      <label>
-        Children:
-        <input
-          type="number"
-          name="children"
-          value={formData.children}
-          onChange={handleChange}
-          min="0"
-        />
-      </label>
-      <label>
-        Price:
-        <input
-          type="number"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-          step="0.01"
-        />
-      </label>
-      <label>
-        Deposit:
-        <input
-          type="number"
-          name="deposit"
-          value={formData.deposit}
-          onChange={handleChange}
-          step="0.01"
-        />
-      </label>
-      <button type="submit">Create Booking</button>
+      {error && <p className="text-red-500">{error}</p>}
+      {successMessage && <p className="text-green-500">{successMessage}</p>}
+      {loading && <p>Loading...</p>}
+
+      <div className="space-y-2">
+        <label className="block">
+          Arrival Date:
+          <input
+            type="date"
+            name="arrivalDate"
+            value={formData.arrivalDate}
+            onChange={handleChange}
+            className="block w-full mt-1"
+            required
+          />
+        </label>
+
+        <label className="block">
+          Departure Date:
+          <input
+            type="date"
+            name="departureDate"
+            value={formData.departureDate}
+            onChange={handleChange}
+            className="block w-full mt-1"
+            required
+          />
+        </label>
+
+        <label className="block">
+          Total Price:
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            readOnly
+            className="block w-full mt-1 bg-gray-100"
+          />
+        </label>
+
+        {renderDailyRates()}
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading || !formData.price}
+        className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+      >
+        {loading ? "Creating Booking..." : "Create Booking"}
+      </button>
     </form>
   );
 };
