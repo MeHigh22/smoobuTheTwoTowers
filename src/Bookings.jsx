@@ -183,7 +183,7 @@ const BookingForm = () => {
 
     return (
       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-        <h3 className="font-bold mb-2">Price Breakdown:</h3>
+        <h3 className="font-bold mb-2">Détail des prix:</h3>
         {priceDetails.priceElements.map((element, index) => (
           <div
             key={index}
@@ -198,7 +198,7 @@ const BookingForm = () => {
           </div>
         ))}
         <div className="mt-2 pt-2 border-t border-gray-200 font-bold flex justify-between items-center">
-          <span>Final Price</span>
+          <span>Prix final</span>
           <span>{priceDetails.finalPrice.toFixed(2)} EUR</span>
         </div>
       </div>

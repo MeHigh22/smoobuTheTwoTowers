@@ -111,7 +111,7 @@ const calculatePriceWithSettings = (
   const priceElements = [
     {
       type: "basePrice",
-      name: "Base price",
+      name: "Prix de base",
       amount: totalPrice,
       currencyCode: "EUR",
     },
@@ -147,7 +147,7 @@ const calculatePriceWithSettings = (
   if (discount > 0) {
     priceElements.push({
       type: "longStayDiscount",
-      name: `Long stay discount (${settings.lengthOfStayDiscount.discountPercentage}%)`,
+      name: `Réduction pour long séjour (${settings.lengthOfStayDiscount.discountPercentage}%)`,
       amount: -discount,
       currencyCode: "EUR",
     });
