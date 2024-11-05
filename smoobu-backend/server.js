@@ -27,7 +27,7 @@ const CACHE_DURATION = 5 * 60 * 1000;
 
 // Discount settings stored in backend
 const discountSettings = {
-  1946276: {
+  2402388: {
     // apartmentId
     cleaningFee: 0,
     prepayment: 0,
@@ -46,7 +46,7 @@ const discountSettings = {
 
 app.use(
   cors({
-    origin: "http://127.0.0.1:5173/",
+    origin: "http://localhost:5173",
   })
 );
 
@@ -184,7 +184,7 @@ app.get("/api/rates", async (req, res) => {
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
-        "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+        "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
         "Content-Type": "application/json",
       },
       params: {
@@ -231,7 +231,7 @@ app.post("/api/reservations", async (req, res) => {
       req.body,
       {
         headers: {
-          "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+          "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
           "Content-Type": "application/json",
         },
       }
