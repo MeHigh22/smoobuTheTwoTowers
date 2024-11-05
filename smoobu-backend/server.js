@@ -170,8 +170,6 @@ const calculatePriceWithSettings = (
   };
 };
 
-<<<<<<< Updated upstream
-=======
 // Webhook endpoint must come before JSON middleware
 app.post(
   "/webhook",
@@ -264,7 +262,6 @@ app.use(
 );
 
 // Get rates endpoint
->>>>>>> Stashed changes
 app.get("/api/rates", async (req, res) => {
   try {
     const { apartments, start_date, end_date, adults, children } = req.query;
