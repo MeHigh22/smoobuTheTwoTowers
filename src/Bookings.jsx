@@ -194,7 +194,8 @@ const handleSubmit = async (e) => {
         </div>
         {priceDetails.discount > 0 && (
           <div className="mt-2 text-sm text-green-600">
-            Vous économisez {priceDetails.discount.toFixed(2)} avec notre discount
+            Youre saving {priceDetails.discount.toFixed(2)} EUR with our length
+            of stay discount!
           </div>
         )}
       </div>
