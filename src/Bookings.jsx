@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// Create an axios instance with the backend URL
 const api = axios.create({
   baseURL: "http://localhost:3000/api",
 });
@@ -27,10 +26,12 @@ const BookingForm = () => {
     depositStatus: 1,
     language: "en",
   });
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [dailyRates, setDailyRates] = useState({});
+  const [priceDetails, setPriceDetails] = useState(null);
 
   const fetchRates = async (apartmentId, startDate, endDate) => {
     if (!apartmentId || !startDate || !endDate) return;
@@ -42,6 +43,8 @@ const BookingForm = () => {
           apartments: [apartmentId],
           start_date: startDate,
           end_date: endDate,
+          adults: formData.adults,
+          children: formData.children,
         },
       });
 
@@ -49,16 +52,11 @@ const BookingForm = () => {
 
       if (response.data.data && response.data.data[apartmentId]) {
         setDailyRates(response.data.data[apartmentId]);
-
-        const totalPrice = calculateTotalPrice(
-          response.data.data[apartmentId],
-          startDate,
-          endDate
-        );
+        setPriceDetails(response.data.priceDetails);
 
         setFormData((prevData) => ({
           ...prevData,
-          price: totalPrice,
+          price: response.data.priceDetails.finalPrice,
         }));
 
         setError(null);
@@ -68,6 +66,7 @@ const BookingForm = () => {
           ...prevData,
           price: 0,
         }));
+        setPriceDetails(null);
       }
     } catch (err) {
       console.error("Error fetching rates:", err);
@@ -79,35 +78,10 @@ const BookingForm = () => {
         ...prevData,
         price: 0,
       }));
+      setPriceDetails(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateTotalPrice = (rates, startDate, endDate) => {
-    if (!rates || !startDate || !endDate) return 0;
-
-    let totalPrice = 0;
-    let currentDate = new Date(startDate);
-    const endDateTime = new Date(endDate);
-
-    while (currentDate < endDateTime) {
-      const dateStr = currentDate.toISOString().split("T")[0];
-      const dayRate = rates[dateStr];
-
-      if (dayRate && dayRate.price !== null && dayRate.available === 1) {
-        totalPrice += dayRate.price;
-      } else {
-        setError(
-          "Some dates in your selection are not available or don't have prices set"
-        );
-        return 0;
-      }
-
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return totalPrice;
   };
 
   useEffect(() => {
@@ -118,7 +92,13 @@ const BookingForm = () => {
         formData.departureDate
       );
     }
-  }, [formData.apartmentId, formData.arrivalDate, formData.departureDate]);
+  }, [
+    formData.apartmentId,
+    formData.arrivalDate,
+    formData.departureDate,
+    formData.adults,
+    formData.children,
+  ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -166,6 +146,38 @@ const BookingForm = () => {
     }
   };
 
+  const renderPriceDetails = () => {
+    if (!priceDetails) return null;
+
+    return (
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+        <h3 className="font-bold mb-2">Price Breakdown:</h3>
+        {priceDetails.priceElements.map((element, index) => (
+          <div
+            key={index}
+            className={`flex justify-between items-center ${
+              element.type === "longStayDiscount" ? "text-green-600" : ""
+            } ${element.amount < 0 ? "text-green-600" : ""}`}
+          >
+            <span>{element.name}</span>
+            <span>
+              {Math.abs(element.amount).toFixed(2)} {element.currencyCode}
+            </span>
+          </div>
+        ))}
+        <div className="mt-2 pt-2 border-t border-gray-200 font-bold flex justify-between items-center">
+          <span>Final Price</span>
+          <span>{priceDetails.finalPrice.toFixed(2)} EUR</span>
+        </div>
+        {priceDetails.discount > 0 && (
+          <div className="mt-2 text-sm text-green-600">
+            Vous économisez {priceDetails.discount.toFixed(2)} avec notre discount
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderDailyRates = () => {
     if (
       !formData.arrivalDate ||
@@ -190,11 +202,11 @@ const BookingForm = () => {
 
     return (
       <div className="mt-4">
-        <h3 className="font-bold mb-2">Daily Rates:</h3>
+        <h3 className="font-bold mb-2">Daily Base Rates:</h3>
         <div className="grid grid-cols-2 gap-2">
           {dates.map(({ date, rate }) => (
             <div key={date} className="text-sm">
-              {date}: {rate?.price || "N/A"}{" "}
+              {date}: {rate?.price || "N/A"} EUR{" "}
               {rate?.available === 1 ? "(Available)" : "(Unavailable)"}
             </div>
           ))}
@@ -271,6 +283,36 @@ const BookingForm = () => {
 
         <div>
           <label className="block text-sm font-medium mb-1">
+            Number of Adults:
+            <input
+              type="number"
+              name="adults"
+              value={formData.adults}
+              onChange={handleChange}
+              min="1"
+              max="4"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Number of Children:
+            <input
+              type="number"
+              name="children"
+              value={formData.children}
+              onChange={handleChange}
+              min="0"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
             Arrival Date:
             <input
               type="date"
@@ -299,35 +341,6 @@ const BookingForm = () => {
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            Number of Adults:
-            <input
-              type="number"
-              name="adults"
-              value={formData.adults}
-              onChange={handleChange}
-              min="1"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            />
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Number of Children:
-            <input
-              type="number"
-              name="children"
-              value={formData.children}
-              onChange={handleChange}
-              min="0"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
             Notes:
             <textarea
               name="notice"
@@ -339,29 +352,17 @@ const BookingForm = () => {
           </label>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Total Price:
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              readOnly
-              className="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm"
-            />
-          </label>
-        </div>
-
+        {renderPriceDetails()}
         {renderDailyRates()}
-      </div>
 
-      <button
-        type="submit"
-        disabled={loading || !formData.price}
-        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
-      >
-        {loading ? "Creating Booking..." : "Create Booking"}
-      </button>
+        <button
+          type="submit"
+          disabled={loading || !formData.price}
+          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          {loading ? "Creating Booking..." : "Create Booking"}
+        </button>
+      </div>
     </form>
   );
 };
