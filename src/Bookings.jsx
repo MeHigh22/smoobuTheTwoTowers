@@ -241,7 +241,7 @@ const handleSubmit = async (e) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
   <div className="border border-[#668E73] p-4 rounded space-y-4">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
       <div>
         <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
           Arrival Date
@@ -307,11 +307,12 @@ const handleSubmit = async (e) => {
   </div>
 
   <div className="flex space-x-4">
-    <div className="w-1/3 border border-[#668E73] p-4 rounded">
-      <h2 className="text-[16px] font-medium text-[#668E73]">Title Section</h2>
+    <div className="w-1/3 border border-[#668E73] p-4 rounded text-left">
+      <h2 className="text-[20px] font-bold">Contact</h2>
     </div>
 
-    <div className="w-2/3 border border-[#668E73] p-4 rounded space-y-4">
+    <div className="w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
+    <h2 className="text-[20px] font-bold">Contact</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -442,23 +443,25 @@ const handleSubmit = async (e) => {
             value={formData.notice}
             onChange={handleChange}
             rows="3"
-            placeholder="Add any additional notes here"
+            placeholder="Laissez un message pour le propriétaire"
             className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white p-2"
           />
         </label>
       </div>
+
+      <button
+    type="submit"
+    disabled={loading || !formData.price}
+    className="w-full py-2 px-4 border border-transparent rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73] disabled:bg-gray-300 disabled:cursor-not-allowed"
+  >
+    {loading ? "En cours..." : "Passer au paiement"}
+  </button>
+
     </div>
   </div>
 
   {renderPriceDetails()}
 
-  <button
-    type="submit"
-    disabled={loading || !formData.price}
-    className="w-full py-2 px-4 border border-transparent rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73] disabled:bg-gray-300 disabled:cursor-not-allowed"
-  >
-    {loading ? "Processing..." : "Proceed to Payment"}
-  </button>
 </form>
 
 
