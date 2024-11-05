@@ -1,8 +1,29 @@
 import express from "express";
 import cors from "cors";
 import axios from "axios";
+import * as dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config();
 
 const app = express();
+
+// Enable CORS for your frontend
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
+
+app.use(express.json());
+
+// Cache for API responses
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000;
 
 // Discount settings stored in backend
 const discountSettings = {
@@ -197,6 +218,40 @@ app.get("/api/rates", async (req, res) => {
     );
     res.status(error.response?.status || 500).json({
       error: error.response?.data?.detail || "Failed to fetch rates",
+    });
+  }
+});
+
+app.post("/api/reservations", async (req, res) => {
+  try {
+    console.log("Received reservation request:", req.body);
+
+    const response = await axios.post(
+      "https://login.smoobu.com/api/reservations",
+      req.body,
+      {
+        headers: {
+          "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Log the successful response
+    console.log("Smoobu reservation response:", response.data);
+
+    res.json(response.data);
+  } catch (error) {
+    console.error(
+      "Error creating reservation:",
+      error.response?.data || error.message
+    );
+
+    // Send a more detailed error response
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data?.detail || "Failed to create reservation",
+      details: error.response?.data || {},
+      message: error.message,
     });
   }
 });
