@@ -466,15 +466,35 @@ const handleSubmit = async (e) => {
 
     </form>
 
+);
 
+const renderPaymentForm = () => (
+  <div className="mt-8">
+    <h3 className="text-lg font-medium mb-4">Complete your payment</h3>
+    {clientSecret && (
+      <Elements stripe={stripePromise} options={{ clientSecret }}>
+        <PaymentForm
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+        />
+      </Elements>
+    )}
+  </div>
+);
 
+return (
+  <div className="max-w-2xl mx-auto p-6">
+    <h2 className="text-2xl font-bold mb-4">Book Your Stay</h2>
+    {error && <p className="text-red-500 mb-4">{error}</p>}
+    {successMessage && (
+      <p className="text-green-500 mb-4">{successMessage}</p>
+    )}
+    {loading && <p className="text-blue-500 mb-4">Loading...</p>}
 
-
-
-  );
+    {!showPayment ? renderBookingForm() : renderPaymentForm()}
+  </div>
+);
 };
-
-
 
 
 export default BookingForm;
