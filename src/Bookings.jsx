@@ -210,6 +210,8 @@ const BookingForm = () => {
       <div className="border border-[#668E73] p-4 rounded space-y-4">
         <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73] text-left">Arrivée</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+          
+          {/* Arrival Date */}
           <div>
             <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
               Arrivé
@@ -225,6 +227,7 @@ const BookingForm = () => {
             </label>
           </div>
 
+          {/* Departure Date */}
           <div>
             <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
               Départ
@@ -240,39 +243,55 @@ const BookingForm = () => {
             </label>
           </div>
 
+          {/* Adults Dropdown */}
           <div>
             <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
               Adultes
-              <input
-                type="number"
+              <select
                 name="adults"
                 value={formData.adults}
                 onChange={handleChange}
-                min="1"
-                max="4"
-                placeholder="Enter number of adults"
-                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 appearance-none"
                 required
-              />
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='green' d='M5.23 7.21a.75.75 0 011.06 0L10 10.92l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 010-1.06z'/%3E%3C/svg%3E")`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1.5rem 1.5rem",
+                }}
+              >
+                {[...Array(10).keys()].map((i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
             </label>
           </div>
 
+          {/* Children Dropdown */}
           <div>
             <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
               Enfants
-              <input
-                type="number"
+              <select
                 name="children"
                 value={formData.children}
                 onChange={handleChange}
-                min="0"
-                placeholder="Enter number of children"
-                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              />
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='green' d='M5.23 7.21a.75.75 0 011.06 0L10 10.92l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 010-1.06z'/%3E%3C/svg%3E")`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1.5rem 1.5rem",
+                }}
+              >
+                {[...Array(11).keys()].map((i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </select>
             </label>
           </div>
         </div>
       </div>
+
 
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
     <div className="w-full md:w-1/3 border border-[#668E73] p-4 rounded text-left">
@@ -284,7 +303,7 @@ const BookingForm = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Prénom
+            Prénom*
             <input
               type="text"
               name="firstName"
@@ -299,7 +318,7 @@ const BookingForm = () => {
 
             <div>
               <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                Nom
+                Nom*
                 <input
                   type="text"
                   name="lastName"
@@ -314,7 +333,7 @@ const BookingForm = () => {
 
             <div>
               <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                Email
+                Email*
                 <input
                   type="email"
                   name="email"
@@ -337,7 +356,6 @@ const BookingForm = () => {
                   onChange={handleChange}
                   placeholder="Téléphone"
                   className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  required
                 />
               </label>
             </div>
@@ -352,7 +370,6 @@ const BookingForm = () => {
                   onChange={handleChange}
                   placeholder="Rue/Numéro"
                   className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  required
                 />
               </label>
             </div>
@@ -367,7 +384,6 @@ const BookingForm = () => {
                   onChange={handleChange}
                   placeholder="Code postal"
                   className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  required
                 />
               </label>
             </div>
@@ -382,7 +398,6 @@ const BookingForm = () => {
                   onChange={handleChange}
                   placeholder="Ville"
                   className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  required
                 />
               </label>
             </div>
@@ -397,7 +412,6 @@ const BookingForm = () => {
                   onChange={handleChange}
                   placeholder="Pays"
                   className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  required
                 />
               </label>
             </div>
@@ -450,7 +464,8 @@ const BookingForm = () => {
 
   return (
     <div className="mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Book Your Stay</h2>
+      <h1 className="text-2xl font-bold mb-4">Réserver le Dôme des Libellules
+</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {successMessage && (
         <p className="text-green-500 mb-4">{successMessage}</p>
