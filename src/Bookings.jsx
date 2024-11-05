@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+// Create an axios instance with the backend URL
+const api = axios.create({
+  baseURL: "http://localhost:3000/api",
+});
+
 const BookingForm = () => {
   const [formData, setFormData] = useState({
     arrivalDate: "",
@@ -32,28 +37,19 @@ const BookingForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://cors-anywhere.herokuapp.com/https://login.smoobu.com/api/rates`,
-        {
-          headers: {
-            "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
-            "Content-Type": "application/json",
-          },
-          params: {
-            apartments: [apartmentId],
-            start_date: startDate,
-            end_date: endDate,
-          },
-        }
-      );
+      const response = await api.get("/rates", {
+        params: {
+          apartments: [apartmentId],
+          start_date: startDate,
+          end_date: endDate,
+        },
+      });
 
       console.log("Rates response:", response.data);
 
-      // Store the daily rates for the apartment
       if (response.data.data && response.data.data[apartmentId]) {
         setDailyRates(response.data.data[apartmentId]);
 
-        // Calculate total price for the stay
         const totalPrice = calculateTotalPrice(
           response.data.data[apartmentId],
           startDate,
@@ -75,7 +71,10 @@ const BookingForm = () => {
       }
     } catch (err) {
       console.error("Error fetching rates:", err);
-      setError("Could not fetch rates. Please try again later.");
+      setError(
+        err.response?.data?.error ||
+          "Could not fetch rates. Please try again later."
+      );
       setFormData((prevData) => ({
         ...prevData,
         price: 0,
@@ -99,7 +98,6 @@ const BookingForm = () => {
       if (dayRate && dayRate.price !== null && dayRate.available === 1) {
         totalPrice += dayRate.price;
       } else {
-        // If any day is unavailable or has no price, return 0
         setError(
           "Some dates in your selection are not available or don't have prices set"
         );
@@ -112,7 +110,6 @@ const BookingForm = () => {
     return totalPrice;
   };
 
-  // Fetch rates when dates change
   useEffect(() => {
     if (formData.arrivalDate && formData.departureDate) {
       fetchRates(
@@ -147,23 +144,13 @@ const BookingForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        "https://cors-anywhere.herokuapp.com/https://login.smoobu.com/api/reservations",
-        {
-          ...formData,
-          price: Number(formData.price),
-          adults: Number(formData.adults),
-          children: Number(formData.children),
-          deposit: Number(formData.deposit),
-        },
-        {
-          headers: {
-            "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        }
-      );
+      const response = await api.post("/reservations", {
+        ...formData,
+        price: Number(formData.price),
+        adults: Number(formData.adults),
+        children: Number(formData.children),
+        deposit: Number(formData.deposit),
+      });
 
       console.log("Booking response:", response.data);
       setSuccessMessage("Booking created successfully!");
@@ -171,7 +158,7 @@ const BookingForm = () => {
     } catch (err) {
       console.error("Booking error:", err);
       setError(
-        err.response?.data?.detail ||
+        err.response?.data?.error ||
           "An error occurred while creating the booking."
       );
     } finally {
@@ -218,46 +205,152 @@ const BookingForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2>Create Booking</h2>
-      {error && <p className="text-red-500">{error}</p>}
-      {successMessage && <p className="text-green-500">{successMessage}</p>}
-      {loading && <p>Loading...</p>}
+      <h2 className="text-2xl font-bold mb-4">Create Booking</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {successMessage && (
+        <p className="text-green-500 mb-4">{successMessage}</p>
+      )}
+      {loading && <p className="text-blue-500 mb-4">Loading...</p>}
 
-      <div className="space-y-2">
-        <label className="block">
-          Arrival Date:
-          <input
-            type="date"
-            name="arrivalDate"
-            value={formData.arrivalDate}
-            onChange={handleChange}
-            className="block w-full mt-1"
-            required
-          />
-        </label>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            First Name:
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
 
-        <label className="block">
-          Departure Date:
-          <input
-            type="date"
-            name="departureDate"
-            value={formData.departureDate}
-            onChange={handleChange}
-            className="block w-full mt-1"
-            required
-          />
-        </label>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Last Name:
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
 
-        <label className="block">
-          Total Price:
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            readOnly
-            className="block w-full mt-1 bg-gray-100"
-          />
-        </label>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Email:
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Phone:
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Arrival Date:
+            <input
+              type="date"
+              name="arrivalDate"
+              value={formData.arrivalDate}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Departure Date:
+            <input
+              type="date"
+              name="departureDate"
+              value={formData.departureDate}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Number of Adults:
+            <input
+              type="number"
+              name="adults"
+              value={formData.adults}
+              onChange={handleChange}
+              min="1"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Number of Children:
+            <input
+              type="number"
+              name="children"
+              value={formData.children}
+              onChange={handleChange}
+              min="0"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Notes:
+            <textarea
+              name="notice"
+              value={formData.notice}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              rows="3"
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Total Price:
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
+              readOnly
+              className="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm"
+            />
+          </label>
+        </div>
 
         {renderDailyRates()}
       </div>
@@ -265,7 +358,7 @@ const BookingForm = () => {
       <button
         type="submit"
         disabled={loading || !formData.price}
-        className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         {loading ? "Creating Booking..." : "Create Booking"}
       </button>
