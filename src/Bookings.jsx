@@ -239,83 +239,84 @@ const handleSubmit = async (e) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-  <div className="border border-[#668E73] p-4 rounded space-y-4">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-      <div>
-        <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-          Arrival Date
-          <input
-            type="date"
-            name="arrivalDate"
-            value={formData.arrivalDate}
-            onChange={handleChange}
-            placeholder="Select arrival date"
-            className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-            required
-          />
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-4 w-full md:w-4/5 lg:w-3/5 mx-auto">
+      <div className="border border-[#668E73] p-4 rounded space-y-4">
+        <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73] text-left">Arrivée</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Arrivé
+              <input
+                type="date"
+                name="arrivalDate"
+                value={formData.arrivalDate}
+                onChange={handleChange}
+                placeholder="Select arrival date"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                required
+              />
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Départ
+              <input
+                type="date"
+                name="departureDate"
+                value={formData.departureDate}
+                onChange={handleChange}
+                placeholder="Select departure date"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                required
+              />
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Adultes
+              <input
+                type="number"
+                name="adults"
+                value={formData.adults}
+                onChange={handleChange}
+                min="1"
+                max="4"
+                placeholder="Enter number of adults"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                required
+              />
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Enfants
+              <input
+                type="number"
+                name="children"
+                value={formData.children}
+                onChange={handleChange}
+                min="0"
+                placeholder="Enter number of children"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              />
+            </label>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-          Departure Date
-          <input
-            type="date"
-            name="departureDate"
-            value={formData.departureDate}
-            onChange={handleChange}
-            placeholder="Select departure date"
-            className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-            required
-          />
-        </label>
-      </div>
-
-      <div>
-        <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-          Number of Adults
-          <input
-            type="number"
-            name="adults"
-            value={formData.adults}
-            onChange={handleChange}
-            min="1"
-            max="4"
-            placeholder="Enter number of adults"
-            className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-            required
-          />
-        </label>
-      </div>
-
-      <div>
-        <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-          Number of Children
-          <input
-            type="number"
-            name="children"
-            value={formData.children}
-            onChange={handleChange}
-            min="0"
-            placeholder="Enter number of children"
-            className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-          />
-        </label>
-      </div>
+      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+    <div className="w-full md:w-1/3 border border-[#668E73] p-4 rounded text-left">
+      <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Info</h2>
     </div>
-  </div>
 
-  <div className="flex space-x-4">
-    <div className="w-1/3 border border-[#668E73] p-4 rounded text-left">
-      <h2 className="text-[20px] font-bold">Contact</h2>
-    </div>
-
-    <div className="w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
-    <h2 className="text-[20px] font-bold">Contact</h2>
+    <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
+      <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Contact</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
+          <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
             Prénom
             <input
               type="text"
@@ -323,146 +324,146 @@ const handleSubmit = async (e) => {
               value={formData.firstName}
               onChange={handleChange}
               placeholder="Prénom"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
               required
             />
           </label>
         </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Nom
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              placeholder="Nom"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
-        </div>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Nom
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Nom"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Email
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
-        </div>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Email
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Téléphone
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Téléphone"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
-        </div>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Téléphone
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Téléphone"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Rue/numéro
-            <input
-              type="text"
-              name="street"
-              value={formData.street}
-              onChange={handleChange}
-              placeholder="Rue/Numéro"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
-        </div>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Rue/numéro
+                <input
+                  type="text"
+                  name="street"
+                  value={formData.street}
+                  onChange={handleChange}
+                  placeholder="Rue/Numéro"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Code postal
-            <input
-              type="number"
-              name="postalCode"
-              value={formData.postalCode}
-              onChange={handleChange}
-              placeholder="Code postal"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
-        </div>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Code postal
+                <input
+                  type="number"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleChange}
+                  placeholder="Code postal"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Ville
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="Ville"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
-        </div>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Ville
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Ville"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
 
-        <div>
-          <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-            Pays
-            <input
-              type="text"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              placeholder="Pays"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              required
-            />
-          </label>
+            <div>
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Pays
+                <input
+                  type="text"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  placeholder="Pays"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  required
+                />
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Laissez un message pour le propriétaire
+              <textarea
+                name="notice"
+                value={formData.notice}
+                onChange={handleChange}
+                rows="3"
+                placeholder="Laissez un message pour le propriétaire"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white p-2"
+              />
+            </label>
+          </div>
+
+          <button
+        type="submit"
+        disabled={loading || !formData.price}
+        className="w-full py-2 px-4 border border-transparent rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73] disabled:bg-gray-300 disabled:cursor-not-allowed"
+      >
+        {loading ? "En cours..." : "Passer au paiement"}
+      </button>
+
         </div>
       </div>
 
-      <div>
-        <label className="block text-[16px] font-medium text-[#9a9a9a] mb-1">
-          Laissez un message pour le propriétaire
-          <textarea
-            name="notice"
-            value={formData.notice}
-            onChange={handleChange}
-            rows="3"
-            placeholder="Laissez un message pour le propriétaire"
-            className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white p-2"
-          />
-        </label>
-      </div>
+      {renderPriceDetails()}
 
-      <button
-    type="submit"
-    disabled={loading || !formData.price}
-    className="w-full py-2 px-4 border border-transparent rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73] disabled:bg-gray-300 disabled:cursor-not-allowed"
-  >
-    {loading ? "En cours..." : "Passer au paiement"}
-  </button>
-
-    </div>
-  </div>
-
-  {renderPriceDetails()}
-
-</form>
+    </form>
 
 
 

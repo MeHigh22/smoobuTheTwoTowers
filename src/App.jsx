@@ -10,7 +10,7 @@ function App() {
 
   return (
     <>
-        <div className="text-left mb-5">
+        <div className="text-left mb-5 space-y-4 w-3/5 mx-auto">
           <h1 className="text-[30px] font-bold">Réserver le Dôme des Libellules
 </h1>
         </div>
