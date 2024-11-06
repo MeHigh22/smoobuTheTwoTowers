@@ -231,8 +231,7 @@ const BookingForm = () => {
 
   const renderBookingForm = () => (
     <form onSubmit={handleSubmit} className="space-y-4 w-full md:w-4/5 lg:w-3/5 mx-auto">
-      <div className="border border-[#668E73] p-4 rounded space-y-4">
-        <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73] text-left">Arrivée</h2>
+      <div className="border border-[#668E73] p-5 rounded space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 text-left">
           
           {/* Arrival Date */}
@@ -355,8 +354,8 @@ const BookingForm = () => {
           alt="Informational Image"
           className="w-[100%] h-[250px] object-cover rounded-[0.3em] mt-4"
         />
-        <div className="w-full p-4 rounded text-left">
-          <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Info</h2>
+        <div className="w-full py-4 rounded text-left">
+        <h2 className="text-[18px] md:text-[23px] font-normal text-black">Le dôme des libellules</h2>
 
           {/* Number of People */}
           <div className="flex items-center justify-between mt-4">
@@ -390,13 +389,13 @@ const BookingForm = () => {
             </div>
           </div>
         </div>
-        <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Le dôme des libellules</h2>
+        <hr/>
         {showPriceDetails && renderPriceDetails()}
 
       </div>
 
     <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
-      <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Contact</h2>
+      <h2 className="text-[18px] md:text-[23px] font-normal text-black">Contact</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
