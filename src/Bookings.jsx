@@ -3,6 +3,9 @@ import axios from "axios";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
+import Calendar from './assets/icons8-calendar-50.png'
+import Group from './assets/icons8-group-48.png'
+
 const stripePromise = loadStripe("your-public-stripe-key");
 
 const api = axios.create({
@@ -38,6 +41,15 @@ const BookingForm = () => {
   const [priceDetails, setPriceDetails] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
+
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // Months are zero-indexed
+    const year = date.getFullYear().toString().slice(-2); // Get last two digits of the year
+    return `${day}.${month}.${year}`;
+  };
 
   useEffect(() => {
     // Set default dates
@@ -206,7 +218,7 @@ const BookingForm = () => {
   };
 
   const renderBookingForm = () => (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full md:w-4/5 lg:w-3/5 mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full md:w-4/5 lg:w-3/5 mx-auto">
       <div className="border border-[#668E73] p-4 rounded space-y-4">
         <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73] text-left">Arrivée</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
@@ -294,9 +306,38 @@ const BookingForm = () => {
 
 
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-    <div className="w-full md:w-1/3 border border-[#668E73] p-4 rounded text-left">
-      <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Info</h2>
-    </div>
+      <div className="w-full md:w-1/3 border border-[#668E73] p-4 rounded text-left">        
+        {/* New Image and Title */}
+        <img
+          src="https://images.unsplash.com/photo-1720293315632-37efe958d5ec?q=80&w=3432&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="Informational Image"
+          className="w-[100%] h-[250px] object-cover rounded-[0.3em] mt-4"
+        />
+        <div className="w-full p-4 rounded text-left">
+          <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Info</h2>
+
+          {/* Number of People */}
+          <div className="flex items-center justify-between mt-4">
+            <img src={Group} alt="Profile Icon" className="w-6 h-6" />
+            <span className="text-[16px] font-bold text-[#668E73]">
+              {Number(formData.adults) + Number(formData.children)}{" "}
+              {Number(formData.adults) + Number(formData.children) > 1 ? "personnes" : "personne"}
+            </span>
+          </div>
+
+          {/* Arrival and Departure Dates */}
+          <div className="flex items-center justify-between mt-2">
+            <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
+            <div className="flex items-center text-[16px] font-bold text-[#668E73]">
+              <span>{formatDate(formData.arrivalDate)}</span>
+              <span className="mx-2">→</span>
+              <span>{formatDate(formData.departureDate)}</span>
+            </div>
+          </div>
+        </div>
+        <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Le dôme des libellules</h2>
+        {renderPriceDetails()}
+      </div>
 
     <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
       <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Contact</h2>
