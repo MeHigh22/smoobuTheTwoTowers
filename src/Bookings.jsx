@@ -361,7 +361,7 @@ const BookingForm = () => {
           {/* Number of People */}
           <div className="flex items-center justify-between mt-4">
             <img src={Group} alt="Profile Icon" className="w-6 h-6" />
-            <span className="text-[16px] font-bold text-[#668E73]">
+            <span className="text-[16px] font-light text-black">
               {Number(formData.adults) + Number(formData.children)}{" "}
               {Number(formData.adults) + Number(formData.children) > 1 ? "personnes" : "personne"}
             </span>
@@ -370,7 +370,7 @@ const BookingForm = () => {
           {/* Arrival and Departure Dates */}
           <div className="flex items-center justify-between mt-2">
             <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
-            <div className="flex items-center text-[16px] font-bold text-[#668E73]">
+            <div className="flex items-center text-[16px] font-light text-black">
               {/* Conditionally render the arrival date */}
               {formData.arrivalDate && (
                 <>
@@ -379,7 +379,7 @@ const BookingForm = () => {
               )}
               
               {/* Display arrow only if both dates are selected */}
-              {formData.arrivalDate && formData.departureDate && <span className="mx-2">→</span>}
+              <span className="mx-2 text-black">→</span>
               
               {/* Conditionally render the departure date */}
               {formData.departureDate && (
