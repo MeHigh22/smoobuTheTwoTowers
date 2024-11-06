@@ -230,7 +230,7 @@ const BookingForm = () => {
         <form onSubmit={handleSubmit} className="space-y-4 w-full md:w-4/5 lg:w-3/5 mx-auto">
           {/* Search Section */}
           <div className="border border-[#668E73] p-5 rounded space-y-4">
-            <div className="grid grid-cols-1 gap-4 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 text-left">
             <div className="border border-[#668E73] p-5 rounded space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 text-left">
           
