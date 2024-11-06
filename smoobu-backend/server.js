@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import axios from "axios";
+import Stripe from "stripe";
 import * as dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -11,24 +12,14 @@ const __dirname = dirname(__filename);
 dotenv.config();
 
 const app = express();
-
-// Enable CORS for your frontend
-app.use(
-  cors({
-    origin: "http://127.0.0.1:5173",
-  })
+const stripe = new Stripe(
+  "sk_test_51QHmafIhkftuEy3nihoW4ZunaXVY1D85r176d91x9BAhGfvW92zG7r7A5rVeGuL1ysHVMOzflF0jwoCpyKJl760n00GC9ZYSJ4"
 );
+const pendingBookings = new Map();
 
-app.use(express.json());
-
-// Cache for API responses
-const cache = new Map();
-const CACHE_DURATION = 5 * 60 * 1000;
-
-// Discount settings stored in backend
+// Discount settings
 const discountSettings = {
   2402388: {
-    // apartmentId
     cleaningFee: 0,
     prepayment: 0,
     minDaysBetweenBookingAndArrival: 1,
@@ -41,31 +32,9 @@ const discountSettings = {
       discountPercentage: 40,
     },
   },
-  // Add more apartments with their settings as needed
 };
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-  })
-);
-
-app.use(express.json());
-
-// New endpoint to get discount settings
-app.get("/api/discount-settings/:apartmentId", (req, res) => {
-  const { apartmentId } = req.params;
-  const settings = discountSettings[apartmentId];
-
-  if (!settings) {
-    return res
-      .status(404)
-      .json({ error: "Discount settings not found for this apartment" });
-  }
-
-  res.json(settings);
-});
-
+// Calculate price with settings
 const calculatePriceWithSettings = (
   rates,
   startDate,
@@ -79,7 +48,6 @@ const calculatePriceWithSettings = (
   const currentDate = new Date(startDate);
   const endDateTime = new Date(endDate);
 
-  // Calculate base price and nights
   while (currentDate < endDateTime) {
     const dateStr = currentDate.toISOString().split("T")[0];
     const dayRate = rates[dateStr];
@@ -92,16 +60,12 @@ const calculatePriceWithSettings = (
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Calculate extra guests fee
   const extraGuests = Math.max(0, numberOfGuests - settings.startingAtGuest);
   const extraGuestsFee =
     extraGuests * settings.extraGuestsPerNight * numberOfNights;
-
-  // Calculate extra children fee
   const extraChildrenFee =
     numberOfChildren * settings.extraChildPerNight * numberOfNights;
 
-  // Calculate length of stay discount
   let discount = 0;
   if (numberOfNights >= settings.lengthOfStayDiscount.minNights) {
     discount =
@@ -111,7 +75,7 @@ const calculatePriceWithSettings = (
   const priceElements = [
     {
       type: "basePrice",
-      name: "Prix de base",
+      name: "Base price",
       amount: totalPrice,
       currencyCode: "EUR",
     },
@@ -147,7 +111,7 @@ const calculatePriceWithSettings = (
   if (discount > 0) {
     priceElements.push({
       type: "longStayDiscount",
-      name: `Réduction pour long séjour (${settings.lengthOfStayDiscount.discountPercentage}%)`,
+      name: `Long stay discount (${settings.lengthOfStayDiscount.discountPercentage}%)`,
       amount: -discount,
       currencyCode: "EUR",
     });
@@ -255,7 +219,7 @@ app.post(
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://127.0.0.1:5173",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -276,7 +240,8 @@ app.get("/api/rates", async (req, res) => {
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
-        "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+        "Api-Key":
+        "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
         "Content-Type": "application/json",
       },
       params: {
@@ -314,13 +279,69 @@ app.get("/api/rates", async (req, res) => {
   }
 });
 
-app.post("/api/reservations", async (req, res) => {
+// Create payment intent endpoint
+app.post("/api/create-payment-intent", async (req, res) => {
   try {
-    console.log("Received reservation request:", req.body);
+    const { price, bookingData } = req.body;
+    console.log("Received booking data:", bookingData);
+
+    const bookingReference = `BOOKING-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    console.log("Generated booking reference:", bookingReference);
+
+    pendingBookings.set(bookingReference, bookingData);
+    console.log("Stored booking data in pending bookings");
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(price * 100),
+      currency: "eur",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        bookingReference: bookingReference,
+      },
+    });
+
+    console.log("Created payment intent:", paymentIntent.id);
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      bookingReference: bookingReference,
+    });
+  } catch (error) {
+    console.error("Error creating payment intent:", error);
+    res.status(500).json({ error: "Failed to create payment intent" });
+  }
+});
+
+// Test Smoobu endpoint
+app.post("/api/test-smoobu", async (req, res) => {
+  try {
+    const testBooking = {
+      arrivalDate: "2024-11-10",
+      departureDate: "2024-11-12",
+      channelId: 3960043,
+      apartmentId: 2402388,
+      firstName: "Test",
+      lastName: "Booking",
+      email: "test@example.com",
+      phone: "1234567890",
+      adults: 1,
+      children: 0,
+      price: 100,
+      priceStatus: 1,
+      deposit: 0,
+      depositStatus: 1,
+      language: "en",
+    };
+
+    console.log("Testing Smoobu API with data:", testBooking);
 
     const response = await axios.post(
       "https://login.smoobu.com/api/reservations",
-      req.body,
+      testBooking,
       {
         headers: {
           "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
@@ -329,26 +350,25 @@ app.post("/api/reservations", async (req, res) => {
       }
     );
 
-    // Log the successful response
-    console.log("Smoobu reservation response:", response.data);
-
+    console.log("Smoobu test response:", response.data);
     res.json(response.data);
   } catch (error) {
-    console.error(
-      "Error creating reservation:",
-      error.response?.data || error.message
-    );
-
-    // Send a more detailed error response
-    res.status(error.response?.status || 500).json({
-      error: error.response?.data?.detail || "Failed to create reservation",
-      details: error.response?.data || {},
-      message: error.message,
+    console.error("Smoobu test error:", error.response?.data || error.message);
+    res.status(500).json({
+      error: "Smoobu test failed",
+      details: error.response?.data,
     });
   }
 });
 
-const PORT = 3000;
+// Debug endpoint to check pending bookings
+app.get("/api/pending-bookings", (req, res) => {
+  const bookings = Array.from(pendingBookings.entries());
+  res.json(bookings);
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log("Webhook endpoint ready at /webhook");
 });
