@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+
 
 import Calendar from './assets/icons8-calendar-50.png'
 import Group from './assets/icons8-group-48.png'
@@ -36,11 +37,19 @@ const BookingForm = () => {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(false); // Availability status
+  const [showPriceDetails, setShowPriceDetails] = useState(false); // New state for controlling price details visibility
   const [successMessage, setSuccessMessage] = useState("");
   const [dailyRates, setDailyRates] = useState({});
   const [priceDetails, setPriceDetails] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
+
+  const arrivalDateRef = useRef(null); // Create ref for arrival date
+  const departureDateRef = useRef(null); // Create ref for departure date
+    // Open calendar picker when clicking the icon
+    const openArrivalDatePicker = () => arrivalDateRef.current?.showPicker();
+    const openDepartureDatePicker = () => departureDateRef.current?.showPicker();
 
 
   const formatDate = (dateString) => {
@@ -61,8 +70,8 @@ const BookingForm = () => {
 
     setFormData((prevData) => ({
       ...prevData,
-      arrivalDate: todayStr,
-      departureDate: tomorrowStr,
+      arrivalDate: "",
+      departureDate: "",
     }));
   }, []);
 
@@ -81,39 +90,41 @@ const BookingForm = () => {
         },
       });
 
+      // If rates are found, set price details and show them
       if (response.data.data && response.data.data[apartmentId]) {
-        setDailyRates(response.data.data[apartmentId]);
         setPriceDetails(response.data.priceDetails);
-
         setFormData((prevData) => ({
           ...prevData,
           price: response.data.priceDetails.finalPrice,
         }));
-
+        setIsAvailable(true);
+        setShowPriceDetails(true); // Display price details only if availability confirmed
         setError(null);
       } else {
+        // If no rates are found, hide price details and show an error
+        setIsAvailable(false);
+        setShowPriceDetails(false); // Hide price details if room is unavailable
         setError("No rates found for the selected dates");
-        setFormData((prevData) => ({
-          ...prevData,
-          price: 0,
-        }));
         setPriceDetails(null);
       }
     } catch (err) {
-      console.error("Error fetching rates:", err);
+      setIsAvailable(false);
+      setShowPriceDetails(false); // Hide price details if there's an error fetching rates
       setError(
         err.response?.data?.error ||
           "Could not fetch rates. Please try again later."
       );
-      setFormData((prevData) => ({
-        ...prevData,
-        price: 0,
-      }));
       setPriceDetails(null);
     } finally {
       setLoading(false);
     }
   };
+
+  // Handler for "Check Availability" button click
+  const handleCheckAvailability = () => {
+    fetchRates(formData.apartmentId, formData.arrivalDate, formData.departureDate);
+  };
+
 
   useEffect(() => {
     if (formData.arrivalDate && formData.departureDate) {
@@ -137,6 +148,7 @@ const BookingForm = () => {
       ...prevData,
       [name]: value,
     }));
+    setShowPriceDetails(false); // Reset price details visibility when dates are changed
   };
 
   const handleSubmit = async (e) => {
@@ -221,37 +233,55 @@ const BookingForm = () => {
     <form onSubmit={handleSubmit} className="space-y-4 w-full md:w-4/5 lg:w-3/5 mx-auto">
       <div className="border border-[#668E73] p-4 rounded space-y-4">
         <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73] text-left">Arrivée</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 text-left">
           
           {/* Arrival Date */}
-          <div>
+          <div className="relative">
             <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
               Arrivé
-              <input
-                type="date"
-                name="arrivalDate"
-                value={formData.arrivalDate}
-                onChange={handleChange}
-                placeholder="Select arrival date"
-                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="date"
+                  name="arrivalDate"
+                  value={formData.arrivalDate}
+                  onChange={handleChange}
+                  placeholder="Select arrival date"
+                  ref={arrivalDateRef} // Add ref to arrival date input
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 pr-10"
+                  required
+                />
+                <img
+                  src={Calendar}
+                  alt="Calendar Icon"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
+                  onClick={openArrivalDatePicker} // Open calendar on click
+                />
+              </div>
             </label>
           </div>
 
           {/* Departure Date */}
-          <div>
+          <div className="relative">
             <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
               Départ
-              <input
-                type="date"
-                name="departureDate"
-                value={formData.departureDate}
-                onChange={handleChange}
-                placeholder="Select departure date"
-                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="date"
+                  name="departureDate"
+                  value={formData.departureDate}
+                  onChange={handleChange}
+                  placeholder="Select departure date"
+                  ref={departureDateRef} // Add ref to departure date input
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 pr-10"
+                  required
+                />
+                <img
+                  src={Calendar}
+                  alt="Calendar Icon"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
+                  onClick={openDepartureDatePicker} // Open calendar on click
+                />
+              </div>
             </label>
           </div>
 
@@ -301,6 +331,18 @@ const BookingForm = () => {
               </select>
             </label>
           </div>
+
+          {/* Check Availability Button */}
+          <div className="block align-baseline">
+          <button
+              type="button"
+              onClick={handleCheckAvailability}
+              className="w-full h-12 p-2 mt-7 border rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none"
+            >
+              Rechercher
+            </button>
+          </div>
+
         </div>
       </div>
 
@@ -329,14 +371,28 @@ const BookingForm = () => {
           <div className="flex items-center justify-between mt-2">
             <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
             <div className="flex items-center text-[16px] font-bold text-[#668E73]">
-              <span>{formatDate(formData.arrivalDate)}</span>
-              <span className="mx-2">→</span>
-              <span>{formatDate(formData.departureDate)}</span>
+              {/* Conditionally render the arrival date */}
+              {formData.arrivalDate && (
+                <>
+                  <span>{formatDate(formData.arrivalDate)}</span>
+                </>
+              )}
+              
+              {/* Display arrow only if both dates are selected */}
+              {formData.arrivalDate && formData.departureDate && <span className="mx-2">→</span>}
+              
+              {/* Conditionally render the departure date */}
+              {formData.departureDate && (
+                <>
+                  <span>{formatDate(formData.departureDate)}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
         <h2 className="text-[18px] md:text-[20px] font-bold text-[#668E73]">Le dôme des libellules</h2>
-        {renderPriceDetails()}
+        {showPriceDetails && renderPriceDetails()}
+
       </div>
 
     <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
@@ -482,8 +538,6 @@ const BookingForm = () => {
 
         </div>
       </div>
-
-      {renderPriceDetails()}
 
     </form>
 
