@@ -62,11 +62,11 @@ const BookingForm = () => {
 
   useEffect(() => {
     // Set default dates
-    const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+    // const today = new Date();
+    // const todayStr = today.toISOString().split("T")[0];
+    // const tomorrow = new Date(today);
+    // tomorrow.setDate(today.getDate() + 1);
+    // const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
     setFormData((prevData) => ({
       ...prevData,
@@ -98,22 +98,18 @@ const BookingForm = () => {
           price: response.data.priceDetails.finalPrice,
         }));
         setIsAvailable(true);
-        setShowPriceDetails(true); // Display price details only if availability confirmed
+        setShowPriceDetails(true);
         setError(null);
       } else {
-        // If no rates are found, hide price details and show an error
         setIsAvailable(false);
-        setShowPriceDetails(false); // Hide price details if room is unavailable
+        setShowPriceDetails(false);
         setError("No rates found for the selected dates");
         setPriceDetails(null);
       }
     } catch (err) {
       setIsAvailable(false);
-      setShowPriceDetails(false); // Hide price details if there's an error fetching rates
-      setError(
-        err.response?.data?.error ||
-          "Could not fetch rates. Please try again later."
-      );
+      setShowPriceDetails(false);
+      setError(err.response?.data?.error || "Could not fetch rates. Please try again later.");
       setPriceDetails(null);
     } finally {
       setLoading(false);
@@ -126,21 +122,21 @@ const BookingForm = () => {
   };
 
 
-  useEffect(() => {
-    if (formData.arrivalDate && formData.departureDate) {
-      fetchRates(
-        formData.apartmentId,
-        formData.arrivalDate,
-        formData.departureDate
-      );
-    }
-  }, [
-    formData.apartmentId,
-    formData.arrivalDate,
-    formData.departureDate,
-    formData.adults,
-    formData.children,
-  ]);
+  // useEffect(() => {
+  //   if (formData.arrivalDate && formData.departureDate) {
+  //     fetchRates(
+  //       formData.apartmentId,
+  //       formData.arrivalDate,
+  //       formData.departureDate
+  //     );
+  //   }
+  // }, [
+  //   formData.apartmentId,
+  //   formData.arrivalDate,
+  //   formData.departureDate,
+  //   formData.adults,
+  //   formData.children,
+  // ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -153,12 +149,10 @@ const BookingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.price) {
       setError("Please wait for the price calculation before submitting.");
       return;
     }
-
     const today = new Date().toISOString().split("T")[0];
     if (formData.arrivalDate < today) {
       setError("Arrival date cannot be before today.");
@@ -184,19 +178,12 @@ const BookingForm = () => {
       setSuccessMessage("Booking created successfully!");
       setError(null);
 
-      // Assuming you get a clientSecret from your API for Stripe payment
       setClientSecret(response.data.clientSecret || "");
-
-      // Show payment form if clientSecret exists
       setShowPayment(!!response.data.clientSecret);
 
     } catch (err) {
       console.error("Booking error:", err);
-      const errorMessage =
-        err.response?.data?.error ||
-        err.response?.data?.detail ||
-        "An error occurred while creating the booking.";
-      setError(errorMessage);
+      setError(err.response?.data?.error || "An error occurred while creating the booking.");
     } finally {
       setLoading(false);
     }
@@ -204,21 +191,13 @@ const BookingForm = () => {
 
   const renderPriceDetails = () => {
     if (!priceDetails) return null;
-
     return (
       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
         <h3 className="font-bold mb-2">Détail des prix:</h3>
         {priceDetails.priceElements.map((element, index) => (
-          <div
-            key={index}
-            className={`flex justify-between items-center ${
-              element.type === "longStayDiscount" ? "text-green-600" : ""
-            } ${element.amount < 0 ? "text-green-600" : ""}`}
-          >
+          <div key={index} className={`flex justify-between items-center ${element.amount < 0 ? "text-green-600" : ""}`}>
             <span>{element.name}</span>
-            <span>
-              {Math.abs(element.amount).toFixed(2)} {element.currencyCode}
-            </span>
+            <span>{Math.abs(element.amount).toFixed(2)} {element.currencyCode}</span>
           </div>
         ))}
         <div className="mt-2 pt-2 border-t border-gray-200 font-bold flex justify-between items-center">
@@ -347,52 +326,31 @@ const BookingForm = () => {
 
 
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-      <div className="w-full md:w-1/3 border border-[#668E73] p-4 rounded text-left">        
-        {/* New Image and Title */}
+        <div className="w-full md:w-1/3 border p-4 rounded text-left">
+          {/* New Image and Title */}
         <img
           src="https://images.unsplash.com/photo-1720293315632-37efe958d5ec?q=80&w=3432&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Informational Image"
           className="w-[100%] h-[250px] object-cover rounded-[0.3em] mt-4"
         />
-        <div className="w-full py-4 rounded text-left">
-        <h2 className="text-[18px] md:text-[23px] font-normal text-black">Le dôme des libellules</h2>
-
-          {/* Number of People */}
+          <h2 className="text-[18px] md:text-[23px] font-normal text-black">Le dôme des libellules</h2>
           <div className="flex items-center justify-between mt-4">
             <img src={Group} alt="Profile Icon" className="w-6 h-6" />
             <span className="text-[16px] font-light text-black">
-              {Number(formData.adults) + Number(formData.children)}{" "}
-              {Number(formData.adults) + Number(formData.children) > 1 ? "personnes" : "personne"}
+              {Number(formData.adults) + Number(formData.children)} {Number(formData.adults) + Number(formData.children) > 1 ? "personnes" : "personne"}
             </span>
           </div>
-
-          {/* Arrival and Departure Dates */}
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between mt-2 mb-5">
             <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
             <div className="flex items-center text-[16px] font-light text-black">
-              {/* Conditionally render the arrival date */}
-              {formData.arrivalDate && (
-                <>
-                  <span>{formatDate(formData.arrivalDate)}</span>
-                </>
-              )}
-              
-              {/* Display arrow only if both dates are selected */}
+              {formData.arrivalDate && <span>{formatDate(formData.arrivalDate)}</span>}
               <span className="mx-2 text-black">→</span>
-              
-              {/* Conditionally render the departure date */}
-              {formData.departureDate && (
-                <>
-                  <span>{formatDate(formData.departureDate)}</span>
-                </>
-              )}
+              {formData.departureDate && <span>{formatDate(formData.departureDate)}</span>}
             </div>
           </div>
+          <hr/>
+          {showPriceDetails && renderPriceDetails()}
         </div>
-        <hr/>
-        {showPriceDetails && renderPriceDetails()}
-
-      </div>
 
     <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
       <h2 className="text-[18px] md:text-[23px] font-normal text-black">Contact</h2>
@@ -558,14 +516,10 @@ const BookingForm = () => {
 
   return (
     <div className="mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Réserver le Dôme des Libellules
-</h1>
+      <h1 className="text-2xl font-bold mb-4">Réserver le Dôme des Libellules</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      {successMessage && (
-        <p className="text-green-500 mb-4">{successMessage}</p>
-      )}
+      {successMessage && <p className="text-green-500 mb-4">{successMessage}</p>}
       {loading && <p className="text-blue-500 mb-4">Loading...</p>}
-
       {!showPayment ? renderBookingForm() : renderPaymentForm()}
     </div>
   );
