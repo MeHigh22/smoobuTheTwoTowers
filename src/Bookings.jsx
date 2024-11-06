@@ -140,11 +140,16 @@ const BookingForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+  
+    // Only reset showPriceDetails if the arrival or departure date is being changed
+    if (name === "arrivalDate" || name === "departureDate") {
+      setShowPriceDetails(false);
+    }
+  
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
-    setShowPriceDetails(false); // Reset price details visibility when dates are changed
   };
 
   const handleSubmit = async (e) => {
