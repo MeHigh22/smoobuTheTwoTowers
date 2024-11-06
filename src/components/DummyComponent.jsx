@@ -27,7 +27,7 @@ const BookingConfirmation = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg p-8">
+      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
         <div className="text-center">
           <div className="mb-6">
             <svg

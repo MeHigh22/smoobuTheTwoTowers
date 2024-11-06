@@ -1,20 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-import Bookings from './Bookings'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import BookingForm from "./Bookings";
+import BookingConfirmation from "./components/BookingConfirmation";
+import DummyComponent from "./components/DummyComponent"
+import './index.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-
-        <Bookings />
-
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<BookingForm />} />
+        <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+        <Route path="/dummy-component" element={<BookingConfirmation />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
