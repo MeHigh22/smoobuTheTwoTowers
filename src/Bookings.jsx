@@ -58,6 +58,47 @@ const BookingForm = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
 
+  const [showExtras, setShowExtras] = useState(false);
+const [selectedExtras, setSelectedExtras] = useState({});
+
+const extras = [
+  { id: 'spa', name: 'Formule SPA (2pers)', price: 50, type: 'booking' },
+  { id: 'spaBottle', name: 'Formule SPA + bouteille (2pers)', price: 90, type: 'booking' },
+  { id: 'passion', name: 'Formule passion', price: 50, type: 'booking' },
+  { id: 'anniversary', name: 'Formule anniversaire (2pers)', price: 55, type: 'booking' },
+  { id: 'breakfast', name: 'Formule petit-déjeuner (2pers)', price: 35, type: 'booking' },
+  { id: 'gourmet', name: 'Formule gourmet (2pers)', price: 85, type: 'booking' },
+  { id: 'raclette', name: 'Formule raclette (2pers)', price: 85, type: 'booking' },
+  { id: 'apero', name: 'Formule planche apéro (2pers)', price: 30, type: 'booking' },
+  { id: 'extraSpa', name: 'Personne supplémentaire SPA', price: 10, type: 'booking' },
+  { id: 'extraAnniversary', name: 'Personne supplémentaire anniversaire', price: 5, type: 'booking' },
+  { id: 'extraBreakfast', name: 'Personne supplémentaire petit-déjeuner', price: 10, type: 'booking' },
+  { id: 'extraRaclette', name: 'Personne supplémentaire raclette', price: 20, type: 'booking' },
+  { id: 'extraGourmet', name: 'Personne supplémentaire gourmet', price: 20, type: 'booking' },
+  // Meals
+  { id: 'meatballsTomato', name: 'Boulette de viande sauce tomate (1pers)', price: 15, type: 'meal' },
+  { id: 'waterzooi', name: 'Waterzooï de volaille (1pers)', price: 15, type: 'meal' },
+  { id: 'chiliVeg', name: 'Chili végétarien (1pers)', price: 15, type: 'meal' },
+  { id: 'meatballsLiege', name: 'Boulettes de viande sauce liégeoise (1pers)', price: 15, type: 'meal' },
+  { id: 'carrotSoup', name: 'Velouté de carotte et cumin (1pers)', price: 5, type: 'meal' },
+  // Drinks
+  { id: 'brutBioul', name: 'Brut de Bioul', price: 50, type: 'drink' },
+  { id: 'cortilBarco', name: 'Cortil Barco', price: 30, type: 'drink' },
+  { id: 'terreCharlot', name: 'Terre Charlot', price: 30, type: 'drink' },
+  { id: 'houblondeTriple', name: 'Houblonde Triple', price: 4, type: 'drink' },
+  { id: 'houblondeBlonde', name: 'Houblonde Blonde', price: 4, type: 'drink' },
+  { id: 'houblondeWhite', name: 'Houblonde White IPA', price: 4, type: 'drink' },
+  { id: 'bruneCondroz', name: 'Brune du Condroz', price: 4, type: 'drink' },
+  { id: 'ambreeCondroz', name: 'Ambrée du Condroz', price: 4, type: 'drink' },
+  { id: 'blancheCondroz', name: 'Blanche du Condroz', price: 4, type: 'drink' },
+  { id: 'saisonCondroz', name: 'Saison du Condroz', price: 4, type: 'drink' },
+  { id: 'appleJuice', name: 'Jus de pomme « Happy »', price: 3, type: 'drink' },
+  { id: 'ritchieLemonRasp', name: 'Ritchie Citron/Framboise', price: 3, type: 'drink' },
+  { id: 'ritchieOrangeVan', name: 'Ritchie Orange/Vanille', price: 3, type: 'drink' },
+  { id: 'ritchieCola', name: 'Ritchie Cola', price: 3, type: 'drink' },
+  { id: 'ritchieColaZero', name: 'Ritchie Cola Zéro', price: 3, type: 'drink' },
+];
+
   const arrivalDateRef = useRef(null);
   const departureDateRef = useRef(null);
 
@@ -71,6 +112,22 @@ const BookingForm = () => {
     const year = date.getFullYear().toString().slice(-2);
     return `${day}.${month}.${year}`;
   };
+
+
+  const handleExtraChange = (extraId, quantity) => {
+    setSelectedExtras(prev => ({
+      ...prev,
+      [extraId]: quantity
+    }));
+  };
+  
+  const calculateExtrasTotal = () => {
+    return Object.entries(selectedExtras).reduce((total, [extraId, quantity]) => {
+      const extra = extras.find(e => e.id === extraId);
+      return total + (extra?.price || 0) * quantity;
+    }, 0);
+  };
+  
 
   const fetchRates = async (apartmentId, startDate, endDate) => {
     if (!apartmentId || !startDate || !endDate) return;
@@ -180,26 +237,30 @@ const BookingForm = () => {
 
   const renderPriceDetails = () => {
     if (!priceDetails) return null;
-
+  
+    const extrasTotal = calculateExtrasTotal();
+    const finalTotal = priceDetails.finalPrice + extrasTotal;
+  
     return (
       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
         <h3 className="font-bold mb-2">Détail des prix:</h3>
         {priceDetails.priceElements.map((element, index) => (
-          <div 
-            key={index} 
-            className={`flex justify-between items-center ${
-              element.amount < 0 ? "text-green-600" : ""
-            }`}
-          >
+          <div key={index} className={`flex justify-between items-center ${element.amount < 0 ? "text-green-600" : ""}`}>
             <span>{element.name}</span>
             <span>{Math.abs(element.amount).toFixed(2)} {element.currencyCode}</span>
           </div>
-
-          
         ))}
+        
+        {extrasTotal > 0 && (
+          <div className="flex justify-between items-center mt-2">
+            <span>Extras</span>
+            <span>{extrasTotal.toFixed(2)} EUR</span>
+          </div>
+        )}
+  
         <div className="mt-2 pt-2 border-t border-gray-200 font-bold flex justify-between items-center">
           <span>Prix final</span>
-          <span>{priceDetails.finalPrice.toFixed(2)} EUR</span>
+          <span>{finalTotal.toFixed(2)} EUR</span>
         </div>
       </div>
     );
@@ -503,6 +564,110 @@ const BookingForm = () => {
               </label>
             </div>
           </div>
+
+          <div className="mt-8">
+  <button
+    type="button"
+    onClick={() => setShowExtras(!showExtras)}
+    className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
+  >
+    <span className="text-lg font-medium">Extras</span>
+    <svg
+      className={`w-6 h-6 transform transition-transform ${showExtras ? 'rotate-180' : ''}`}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  {showExtras && (
+    <div className="mt-4 space-y-6">
+      {/* Formules */}
+      <div>
+        <h3 className="text-lg font-medium mb-3">Formules</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {extras.filter(extra => !extra.type.includes('meal') && !extra.type.includes('drink')).map(extra => (
+            <div key={extra.id} className="flex items-center justify-between p-3 bg-[#668E73] bg-opacity-10 rounded-lg">
+              <div>
+                <p className="font-medium">{extra.name}</p>
+                <p className="text-sm text-gray-600">{extra.price} EUR</p>
+              </div>
+              <select
+                value={selectedExtras[extra.id] || 0}
+                onChange={(e) => handleExtraChange(extra.id, Number(e.target.value))}
+                className="ml-4 bg-white rounded-md border-[#668E73] text-sm focus:ring-[#668E73]"
+              >
+                {[...Array(11)].map((_, i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Meals */}
+      <div>
+        <h3 className="text-lg font-medium mb-3">Repas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {extras.filter(extra => extra.type === 'meal').map(extra => (
+            <div key={extra.id} className="flex items-center justify-between p-3 bg-[#668E73] bg-opacity-10 rounded-lg">
+              <div>
+                <p className="font-medium">{extra.name}</p>
+                <p className="text-sm text-gray-600">{extra.price} EUR</p>
+              </div>
+              <select
+                value={selectedExtras[extra.id] || 0}
+                onChange={(e) => handleExtraChange(extra.id, Number(e.target.value))}
+                className="ml-4 bg-white rounded-md border-[#668E73] text-sm focus:ring-[#668E73]"
+              >
+                {[...Array(11)].map((_, i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Drinks */}
+      <div>
+        <h3 className="text-lg font-medium mb-3">Boissons</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {extras.filter(extra => extra.type === 'drink').map(extra => (
+            <div key={extra.id} className="flex items-center justify-between p-3 bg-[#668E73] bg-opacity-10 rounded-lg">
+              <div>
+                <p className="font-medium">{extra.name}</p>
+                <p className="text-sm text-gray-600">{extra.price} EUR</p>
+              </div>
+              <select
+                value={selectedExtras[extra.id] || 0}
+                onChange={(e) => handleExtraChange(extra.id, Number(e.target.value))}
+                className="ml-4 rounded-md bg-white border-[#668E73] text-sm focus:ring-[#668E73]"
+              >
+                {[...Array(11)].map((_, i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Total des extras */}
+      {Object.keys(selectedExtras).some(key => selectedExtras[key] > 0) && (
+        <div className="mt-4 p-4 bg-[#668E73] bg-opacity-10 rounded-lg">
+          <div className="flex justify-between items-center font-medium">
+            <span>Total des extras</span>
+            <span>{calculateExtrasTotal()} EUR</span>
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+</div>
 
               <button
                 type="submit"
