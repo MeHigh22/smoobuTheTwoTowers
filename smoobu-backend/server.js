@@ -141,7 +141,6 @@ app.post(
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
-
     console.log("Received webhook call");
 
     try {
@@ -169,6 +168,7 @@ app.post(
         }
 
         try {
+          // First create the main booking
           const smoobuResponse = await axios.post(
             "https://login.smoobu.com/api/reservations",
             {
@@ -198,6 +198,40 @@ app.post(
           );
 
           console.log("Smoobu booking created:", smoobuResponse.data);
+
+          // If there are extras, create them as price elements
+          if (bookingData.extras && bookingData.extras.length > 0) {
+            console.log("Creating extras as price elements...");
+            const reservationId = smoobuResponse.data.id;
+
+            for (const extra of bookingData.extras) {
+              try {
+                const extraResponse = await axios.post(
+                  `https://login.smoobu.com/api/reservations/${reservationId}/price-elements`,
+                  {
+                    type: "addon",
+                    name: extra.name,
+                    amount: extra.amount,
+                    quantity: extra.quantity,
+                    currencyCode: "EUR"
+                  },
+                  {
+                    headers: {
+                      "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+                console.log(`Added extra: ${extra.name}`, extraResponse.data);
+              } catch (extraError) {
+                console.error(
+                  `Error adding extra ${extra.name}:`,
+                  extraError.response?.data || extraError.message
+                );
+              }
+            }
+          }
+
           pendingBookings.delete(bookingReference);
         } catch (error) {
           console.error(
@@ -279,42 +313,44 @@ app.get("/api/rates", async (req, res) => {
   }
 });
 
-// Create payment intent endpoint
-app.post("/api/create-payment-intent", async (req, res) => {
+app.post('/api/create-payment-intent', async (req, res) => {
   try {
     const { price, bookingData } = req.body;
-    console.log("Received booking data:", bookingData);
-
-    const bookingReference = `BOOKING-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
-    console.log("Generated booking reference:", bookingReference);
-
+    
+    const bookingReference = `BOOKING-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log('Generated booking reference:', bookingReference);
+    
+    // Store booking data for webhook
     pendingBookings.set(bookingReference, bookingData);
-    console.log("Stored booking data in pending bookings");
+    console.log('Stored booking data with extras:', bookingData);
 
+    // Create payment intent with total price (including extras)
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(price * 100),
-      currency: "eur",
+      amount: Math.round(price * 100), // Convert to cents
+      currency: 'eur',
       automatic_payment_methods: {
         enabled: true,
       },
       metadata: {
         bookingReference: bookingReference,
-      },
+        basePrice: bookingData.price,
+        extrasTotal: price - bookingData.price
+      }
     });
 
-    console.log("Created payment intent:", paymentIntent.id);
+    console.log('Created payment intent:', paymentIntent.id);
 
     res.json({
       clientSecret: paymentIntent.client_secret,
-      bookingReference: bookingReference,
+      bookingReference: bookingReference
     });
   } catch (error) {
-    console.error("Error creating payment intent:", error);
-    res.status(500).json({ error: "Failed to create payment intent" });
+    console.error('Error creating payment intent:', error);
+    res.status(500).json({ error: 'Failed to create payment intent' });
   }
 });
+
+
 
 // Test Smoobu endpoint
 app.post("/api/test-smoobu", async (req, res) => {

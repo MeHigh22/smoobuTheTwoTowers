@@ -190,37 +190,50 @@ const extras = [
     e.preventDefault();
     
     if (!formData.price) {
-      setError("Veuillez attendre le calcul du prix avant de continuer.");
+      setError("Please wait for the price calculation before submitting.");
       return;
     }
-
-    const today = new Date().toISOString().split('T')[0];
-    if (formData.arrivalDate < today) {
-      setError("La date d'arrivée ne peut pas être antérieure à aujourd'hui.");
-      return;
-    }
-
+  
     setLoading(true);
     try {
+      // Calculate total with extras
+      const extrasTotal = calculateExtrasTotal();
+      const totalPrice = Number(formData.price) + extrasTotal;
+  
+      // Create array of selected extras for the booking
+      const selectedExtrasArray = Object.entries(selectedExtras)
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([extraId, quantity]) => {
+          const extra = extras.find(e => e.id === extraId);
+          return {
+            type: 'addon',
+            name: extra.name,
+            amount: extra.price * quantity,
+            quantity: quantity,
+            currencyCode: 'EUR'
+          };
+        });
+  
       console.log("Submitting booking data:", formData);
       const response = await api.post("/create-payment-intent", {
-        price: formData.price,
+        price: totalPrice, // Send total price including extras
         bookingData: {
           ...formData,
-          price: Number(formData.price),
+          price: totalPrice, // Update price to include extras
+          extras: selectedExtrasArray, // Send extras details
           adults: Number(formData.adults),
           children: Number(formData.children),
           deposit: Number(formData.deposit)
         }
       });
-
+  
       console.log("Payment intent created:", response.data);
       setClientSecret(response.data.clientSecret);
       setShowPayment(true);
       setError(null);
     } catch (err) {
       console.error("Error:", err);
-      setError(err.response?.data?.error || "Une erreur s'est produite");
+      setError(err.response?.data?.error || "An error occurred");
     } finally {
       setLoading(false);
     }
