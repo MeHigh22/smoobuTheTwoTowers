@@ -79,6 +79,8 @@ const BookingForm = () => {
   };
 
   const handleExtraChange = (extraId, quantity) => {
+    // Prevent event bubbling just in case
+    event?.preventDefault?.();
     if (quantity < 0) return;
     setSelectedExtras((prev) => ({
       ...prev,
@@ -301,8 +303,9 @@ const BookingForm = () => {
 
   const renderExtrasSection = () => (
     <div className="mt-8">
+      {/* Add type="button" to the extras toggle button */}
       <button
-        type="button"
+        type="button" // Important!
         onClick={() => setShowExtras(!showExtras)}
         className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
       >
@@ -326,11 +329,12 @@ const BookingForm = () => {
 
       {showExtras && (
         <div className="mt-6 space-y-8">
-          {/* Category Filter Buttons */}
+          {/* Add type="button" to category filter buttons */}
           <div className="flex flex-wrap gap-3">
             {Object.entries(extraCategories).map(([key, category]) => (
               <button
                 key={key}
+                type="button" // Important!
                 onClick={() => setSelectedCategory(key)}
                 className={`px-5 py-2 rounded-lg transition-all text-[16px] font-normal ${
                   selectedCategory === key
@@ -343,7 +347,6 @@ const BookingForm = () => {
             ))}
           </div>
 
-          {/* Extras Grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {extraCategories[selectedCategory].items.map((item) => (
               <div
@@ -368,8 +371,9 @@ const BookingForm = () => {
                     {item.description}
                   </p>
                   <div className="flex items-center gap-3">
+                    {/* Add type="button" to the increment/decrement buttons */}
                     <button
-                      type="button"
+                      type="button" // Important!
                       onClick={() =>
                         handleExtraChange(
                           item.id,
@@ -385,7 +389,7 @@ const BookingForm = () => {
                       {selectedExtras[item.id] || 0}
                     </span>
                     <button
-                      type="button"
+                      type="button" // Important!
                       onClick={() =>
                         handleExtraChange(
                           item.id,
