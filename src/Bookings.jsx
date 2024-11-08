@@ -63,6 +63,18 @@ const BookingForm = () => {
   const [selectedCategory, setSelectedCategory] = useState("meals");
   const [selectedExtras, setSelectedExtras] = useState({});
   const [showExtras, setShowExtras] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState(null);
+
+  const VALID_COUPONS = {
+    TEST420: {
+      discount: 10,
+      type: "fixed", // 'fixed' for euro amount, 'percentage' for percentage discount
+      currency: "EUR",
+    },
+    // Add more coupons as needed
+  };
 
   const arrivalDateRef = useRef(null);
   const departureDateRef = useRef(null);
@@ -77,6 +89,7 @@ const BookingForm = () => {
     const year = date.getFullYear().toString().slice(-2);
     return `${day}.${month}.${year}`;
   };
+
 
   const handleExtraChange = (extraId, quantity) => {
     // Prevent event bubbling just in case
@@ -216,10 +229,90 @@ const BookingForm = () => {
     setError(`Échec du paiement: ${errorMessage}`);
   };
 
+
+   const verifyAndApplyCoupon = async (couponCode, reservationId) => {
+     try {
+       // First create a coupon price element
+       const response = await api.post(
+         `/reservations/${reservationId}/price-elements`,
+         {
+           type: "coupon",
+           name: `Coupon ${couponCode}`,
+           amount: 0, // Initial amount, will be calculated based on the response
+           currencyCode: "EUR",
+         }
+       );
+
+       // Get updated price elements to see the applied coupon
+       const priceElementsResponse = await api.get(
+         `/reservations/${reservationId}/price-elements`
+       );
+
+       // Find the coupon in the price elements
+       const couponElement = priceElementsResponse.data.priceElements.find(
+         (element) => element.type === "coupon"
+       );
+
+       if (couponElement) {
+         setAppliedCoupon({
+           id: couponElement.id,
+           code: couponCode,
+           amount: Math.abs(couponElement.amount),
+           type: "fixed",
+         });
+         return true;
+       }
+
+       return false;
+     } catch (error) {
+       console.error("Error applying coupon:", error);
+       return false;
+     }
+   };
+
+   const handleApplyCoupon = () => {
+     setCouponError(null);
+
+     if (!coupon) {
+       setCouponError("Veuillez entrer un code promo");
+       return;
+     }
+
+     const couponInfo = VALID_COUPONS[coupon.toUpperCase()];
+
+     if (!couponInfo) {
+       setCouponError("Code promo invalide");
+       return;
+     }
+
+     setAppliedCoupon({
+       code: coupon.toUpperCase(),
+       ...couponInfo,
+     });
+
+     // Update price details to include coupon
+     setPriceDetails((prev) => ({
+       ...prev,
+       priceElements: [
+         ...(prev?.priceElements || []),
+         {
+           type: "coupon",
+           name: `Code promo ${coupon.toUpperCase()}`,
+           amount: -couponInfo.discount,
+           currencyCode: couponInfo.currency,
+         },
+       ],
+     }));
+
+     setCoupon(""); // Clear input
+   };
+
+   
+   // Then add the coupon input UI in your form, before the submit button:
+
   const renderPriceDetails = () => {
     if (!priceDetails) return null;
 
-    // Get all selected extras with their details
     const selectedExtrasDetails = Object.entries(selectedExtras)
       .filter(([_, quantity]) => quantity > 0)
       .map(([extraId, quantity]) => {
@@ -238,13 +331,15 @@ const BookingForm = () => {
       (sum, extra) => sum + extra.total,
       0
     );
-    const finalTotal = priceDetails.finalPrice + extrasTotal;
+    const subtotal = priceDetails.finalPrice + extrasTotal;
+    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+    const finalTotal = subtotal - couponDiscount;
 
     return (
       <div className="p-4 mt-4 rounded-lg bg-gray-50">
         <h3 className="mb-2 font-bold">Détail des prix:</h3>
 
-        {/* Base price elements */}
+        {/* Base price */}
         {priceDetails.priceElements.map((element, index) => (
           <div
             key={index}
@@ -259,7 +354,7 @@ const BookingForm = () => {
           </div>
         ))}
 
-        {/* Individual extras breakdown */}
+        {/* Individual extras */}
         {selectedExtrasDetails.length > 0 && (
           <>
             <div className="mt-4 mb-2 font-medium text-gray-700">
@@ -279,24 +374,14 @@ const BookingForm = () => {
           </>
         )}
 
+        {/* Coupon discount */}
+
+
         {/* Final total */}
         <div className="flex items-center justify-between pt-2 mt-4 font-bold border-t border-gray-200">
           <span>Prix final</span>
           <span>{finalTotal.toFixed(2)} EUR</span>
         </div>
-
-        {/* Show total savings if there are any discounts */}
-        {priceDetails.priceElements.some((element) => element.amount < 0) && (
-          <div className="mt-2 text-sm text-right text-green-600">
-            Vous économisez{" "}
-            {Math.abs(
-              priceDetails.priceElements
-                .filter((element) => element.amount < 0)
-                .reduce((total, element) => total + element.amount, 0)
-            ).toFixed(2)}{" "}
-            EUR
-          </div>
-        )}
       </div>
     );
   };
@@ -741,6 +826,39 @@ const BookingForm = () => {
 
               {/* Extras Section */}
               {renderExtrasSection()}
+
+              <div className="pt-4 mt-6 border-t border-gray-200">
+                <div className="flex items-end gap-4">
+                  <div className="flex-grow">
+                    <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                      Code promo
+                      <input
+                        type="text"
+                        value={coupon}
+                        onChange={(e) => setCoupon(e.target.value)}
+                        placeholder="Entrez votre code promo"
+                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                      />
+                    </label>
+                    {couponError && (
+                      <p className="mt-1 text-sm text-red-500">{couponError}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    className="h-12 px-6 rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none"
+                  >
+                    Appliquer
+                  </button>
+                </div>
+                {appliedCoupon && (
+                  <div className="mt-2 text-sm text-green-600">
+                    Code promo {appliedCoupon.code} appliqué : -
+                    {appliedCoupon.discount}€
+                  </div>
+                )}
+              </div>
 
               <button
                 type="submit"
