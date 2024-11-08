@@ -824,9 +824,6 @@ const BookingForm = () => {
                 </div>
               </div>
 
-              {/* Extras Section */}
-              {renderExtrasSection()}
-
               <div className="pt-4 mt-6 border-t border-gray-200">
                 <div className="flex items-end gap-4">
                   <div className="flex-grow">
@@ -859,6 +856,9 @@ const BookingForm = () => {
                   </div>
                 )}
               </div>
+
+              {/* Extras Section */}
+              {renderExtrasSection()}
 
               <button
                 type="submit"

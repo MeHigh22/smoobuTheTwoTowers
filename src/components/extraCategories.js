@@ -1,3 +1,10 @@
+import bouletteTomate from "../assets/Boulette-de-viande-sauce-tomate-1.webp";
+import bouletteLiege from "../assets/Boulettes-de-viande-sauce-liegeoise-1.webp";
+import waterzooi from "../assets/Waterzooi-de-volaille-1.webp"
+import veloute from "../assets/Veloute-de-carotte-et-cumin-1-150x150.webp";
+import chiliVeg from "../assets/Chili-vegetarien-1-150x150.webp";
+
+
 export const extraCategories = {
   meals: {
     name: "Les repas de Bossimé",
@@ -7,7 +14,7 @@ export const extraCategories = {
         name: 'Boulettes de viande sauce liégeoise',
         description: 'Dégustez nos délicieuses boulettes de viande sauce liégeoise accompagnées d"une purée de pommes de terre maison.',
         price: 15,
-        image: '/placeholder-meal.jpg',
+        image: bouletteLiege,
         type: 'meal'
       },
       {
@@ -15,7 +22,7 @@ export const extraCategories = {
         name: 'Boulette de viande sauce tomate',
         description: 'Dégustez nos délicieuses boulettes de viande mijotées dans une sauce tomate maison.',
         price: 15,
-        image: '/placeholder-meal.jpg',
+        image: bouletteTomate,
         type: 'meal'
       },
       {
@@ -23,7 +30,7 @@ export const extraCategories = {
         name: 'Waterzooi de volaille',
         description: 'Savourez notre waterzooi de volaille, une spécialité originaire de la région flamande.',
         price: 15,
-        image: '/placeholder-meal.jpg',
+        image: waterzooi,
         type: 'meal'
       },
       {
@@ -31,7 +38,7 @@ export const extraCategories = {
         name: 'Chili végétarien',
         description: 'Une délicieuse création végétarienne préparée avec soin.',
         price: 15,
-        image: '/placeholder-meal.jpg',
+        image: chiliVeg,
         type: 'meal'
       },
       {
@@ -39,7 +46,7 @@ export const extraCategories = {
         name: 'Velouté de carotte et cumin',
         description: 'Un velouté onctueux aux carottes parfumé au cumin.',
         price: 5,
-        image: '/placeholder-meal.jpg',
+        image: veloute,
         type: 'meal'
       }
     ]
