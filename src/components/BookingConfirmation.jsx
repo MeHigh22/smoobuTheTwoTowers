@@ -211,36 +211,40 @@ const fetchBookingDetails = async (paymentIntentId) => {
                     </div>
                   ))}
 
-                  {/* Extra Person Fees if any */}
-                  {bookingDetails?.extras?.map(
-                    (extra, index) =>
-                      extra.extraPersonQuantity > 0 && (
-                        <div
-                          key={`extra-person-${index}`}
-                          className="flex justify-between"
-                        >
-                          <span className="text-gray-600">
-                            {extra.name} - Personne supplémentaire (x
-                            {extra.extraPersonQuantity})
-                          </span>
-                          <span className="font-medium">
-                            {(
-                              extra.extraPersonPrice * extra.extraPersonQuantity
-                            ).toFixed(2)}
-                            €
-                          </span>
-                        </div>
-                      )
+                  {/* Long Stay Discount if applicable */}
+                  {bookingDetails?.priceDetails?.discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>
+                        Réduction long séjour (
+                        {
+                          bookingDetails.priceDetails.settings
+                            .lengthOfStayDiscount.discountPercentage
+                        }
+                        %)
+                      </span>
+                      <span>
+                        -{bookingDetails.priceDetails.discount.toFixed(2)}€
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Coupon Discount if applicable */}
+                  {bookingDetails?.couponApplied && (
+                    <div className="flex justify-between text-green-600">
+                      <span>
+                        Code promo ({bookingDetails.couponApplied.code})
+                      </span>
+                      <span>
+                        -{bookingDetails.couponApplied.discount.toFixed(2)}€
+                      </span>
+                    </div>
                   )}
 
                   {/* Total */}
                   <div className="pt-3 mt-3 border-t border-gray-200">
                     <div className="flex justify-between font-semibold">
                       <span>Total</span>
-                      <span>
-                        {bookingDetails?.priceBreakdown?.totalPrice?.toFixed(2)}
-                        €
-                      </span>
+                      <span>{bookingDetails?.price?.toFixed(2)}€</span>
                     </div>
                   </div>
                 </div>

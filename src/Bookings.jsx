@@ -90,46 +90,53 @@ const BookingForm = () => {
     return `${day}.${month}.${year}`;
   };
 
-  const createSelectedExtrasArray = () => {
-    return Object.entries(selectedExtras)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([extraId, quantity]) => {
-        // Check if this is an extra person selection
-        const isExtraPerson = extraId.endsWith("-extra");
-        const baseExtraId = isExtraPerson
-          ? extraId.replace("-extra", "")
-          : extraId;
+const createSelectedExtrasArray = () => {
+  return Object.entries(selectedExtras)
+    .filter(([_, quantity]) => quantity > 0)
+    .map(([extraId, quantity]) => {
+      // Check if this is an extra person selection
+      const isExtraPerson = extraId.endsWith("-extra");
+      const baseExtraId = isExtraPerson
+        ? extraId.replace("-extra", "")
+        : extraId;
 
-        // Find the extra in all categories
-        const extra = Object.values(extraCategories)
-          .flatMap((category) => category.items)
-          .find((item) => item.id === baseExtraId);
+      // Find the extra in all categories
+      const extra = Object.values(extraCategories)
+        .flatMap((category) => category.items)
+        .find((item) => item.id === baseExtraId);
 
-        if (!extra) return null;
+      if (!extra) return null;
 
-        if (isExtraPerson) {
-          return {
-            type: "addon",
-            name: `${extra.name} - Personne supplémentaire`,
-            amount: extra.extraPersonPrice * quantity,
-            quantity: quantity,
-            currencyCode: "EUR",
-          };
-        }
-
+      // Return extra person details only when it's an extra person selection
+      if (isExtraPerson) {
         return {
           type: "addon",
-          name: extra.name,
-          amount: extra.price * quantity,
+          name: `${extra.name} - Personne supplémentaire`,
+          amount: extra.extraPersonPrice * quantity,
           quantity: quantity,
           currencyCode: "EUR",
-          extraPersonPrice: extra.extraPersonPrice,
-          extraPersonQuantity: selectedExtras[`${extraId}-extra`] || 0,
         };
-      })
-      .filter(Boolean); // Remove any null entries
-  };
+      }
 
+      // For regular extras, include extra person info in the same object
+      const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
+      return {
+        type: "addon",
+        name: extra.name,
+        amount: extra.price * quantity,
+        quantity: quantity,
+        currencyCode: "EUR",
+        extraPersonPrice: extra.extraPersonPrice,
+        extraPersonQuantity: extraPersonQuantity,
+        // Include extra person amount in a separate field if there are extra persons
+        extraPersonAmount:
+          extraPersonQuantity > 0
+            ? extra.extraPersonPrice * extraPersonQuantity
+            : 0,
+      };
+    })
+    .filter(Boolean); // Remove any null entries
+};
 
   const handleExtraChange = (extraId, quantity) => {
     // Prevent event bubbling just in case
@@ -207,35 +214,69 @@ const BookingForm = () => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-
   if (!formData.price) {
     setError("Veuillez attendre le calcul du prix avant de continuer.");
     return;
   }
-
   setLoading(true);
   try {
     const selectedExtrasArray = createSelectedExtrasArray();
 
     // Calculate total with extras
     const extrasTotal = selectedExtrasArray.reduce(
-      (sum, extra) => sum + extra.amount,
+      (sum, extra) => sum + extra.amount + (extra.extraPersonAmount || 0),
       0
     );
-    const basePrice = Number(formData.price); // This is your base price before extras
-    const totalPrice = basePrice + extrasTotal; // Total including extras
 
-    console.log("Submitting booking data:", formData);
+    const basePrice = priceDetails.originalPrice;
+    const subtotalBeforeDiscounts = basePrice + extrasTotal; // 400 + 105 = 505
+
+    // Apply long stay discount
+    const longStayDiscount = priceDetails.discount || 0; // 160
+    // Apply coupon discount
+    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0; // 10
+
+    // Calculate final total by subtracting both discounts
+    const finalTotal =
+      subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
+    // 505 - 160 - 10 = 335
+
+    console.log("Price calculation:", {
+      basePrice,
+      extrasTotal,
+      subtotalBeforeDiscounts,
+      longStayDiscount,
+      couponDiscount,
+      finalTotal,
+    });
+
     const response = await api.post("/create-payment-intent", {
-      price: totalPrice,
+      price: finalTotal, // Using the correct final total
       bookingData: {
         ...formData,
-        price: totalPrice,
-        basePrice: basePrice, // Add the base price separately
+        price: finalTotal, // Using the correct final total here too
+        basePrice: basePrice,
         extras: selectedExtrasArray,
-        adults: Number(formData.adults),
-        children: Number(formData.children),
-        deposit: Number(formData.deposit),
+        couponApplied: appliedCoupon
+          ? {
+              code: appliedCoupon.code,
+              discount: couponDiscount,
+            }
+          : null,
+        priceDetails: {
+          ...priceDetails,
+          finalPrice: finalTotal,
+          calculatedDiscounts: {
+            longStay: longStayDiscount,
+            coupon: couponDiscount,
+          },
+        },
+        metadata: {
+          basePrice: basePrice.toString(),
+          extrasTotal: extrasTotal.toString(),
+          longStayDiscount: longStayDiscount.toString(),
+          couponDiscount: couponDiscount.toString(),
+        },
       },
     });
 
@@ -365,98 +406,108 @@ const handlePaymentSuccess = () => {
    
    // Then add the coupon input UI in your form, before the submit button:
 
- const renderPriceDetails = () => {
-   if (!priceDetails) return null;
+const renderPriceDetails = () => {
+  if (!priceDetails) return null;
 
-   console.log("Price Details:", priceDetails); // Ajoutez ceci
+  const selectedExtrasDetails = Object.entries(selectedExtras)
+    .filter(([_, quantity]) => quantity > 0)
+    .map(([extraId, quantity]) => {
+      const isExtraPerson = extraId.endsWith("-extra");
+      const baseExtraId = isExtraPerson
+        ? extraId.replace("-extra", "")
+        : extraId;
+      const extra = Object.values(extraCategories)
+        .flatMap((category) => category.items)
+        .find((item) => item.id === baseExtraId);
+      if (!extra) return null;
+      return {
+        name: isExtraPerson
+          ? `${extra.name} - Personne supplémentaire`
+          : extra.name,
+        quantity: quantity,
+        price: isExtraPerson ? extra.extraPersonPrice : extra.price,
+        total:
+          (isExtraPerson ? extra.extraPersonPrice : extra.price) * quantity,
+      };
+    })
+    .filter(Boolean);
 
-   const selectedExtrasDetails = Object.entries(selectedExtras)
-     .filter(([_, quantity]) => quantity > 0)
-     .map(([extraId, quantity]) => {
-       // Check if this is an extra person selection
-       const isExtraPerson = extraId.endsWith("-extra");
-       const baseExtraId = isExtraPerson
-         ? extraId.replace("-extra", "")
-         : extraId;
+  // Calculate initial total with extras
+  const extrasTotal = selectedExtrasDetails.reduce(
+    (sum, extra) => sum + extra.total,
+    0
+  );
 
-       const extra = Object.values(extraCategories)
-         .flatMap((category) => category.items)
-         .find((item) => item.id === baseExtraId);
+  // Base price + extras before any discounts
+  const subtotalBeforeDiscounts = priceDetails.originalPrice + extrasTotal;
 
-       if (!extra) return null;
+  // IMPORTANT: Make sure these are treated as reductions
+  const longStayDiscount = Math.abs(priceDetails.discount || 0); // Use Math.abs to ensure positive number
+  const couponDiscount = appliedCoupon ? Math.abs(appliedCoupon.discount) : 0;
 
-       return {
-         name: isExtraPerson
-           ? `${extra.name} - Personne supplémentaire`
-           : extra.name,
-         quantity: quantity,
-         price: isExtraPerson ? extra.extraPersonPrice : extra.price,
-         total:
-           (isExtraPerson ? extra.extraPersonPrice : extra.price) * quantity,
-       };
-     })
-     .filter(Boolean);
+  // Subtract both discounts from the subtotal
+  const finalTotal =
+    subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
 
-   const extrasTotal = selectedExtrasDetails.reduce(
-     (sum, extra) => sum + extra.total,
-     0
-   );
-   const subtotal = priceDetails.finalPrice + extrasTotal;
-   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-   const finalTotal = subtotal - couponDiscount;
+  console.log("Calculation breakdown:", {
+    basePrice: priceDetails.originalPrice,
+    extrasTotal,
+    subtotalBeforeDiscounts,
+    longStayDiscount,
+    couponDiscount,
+    finalTotal,
+  });
 
-   console.log("priceDetails:", priceDetails);
-   console.log("priceElements:", priceDetails.priceElements);
+  return (
+    <div className="p-4 mt-4 rounded-lg bg-gray-50">
+      <h3 className="mb-2 font-bold">Détail des prix:</h3>
 
-   return (
-     <div className="p-4 mt-4 rounded-lg bg-gray-50">
-       <h3 className="mb-2 font-bold">Détail des prix:</h3>
+      {/* Base price */}
+      <div className="flex items-center justify-between">
+        <span>Prix de base</span>
+        <span>{priceDetails.originalPrice.toFixed(2)} EUR</span>
+      </div>
 
-       {/* Base price */}
-       {priceDetails.priceElements?.map((element, index) => (
-         <div
-           key={index}
-           className={`flex justify-between items-center ${
-             element.amount < 0 ? "text-green-600" : ""
-           }`}
-         >
-           <span>{element.name}</span>
-           <span>
-             {Math.abs(element.amount).toFixed(2)} {element.currencyCode}
-           </span>
-         </div>
-       ))}
+      {/* Extras */}
+      {selectedExtrasDetails.map((extra, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between text-gray-600"
+        >
+          <span>
+            {extra.name} ({extra.quantity}x)
+          </span>
+          <span>{extra.total.toFixed(2)} EUR</span>
+        </div>
+      ))}
 
-       {/* Individual extras */}
-       {selectedExtrasDetails.length > 0 && (
-         <>
-           <div className="mt-4 mb-2 font-medium text-gray-700">
-             Extras sélectionnés:
-           </div>
-           {selectedExtrasDetails.map((extra, index) => (
-             <div
-               key={index}
-               className="flex items-center justify-between pl-4 text-gray-600"
-             >
-               <span>
-                 {extra.name} ({extra.quantity}x {extra.price.toFixed(2)}€)
-               </span>
-               <span>{extra.total.toFixed(2)} EUR</span>
-             </div>
-           ))}
-         </>
-       )}
+      {/* Long stay discount */}
+      {longStayDiscount > 0 && (
+        <div className="flex items-center justify-between text-green-600">
+          <span>
+            Réduction long séjour (
+            {priceDetails.settings.lengthOfStayDiscount.discountPercentage}%)
+          </span>
+          <span>-{longStayDiscount.toFixed(2)} EUR</span>
+        </div>
+      )}
 
-       {/* Coupon discount */}
+      {/* Coupon discount */}
+      {couponDiscount > 0 && (
+        <div className="flex items-center justify-between text-green-600">
+          <span>Code promo ({appliedCoupon.code})</span>
+          <span>-{couponDiscount.toFixed(2)} EUR</span>
+        </div>
+      )}
 
-       {/* Final total */}
-       <div className="flex items-center justify-between pt-2 mt-4 font-bold border-t border-gray-200">
-         <span>Prix final</span>
-         <span>{finalTotal.toFixed(2)} EUR</span>
-       </div>
-     </div>
-   );
- };
+      {/* Final total */}
+      <div className="flex items-center justify-between pt-2 mt-4 font-bold border-t border-gray-200">
+        <span>Total</span>
+        <span>{finalTotal.toFixed(2)} EUR</span>
+      </div>
+    </div>
+  );
+};
 
  const renderExtrasSection = () => (
    <div className="mt-8">
@@ -525,16 +576,17 @@ const handlePaymentSuccess = () => {
                  <p className="text-[14px] text-gray-600 line-clamp-2">
                    {item.description}
                  </p>
-                 {/* Base quantity selector */}
                  <div className="flex items-center gap-3">
                    <button
                      type="button"
-                     onClick={() =>
-                       handleExtraChange(
-                         item.id,
-                         (selectedExtras[item.id] || 0) - 1
-                       )
-                     }
+                     onClick={() => {
+                       const newQuantity = (selectedExtras[item.id] || 0) - 1;
+                       handleExtraChange(item.id, newQuantity);
+                       // Si on supprime l'extra complètement, supprimer aussi les personnes supplémentaires
+                       if (newQuantity === 0) {
+                         handleExtraChange(`${item.id}-extra`, 0);
+                       }
+                     }}
                      disabled={(selectedExtras[item.id] || 0) === 0}
                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
                    >
@@ -556,46 +608,49 @@ const handlePaymentSuccess = () => {
                      +
                    </button>
                  </div>
-                 {/* Extra person selector - only show if extraPersonPrice exists */}
-                 {item.extraPersonPrice && (
-                   <div className="mt-2">
-                     <p className="text-[14px] text-gray-600 mb-1">
-                       Personne supplémentaire (+{item.extraPersonPrice}€/pers)
-                     </p>
-                     <div className="flex items-center gap-3">
-                       <button
-                         type="button"
-                         onClick={() =>
-                           handleExtraChange(
-                             `${item.id}-extra`,
-                             (selectedExtras[`${item.id}-extra`] || 0) - 1
-                           )
-                         }
-                         disabled={
-                           (selectedExtras[`${item.id}-extra`] || 0) === 0
-                         }
-                         className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
-                       >
-                         -
-                       </button>
-                       <span className="w-8 font-medium text-center text-gray-900">
-                         {selectedExtras[`${item.id}-extra`] || 0}
-                       </span>
-                       <button
-                         type="button"
-                         onClick={() =>
-                           handleExtraChange(
-                             `${item.id}-extra`,
-                             (selectedExtras[`${item.id}-extra`] || 0) + 1
-                           )
-                         }
-                         className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
-                       >
-                         +
-                       </button>
+
+                 {/* Extra person selector - only show if item has extraPersonPrice AND base item is selected */}
+                 {item.extraPersonPrice &&
+                   (selectedExtras[item.id] || 0) > 0 && (
+                     <div className="mt-2">
+                       <p className="text-[14px] text-gray-600 mb-1">
+                         Personne supplémentaire (+{item.extraPersonPrice}
+                         €/pers)
+                       </p>
+                       <div className="flex items-center gap-3">
+                         <button
+                           type="button"
+                           onClick={() =>
+                             handleExtraChange(
+                               `${item.id}-extra`,
+                               (selectedExtras[`${item.id}-extra`] || 0) - 1
+                             )
+                           }
+                           disabled={
+                             (selectedExtras[`${item.id}-extra`] || 0) === 0
+                           }
+                           className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                         >
+                           -
+                         </button>
+                         <span className="w-8 font-medium text-center text-gray-900">
+                           {selectedExtras[`${item.id}-extra`] || 0}
+                         </span>
+                         <button
+                           type="button"
+                           onClick={() =>
+                             handleExtraChange(
+                               `${item.id}-extra`,
+                               (selectedExtras[`${item.id}-extra`] || 0) + 1
+                             )
+                           }
+                           className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                         >
+                           +
+                         </button>
+                       </div>
                      </div>
-                   </div>
-                 )}
+                   )}
                </div>
              </div>
            ))}

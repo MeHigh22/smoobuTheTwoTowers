@@ -351,7 +351,7 @@ app.post("/api/create-payment-intent", async (req, res) => {
     pendingBookings.set(bookingReference, bookingData);
     console.log("Stored booking data with extras:", bookingData);
 
-    // Create payment intent with total price (including extras)
+    // Create payment intent with total price (including extras and discounts)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(price * 100), // Convert to cents
       currency: "eur",
@@ -360,8 +360,10 @@ app.post("/api/create-payment-intent", async (req, res) => {
       },
       metadata: {
         bookingReference: bookingReference,
-        basePrice: bookingData.basePrice, // Store the base price
-        extrasTotal: price - bookingData.basePrice, // Calculate extras total
+        basePrice: bookingData.basePrice.toString(),
+        extrasTotal: (price - bookingData.basePrice).toString(),
+        longStayDiscount: bookingData.priceDetails.discount.toString(),
+        couponDiscount: (bookingData.couponApplied?.discount || "0").toString(),
       },
     });
 
@@ -399,10 +401,24 @@ app.get("/api/bookings/:paymentIntentId", async (req, res) => {
       });
     }
 
-    // Ajoutez explicitement le prix de base dans la réponse
+    // Récupérer les montants des réductions depuis les metadata
+    const basePrice = parseFloat(paymentIntent.metadata.basePrice);
+    const extrasTotal = parseFloat(paymentIntent.metadata.extrasTotal || 0);
+    const longStayDiscount = parseFloat(
+      paymentIntent.metadata.longStayDiscount || 0
+    );
+    const couponDiscount = parseFloat(
+      paymentIntent.metadata.couponDiscount || 0
+    );
+
+    // Calculer le total final
+    const subtotalBeforeDiscounts = basePrice + extrasTotal;
+    const finalTotal =
+      subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
+
     const responseData = {
       ...bookingData,
-      basePrice: paymentIntent.metadata.basePrice,
+      basePrice: basePrice,
       paymentIntent: {
         id: paymentIntent.id,
         amount: paymentIntent.amount,
@@ -410,9 +426,11 @@ app.get("/api/bookings/:paymentIntentId", async (req, res) => {
         status: paymentIntent.status,
       },
       priceBreakdown: {
-        basePrice: parseFloat(paymentIntent.metadata.basePrice),
-        extrasTotal: parseFloat(paymentIntent.metadata.extrasTotal || 0),
-        totalPrice: paymentIntent.amount / 100, // Convertir les centimes en euros
+        basePrice: basePrice,
+        extrasTotal: extrasTotal,
+        longStayDiscount: longStayDiscount,
+        couponDiscount: couponDiscount,
+        totalPrice: finalTotal,
       },
     };
 
