@@ -838,6 +838,24 @@ const handleSubmit = async (e) => {
     }
   };
 
+  const isStepValid = () => {
+    if (currentStep === 1) {
+      return (
+        formData.firstName &&
+        formData.lastName &&
+        formData.email &&
+        formData.arrivalTime
+      );
+    }
+    if (currentStep === 2) {
+      return true; // Adjust based on requirements for step 2
+    }
+    if (currentStep === 3) {
+      return true; // Adjust based on requirements for step 3
+    }
+    return false;
+  };
+
   const renderPaymentForm = () => (
     <div className="mt-8">
       <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
@@ -1057,7 +1075,10 @@ const handleSubmit = async (e) => {
                     <button
                       type="button"
                       onClick={nextStep}
-                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                      disabled={!isStepValid()}
+                      className={`px-4 py-2 ${
+                        isStepValid() ? "bg-[#668E73] hover:bg-opacity-90" : "bg-gray-300 cursor-not-allowed"
+                      } text-white rounded`}
                     >
                       Suivant
                     </button>
