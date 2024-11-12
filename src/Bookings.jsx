@@ -90,6 +90,46 @@ const BookingForm = () => {
     return `${day}.${month}.${year}`;
   };
 
+  const createSelectedExtrasArray = () => {
+    return Object.entries(selectedExtras)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([extraId, quantity]) => {
+        // Check if this is an extra person selection
+        const isExtraPerson = extraId.endsWith("-extra");
+        const baseExtraId = isExtraPerson
+          ? extraId.replace("-extra", "")
+          : extraId;
+
+        // Find the extra in all categories
+        const extra = Object.values(extraCategories)
+          .flatMap((category) => category.items)
+          .find((item) => item.id === baseExtraId);
+
+        if (!extra) return null;
+
+        if (isExtraPerson) {
+          return {
+            type: "addon",
+            name: `${extra.name} - Personne supplémentaire`,
+            amount: extra.extraPersonPrice * quantity,
+            quantity: quantity,
+            currencyCode: "EUR",
+          };
+        }
+
+        return {
+          type: "addon",
+          name: extra.name,
+          amount: extra.price * quantity,
+          quantity: quantity,
+          currencyCode: "EUR",
+          extraPersonPrice: extra.extraPersonPrice,
+          extraPersonQuantity: selectedExtras[`${extraId}-extra`] || 0,
+        };
+      })
+      .filter(Boolean); // Remove any null entries
+  };
+
 
   const handleExtraChange = (extraId, quantity) => {
     // Prevent event bubbling just in case
@@ -175,51 +215,15 @@ const handleSubmit = async (e) => {
 
   setLoading(true);
   try {
-    // Create array of selected extras for the booking
-    const selectedExtrasArray = Object.entries(selectedExtras)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([extraId, quantity]) => {
-        // Check if this is an extra person selection
-        const isExtraPerson = extraId.endsWith("-extra");
-        const baseExtraId = isExtraPerson
-          ? extraId.replace("-extra", "")
-          : extraId;
-
-        // Find the extra in all categories
-        const extra = Object.values(extraCategories)
-          .flatMap((category) => category.items)
-          .find((item) => item.id === baseExtraId);
-
-        if (!extra) return null;
-
-        if (isExtraPerson) {
-          return {
-            type: "addon",
-            name: `${extra.name} - Personne supplémentaire`,
-            amount: extra.extraPersonPrice * quantity,
-            quantity: quantity,
-            currencyCode: "EUR",
-          };
-        }
-
-        return {
-          type: "addon",
-          name: extra.name,
-          amount: extra.price * quantity,
-          quantity: quantity,
-          currencyCode: "EUR",
-          extraPersonPrice: extra.extraPersonPrice,
-          extraPersonQuantity: selectedExtras[`${extraId}-extra`] || 0,
-        };
-      })
-      .filter(Boolean); // Remove any null entries
+    const selectedExtrasArray = createSelectedExtrasArray();
 
     // Calculate total with extras
     const extrasTotal = selectedExtrasArray.reduce(
       (sum, extra) => sum + extra.amount,
       0
     );
-    const totalPrice = Number(formData.price) + extrasTotal;
+    const basePrice = Number(formData.price); // This is your base price before extras
+    const totalPrice = basePrice + extrasTotal; // Total including extras
 
     console.log("Submitting booking data:", formData);
     const response = await api.post("/create-payment-intent", {
@@ -227,6 +231,7 @@ const handleSubmit = async (e) => {
       bookingData: {
         ...formData,
         price: totalPrice,
+        basePrice: basePrice, // Add the base price separately
         extras: selectedExtrasArray,
         adults: Number(formData.adults),
         children: Number(formData.children),
@@ -246,55 +251,79 @@ const handleSubmit = async (e) => {
   }
 };
 
-  const handlePaymentSuccess = () => {
-    setSuccessMessage("Paiement réussi ! Votre réservation est confirmée.");
-    setShowPayment(false);
+
+const handlePaymentSuccess = () => {
+  const selectedExtrasArray = createSelectedExtrasArray();
+
+  // Calculate the total price using the current values
+  const extrasTotal = selectedExtrasArray.reduce(
+    (sum, extra) => sum + extra.amount,
+    0
+  );
+
+  const subtotal = priceDetails.finalPrice + extrasTotal;
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const finalTotal = subtotal - couponDiscount;
+
+  // Pass booking data through localStorage
+  const bookingData = {
+    ...formData,
+    extras: selectedExtrasArray,
+    priceDetails: priceDetails,
+    totalPrice: finalTotal,
   };
 
-  const handlePaymentError = (errorMessage) => {
-    setError(`Échec du paiement: ${errorMessage}`);
-  };
+  // Store booking data in localStorage before redirect
+  localStorage.setItem("bookingData", JSON.stringify(bookingData));
+
+  // Get paymentIntent from clientSecret (it's the first part before the _secret)
+  const paymentIntent = clientSecret.split("_secret")[0];
+
+  // Redirect to confirmation page
+  window.location.href = `/booking-confirmation?payment_intent=${paymentIntent}`;
+};
 
 
-   const verifyAndApplyCoupon = async (couponCode, reservationId) => {
-     try {
-       // First create a coupon price element
-       const response = await api.post(
-         `/reservations/${reservationId}/price-elements`,
-         {
-           type: "coupon",
-           name: `Coupon ${couponCode}`,
-           amount: 0, // Initial amount, will be calculated based on the response
-           currencyCode: "EUR",
-         }
-       );
 
-       // Get updated price elements to see the applied coupon
-       const priceElementsResponse = await api.get(
-         `/reservations/${reservationId}/price-elements`
-       );
+  //  const verifyAndApplyCoupon = async (couponCode, reservationId) => {
+  //    try {
+  //      // First create a coupon price element
+  //      const response = await api.post(
+  //        `/reservations/${reservationId}/price-elements`,
+  //        {
+  //          type: "coupon",
+  //          name: `Coupon ${couponCode}`,
+  //          amount: 0, // Initial amount, will be calculated based on the response
+  //          currencyCode: "EUR",
+  //        }
+  //      );
 
-       // Find the coupon in the price elements
-       const couponElement = priceElementsResponse.data.priceElements.find(
-         (element) => element.type === "coupon"
-       );
+  //      // Get updated price elements to see the applied coupon
+  //      const priceElementsResponse = await api.get(
+  //        `/reservations/${reservationId}/price-elements`
+  //      );
 
-       if (couponElement) {
-         setAppliedCoupon({
-           id: couponElement.id,
-           code: couponCode,
-           amount: Math.abs(couponElement.amount),
-           type: "fixed",
-         });
-         return true;
-       }
+  //      // Find the coupon in the price elements
+  //      const couponElement = priceElementsResponse.data.priceElements.find(
+  //        (element) => element.type === "coupon"
+  //      );
 
-       return false;
-     } catch (error) {
-       console.error("Error applying coupon:", error);
-       return false;
-     }
-   };
+  //      if (couponElement) {
+  //        setAppliedCoupon({
+  //          id: couponElement.id,
+  //          code: couponCode,
+  //          amount: Math.abs(couponElement.amount),
+  //          type: "fixed",
+  //        });
+  //        return true;
+  //      }
+
+  //      return false;
+  //    } catch (error) {
+  //      console.error("Error applying coupon:", error);
+  //      return false;
+  //    }
+  //  };
 
    const handleApplyCoupon = () => {
      setCouponError(null);
@@ -339,6 +368,8 @@ const handleSubmit = async (e) => {
  const renderPriceDetails = () => {
    if (!priceDetails) return null;
 
+   console.log("Price Details:", priceDetails); // Ajoutez ceci
+
    const selectedExtrasDetails = Object.entries(selectedExtras)
      .filter(([_, quantity]) => quantity > 0)
      .map(([extraId, quantity]) => {
@@ -374,12 +405,15 @@ const handleSubmit = async (e) => {
    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
    const finalTotal = subtotal - couponDiscount;
 
+   console.log("priceDetails:", priceDetails);
+   console.log("priceElements:", priceDetails.priceElements);
+
    return (
      <div className="p-4 mt-4 rounded-lg bg-gray-50">
        <h3 className="mb-2 font-bold">Détail des prix:</h3>
 
        {/* Base price */}
-       {priceDetails.priceElements.map((element, index) => (
+       {priceDetails.priceElements?.map((element, index) => (
          <div
            key={index}
            className={`flex justify-between items-center ${
@@ -571,19 +605,20 @@ const handleSubmit = async (e) => {
    </div>
  );
 
-  const renderPaymentForm = () => (
-    <div className="mt-8">
-      <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
-      {clientSecret && (
-        <StripeWrapper clientSecret={clientSecret}>
-          <PaymentForm
-            onSuccess={handlePaymentSuccess}
-            onError={handlePaymentError}
-          />
-        </StripeWrapper>
-      )}
-    </div>
-  );
+const renderPaymentForm = () => (
+  <div className="mt-8">
+    <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
+    {clientSecret && (
+      <StripeWrapper
+        clientSecret={clientSecret}
+        onSuccess={handlePaymentSuccess}
+        onError= 'erreur oops'
+      >
+        <PaymentForm />
+      </StripeWrapper>
+    )}
+  </div>
+);
 
   return (
     <div className="p-6 mx-auto">

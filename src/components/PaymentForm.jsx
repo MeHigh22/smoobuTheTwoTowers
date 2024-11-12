@@ -23,18 +23,29 @@ const PaymentForm = ({ onSuccess, onError }) => {
     setErrorMessage(null);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const result = await stripe.confirmPayment({
         elements,
         confirmParams: {
+          // Update return URL to include payment_intent parameter
           return_url: `${window.location.origin}/booking-confirmation`,
         },
+        redirect: "if_required",
       });
 
-      if (error) {
-        setErrorMessage(error.message);
-        onError(error.message);
-      } else {
-        onSuccess();
+      if (result.error) {
+        setErrorMessage(result.error.message);
+        onError(result.error.message);
+      } else if (
+        result.paymentIntent &&
+        result.paymentIntent.status === "succeeded"
+      ) {
+        // Store booking data in localStorage before redirect
+        const bookingData = {
+          paymentIntent: result.paymentIntent,
+          timestamp: new Date().toISOString(),
+        };
+        localStorage.setItem("bookingData", JSON.stringify(bookingData));
+        onSuccess(result.paymentIntent);
       }
     } catch (err) {
       console.error("Payment error:", err);
@@ -48,15 +59,17 @@ const PaymentForm = ({ onSuccess, onError }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement />
+
       {errorMessage && (
-        <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+        <div className="mt-2 text-sm text-red-500">{errorMessage}</div>
       )}
+
       <button
         type="submit"
         disabled={loading || !stripe || !elements}
-        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73] disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
-        {loading ? "Processing..." : "Pay now"}
+        {loading ? "Traitement en cours..." : "Payer maintenant"}
       </button>
     </form>
   );
