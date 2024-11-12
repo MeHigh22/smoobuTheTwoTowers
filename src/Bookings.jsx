@@ -468,15 +468,15 @@ const handleSubmit = async (e) => {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const renderProgressBar = () => (
-    <div className="flex justify-between items-center mb-4">
-      <div className="w-full h-2 bg-gray-300 rounded">
+    <div className="flex justify-between items-center text-center mb-4">
+      <div className="w-4/5 h-2 bg-gray-300 rounded">
         <div
           className={`h-2 rounded ${
             currentStep === 1 ? "w-1/3" : currentStep === 2 ? "w-2/3" : "w-full"
           } bg-[#668E73]`}
         ></div>
       </div>
-      <span className="ml-2 text-sm text-[#668E73]">
+      <span className="w-1/5 ml-2 text-sm text-[#668E73]">
         Étape {currentStep} sur 3
       </span>
     </div>
@@ -798,7 +798,7 @@ const handleSubmit = async (e) => {
                   </label>
                 </div>
 
-              <div className="pt-4 mt-6 border-t border-gray-200">
+              <div className="pt-4 mt-6 pb-4 mb-6 border-t border-b border-gray-200">
                 <div className="flex items-end gap-4">
                   <div className="flex-grow">
                     <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -1069,18 +1069,11 @@ const handleSubmit = async (e) => {
                       type="submit"
                       className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
                     >
-                      Confirmer
+                      {loading ? "En cours..." : "Passer au paiement"}
                     </button>
                   )}
                 </div>
 
-              <button
-                type="submit"
-                disabled={loading || !formData.price}
-                className="w-full py-2 px-4 border border-transparent rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73] disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {loading ? "En cours..." : "Passer au paiement"}
-              </button>
             </div>
           </div>
         </form>
