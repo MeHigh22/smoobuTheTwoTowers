@@ -1,8 +1,43 @@
-import bouletteTomate from "../assets/Boulette-de-viande-sauce-tomate-1.webp";
-import bouletteLiege from "../assets/Boulettes-de-viande-sauce-liegeoise-1.webp";
-import waterzooi from "../assets/Waterzooi-de-volaille-1.webp"
-import veloute from "../assets/Veloute-de-carotte-et-cumin-1-150x150.webp";
-import chiliVeg from "../assets/Chili-vegetarien-1-150x150.webp";
+//PACKS
+import detente from "../assets/Packs/detente.webp";
+import essentiel from "../assets/Packs/essentiel.webp";
+import racletteromantique from "../assets/Packs/raclette-romantique.webp";
+import raclettedetente from "../assets/Packs/raclette-detente.webp";
+import romantiquegourmet from "../assets/Packs/romantique-gourmet.webp";
+
+//Les plats de Bossimé
+import bouletteTomate from "../assets/repasBossimé/Boulette-de-viande-sauce-tomate-1.webp";
+import bouletteLiege from "../assets/repasBossimé/Boulettes-de-viande-sauce-liegeoise-1.webp";
+import waterzooi from "../assets/repasBossimé/Waterzooi-de-volaille-1.webp";
+import veloute from "../assets/repasBossimé/Veloute-de-carotte-et-cumin-1-150x150.webp";
+import chiliVeg from "../assets/repasBossimé/Chili-vegetarien-1-150x150.webp";
+
+//Formule découverte
+import formulespa from "../assets/Découverte/formule-spa.webp";
+import formuleanniversaire from "../assets/Découverte/formule-anniversaire.webp";
+import passion from "../assets/Découverte/passion.webp";
+import spabouteille from "../assets/Découverte/spa-bouteille.webp";
+//Formule repas
+import formuledejeuner from "../assets/Repas/formule-dejeuner.webp";
+import formulegourmet from "../assets/Repas/formule-gourmet.webp";
+import plancheapero from "../assets/Repas/planche-apero.webp";
+import raclette from "../assets/Repas/raclette.webp";
+
+//Boissons
+import ambreeCondroz from "../assets/Boissons/ambreeCondroz.webp";
+import blancheCondroz from "../assets/Boissons/Blanche-du-Condroz.webp";
+import bruneCondroz from "../assets/Boissons/bruneCondroz.webp";
+import brutBioul from "../assets/Boissons/brutBioul.webp";
+import cortilBarco from "../assets/Boissons/cortilBarco.webp";
+import houblondeBlonde from "../assets/Boissons/Houblonde-Blonde.webp";
+import houblondeTriple from "../assets/Boissons/Houblonde-Triple.webp";
+import houblondeWhite from "../assets/Boissons/Houblonde-White-IPA.webp";
+import pomHappy from "../assets/Boissons/pomHappy.webp";
+import ritchieCitronFramboise from "../assets/Boissons/ritchieCitronFramboise.webp";
+import ritchieCola from "../assets/Boissons/ritchieCola.webp";
+import ritchieColaZero from "../assets/Boissons/ritchieZero.webp";
+import ritchieOrange from "../assets/Boissons/ritchieOrange.webp";
+import terreCharlot from "../assets/Boissons/terreCharlot.webp";
 
 export const extraCategories = {
   packs: {
@@ -15,7 +50,7 @@ export const extraCategories = {
           "Ce pack inclut un petit-déjeuner avec, accompagnements sucrés/salés, jus, café et lait ainsi qu'un accès au spa.",
         price: 85,
         extraPersonPrice: 20,
-        image: "/placeholder-pack.jpg",
+        image: essentiel,
         type: "pack",
       },
       {
@@ -25,7 +60,7 @@ export const extraCategories = {
           "Ce pack inclut un plateau de charcuterie et fromage, une bouteille de vin, un petit-déjeuner complet avec accès au spa.",
         price: 150,
         extraPersonPrice: 40,
-        image: "/placeholder-pack.jpg",
+        image: detente,
         type: "pack",
       },
       {
@@ -35,7 +70,7 @@ export const extraCategories = {
           "Ce pack inclut un assortiment de fromages à raclette et de charcuteries fines, une bouteille de vin, et un accès au spa.",
         price: 150,
         extraPersonPrice: 40,
-        image: "/placeholder-pack.jpg",
+        image: raclettedetente,
         type: "pack",
       },
       {
@@ -45,7 +80,7 @@ export const extraCategories = {
           "Ce pack inclut un plateau de charcuterie et fromage, une bouteille de crémant, un flacon d'huile de massage et un accès au spa.",
         price: 170,
         extraPersonPrice: 40,
-        image: "/placeholder-pack.jpg",
+        image: romantiquegourmet,
         type: "pack",
       },
       {
@@ -55,7 +90,7 @@ export const extraCategories = {
           'Ce pack inclut un assortiment de viandes grillées et d"accompagnements frais, une bouteille de crémant, et un accès au spa.',
         price: 170,
         extraPersonPrice: 40,
-        image: "/placeholder-pack.jpg",
+        image: racletteromantique,
         type: "pack",
       },
     ],
@@ -108,88 +143,89 @@ export const extraCategories = {
       },
     ],
   },
- formulesRepas: {
-  name: "Les formules repas",
-  items: [
-    {
-      id: 'formulePetitDej',
-      name: 'Formule petit-déjeuner (2pers)',
-      description: 'Un petit-déjeuner copieux pour bien commencer la journée.',
-      price: 35,
-      extraPersonPrice: 10,  // Added extra person price
-      image: '/placeholder-breakfast.jpg',
-      type: 'formula'
-    },
-    {
-      id: 'formuleGourmet',
-      name: 'Formule gourmet (2pers)',
-      description: 'Une expérience gastronomique inoubliable.',
-      price: 85,
-      extraPersonPrice: 20,  // Added extra person price
-      image: '/placeholder-gourmet.jpg',
-      type: 'formula'
-    },
-    {
-      id: 'formuleRaclette',
-      name: 'Formule raclette (2pers)',
-      description: 'Une raclette conviviale avec produits locaux.',
-      price: 85,
-      extraPersonPrice: 20,  // Added extra person price
-      image: '/placeholder-raclette.jpg',
-      type: 'formula'
-    },
-    {
-      id: 'formulePancheApero',
-      name: 'Formule planche apéro (2pers)',
-      description: 'Une planche apéritive généreuse à partager.',
-      price: 30,
-      // No extraPersonPrice for this formula
-      image: '/placeholder-apero.jpg',
-      type: 'formula'
-    }
-  ]
-},
+  formulesRepas: {
+    name: "Les formules repas",
+    items: [
+      {
+        id: "formulePetitDej",
+        name: "Formule petit-déjeuner (2pers)",
+        description:
+          "Un petit-déjeuner copieux pour bien commencer la journée.",
+        price: 35,
+        extraPersonPrice: 10, // Added extra person price
+        image: formuledejeuner,
+        type: "formula",
+      },
+      {
+        id: "formuleGourmet",
+        name: "Formule gourmet (2pers)",
+        description: "Une expérience gastronomique inoubliable.",
+        price: 85,
+        extraPersonPrice: 20, // Added extra person price
+        image: formulegourmet,
+        type: "formula",
+      },
+      {
+        id: "formuleRaclette",
+        name: "Formule raclette (2pers)",
+        description: "Une raclette conviviale avec produits locaux.",
+        price: 85,
+        extraPersonPrice: 20, // Added extra person price
+        image: raclette,
+        type: "formula",
+      },
+      {
+        id: "formulePancheApero",
+        name: "Formule planche apéro (2pers)",
+        description: "Une planche apéritive généreuse à partager.",
+        price: 30,
+        // No extraPersonPrice for this formula
+        image: plancheapero,
+        type: "formula",
+      },
+    ],
+  },
   formulesDecouverte: {
-  name: "Les formules découverte",
-  items: [
-    {
-      id: 'formuleSpa',
-      name: 'Formule SPA (2pers)',
-      description: 'Profitez d\'un moment de détente au spa.',
-      price: 50,
-      extraPersonPrice: 10,  // Added extra person price
-      image: '/placeholder-spa.jpg',
-      type: 'formula'
-    },
-    {
-      id: 'formuleSpaBottle',
-      name: 'Formule SPA + bouteille (2pers)',
-      description: 'Spa et bouteille de vin pour une expérience complète.',
-      price: 90,
-      // No extraPersonPrice for this formula
-      image: '/placeholder-spa.jpg',
-      type: 'formula'
-    },
-    {
-      id: 'formulePassion',
-      name: 'Formule passion',
-      description: 'Une formule romantique pour les couples.',
-      price: 50,
-      // No extraPersonPrice for this formula
-      image: '/placeholder-passion.jpg',
-      type: 'formula'
-    },
-    {
-      id: 'formuleAnniversaire',
-      name: 'Formule anniversaire (2pers)',
-      description: 'Célébrez votre anniversaire avec notre formule spéciale.',
-      price: 55,
-      extraPersonPrice: 5,  // Added extra person price
-      image: '/placeholder-birthday.jpg',
-      type: 'formula'
-    }
-  ]
-},
+    name: "Les formules découverte",
+    items: [
+      {
+        id: "formuleSpa",
+        name: "Formule SPA (2pers)",
+        description: "Profitez d'un moment de détente au spa.",
+        price: 50,
+        extraPersonPrice: 10, // Added extra person price
+        image: formulespa,
+        type: "formula",
+      },
+      {
+        id: "formuleSpaBottle",
+        name: "Formule SPA + bouteille (2pers)",
+        description: "Spa et bouteille de vin pour une expérience complète.",
+        price: 90,
+        // No extraPersonPrice for this formula
+        image: spabouteille,
+        type: "formula",
+      },
+      {
+        id: "formulePassion",
+        name: "Formule passion",
+        description: "Une formule romantique pour les couples.",
+        price: 50,
+        // No extraPersonPrice for this formula
+        image: passion,
+        type: "formula",
+      },
+      {
+        id: "formuleAnniversaire",
+        name: "Formule anniversaire (2pers)",
+        description: "Célébrez votre anniversaire avec notre formule spéciale.",
+        price: 55,
+        extraPersonPrice: 5, // Added extra person price
+        image: formuleanniversaire,
+        type: "formula",
+      },
+    ],
+  },
   boissons: {
     name: "Les boissons",
     items: [
@@ -199,7 +235,7 @@ export const extraCategories = {
         name: "Brut de Bioul",
         description: "Un vin effervescent local de qualité exceptionnelle.",
         price: 50,
-        image: "/placeholder-wine.jpg",
+        image: brutBioul,
         type: "wine",
       },
       {
@@ -207,7 +243,7 @@ export const extraCategories = {
         name: "Cortil Barco",
         description: "Un vin rouge élégant aux notes fruitées.",
         price: 30,
-        image: "/placeholder-wine.jpg",
+        image: cortilBarco,
         type: "wine",
       },
       {
@@ -215,7 +251,7 @@ export const extraCategories = {
         name: "Terre Charlot",
         description: "Un vin blanc raffiné aux arômes subtils.",
         price: 30,
-        image: "/placeholder-wine.jpg",
+        image: terreCharlot,
         type: "wine",
       },
       // Beers
@@ -224,7 +260,7 @@ export const extraCategories = {
         name: "Houblonde Triple",
         description: "Une bière triple traditionnelle belge.",
         price: 4,
-        image: "/placeholder-beer.jpg",
+        image: houblondeTriple,
         type: "beer",
       },
       {
@@ -232,7 +268,7 @@ export const extraCategories = {
         name: "Houblonde Blonde",
         description: "Une bière blonde rafraîchissante.",
         price: 4,
-        image: "/placeholder-beer.jpg",
+        image: houblondeBlonde,
         type: "beer",
       },
       {
@@ -240,7 +276,7 @@ export const extraCategories = {
         name: "Houblonde White IPA",
         description: "Une IPA blanche aux notes agrumes.",
         price: 4,
-        image: "/placeholder-beer.jpg",
+        image: houblondeWhite,
         type: "beer",
       },
       {
@@ -248,7 +284,7 @@ export const extraCategories = {
         name: "Brune du Condroz",
         description: "Une bière brune locale du Condroz.",
         price: 4,
-        image: "/placeholder-beer.jpg",
+        image: bruneCondroz,
         type: "beer",
       },
       {
@@ -256,7 +292,7 @@ export const extraCategories = {
         name: "Ambrée du Condroz",
         description: "Une bière ambrée aux malts caramélisés.",
         price: 4,
-        image: "/placeholder-beer.jpg",
+        image: ambreeCondroz,
         type: "beer",
       },
       {
@@ -264,15 +300,7 @@ export const extraCategories = {
         name: "Blanche du Condroz",
         description: "Une bière blanche légère et rafraîchissante.",
         price: 4,
-        image: "/placeholder-beer.jpg",
-        type: "beer",
-      },
-      {
-        id: "saisonCondroz",
-        name: "Saison du Condroz",
-        description: "Une bière de saison traditionnelle.",
-        price: 4,
-        image: "/placeholder-beer.jpg",
+        image: blancheCondroz,
         type: "beer",
       },
       // Softs
@@ -281,7 +309,7 @@ export const extraCategories = {
         name: 'Jus de pomme « Pom d"Happy »',
         description: "Un jus de pomme naturel et rafraîchissant.",
         price: 3,
-        image: "/placeholder-juice.jpg",
+        image: pomHappy,
         type: "soft",
       },
       {
@@ -290,7 +318,7 @@ export const extraCategories = {
         description:
           "Une boisson pétillante aux saveurs de citron et framboise.",
         price: 3,
-        image: "/placeholder-soft.jpg",
+        image: ritchieCitronFramboise,
         type: "soft",
       },
       {
@@ -298,7 +326,7 @@ export const extraCategories = {
         name: "Ritchie Orange/Vanille",
         description: "Un mélange rafraîchissant d'orange et de vanille.",
         price: 3,
-        image: "/placeholder-soft.jpg",
+        image: ritchieOrange,
         type: "soft",
       },
       {
@@ -306,7 +334,7 @@ export const extraCategories = {
         name: "Ritchie Cola",
         description: "Un cola artisanal unique.",
         price: 3,
-        image: "/placeholder-soft.jpg",
+        image: ritchieCola,
         type: "soft",
       },
       {
@@ -314,7 +342,7 @@ export const extraCategories = {
         name: "Ritchie Cola Zéro",
         description: "La version sans sucre du cola artisanal.",
         price: 3,
-        image: "/placeholder-soft.jpg",
+        image: ritchieColaZero,
         type: "soft",
       },
     ],
@@ -324,7 +352,7 @@ export const extraCategories = {
 // Helper functions remain the same
 export const getExtraById = (id) => {
   for (const category of Object.values(extraCategories)) {
-    const item = category.items.find(item => item.id === id);
+    const item = category.items.find((item) => item.id === id);
     if (item) return item;
   }
   return null;
