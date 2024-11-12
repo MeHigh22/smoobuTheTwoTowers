@@ -484,9 +484,6 @@ const handleSubmit = async (e) => {
 
   const renderContactSection = () => (
     <div>
-      <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-        Contact
-      </h2>
       <div className="mt-6 space-y-8 w-full">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* Contact form fields */}
@@ -654,9 +651,6 @@ const handleSubmit = async (e) => {
 
   const renderExtrasSection = () => (
     <div>
-      <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-        Extras
-      </h2>
       <div className="mt-6 space-y-8 w-full">
           <div className="flex flex-wrap gap-3">
             {Object.entries(extraCategories).map(([key, category]) => (
@@ -779,9 +773,6 @@ const handleSubmit = async (e) => {
 
   const renderInfoSupSection = () => (
     <div>
-      <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-        Info Supplémentaire
-      </h2>
       <div className="mt-6 space-y-8 w-full">
               {/* Notes */}
               <div className="col-span-full">
@@ -1034,9 +1025,16 @@ const handleSubmit = async (e) => {
             {/* Right Column - Contact Form */}
             <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
 
-              <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-                Contact
-              </h2>
+
+                  {currentStep == 1 && (
+                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Contact </h2>
+                  )}
+                  {currentStep == 2 && (
+                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Extras </h2>
+                  )}
+                  {currentStep == 3 && (
+                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Notes </h2>
+                  )}
 
               {/* Render progress bar */}
               {renderProgressBar()}
