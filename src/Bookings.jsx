@@ -60,7 +60,7 @@ const BookingForm = () => {
   const [priceDetails, setPriceDetails] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("meals");
+  const [selectedCategory, setSelectedCategory] = useState("packs");
   const [selectedExtras, setSelectedExtras] = useState({});
   const [showExtras, setShowExtras] = useState(false);
   const [coupon, setCoupon] = useState("");
@@ -68,7 +68,7 @@ const BookingForm = () => {
   const [couponError, setCouponError] = useState(null);
 
   const VALID_COUPONS = {
-    TEST420: {
+    TESTDISCOUNT: {
       discount: 10,
       type: "fixed", // 'fixed' for euro amount, 'percentage' for percentage discount
       currency: "EUR",
@@ -165,60 +165,86 @@ const BookingForm = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!formData.price) {
-      setError("Veuillez attendre le calcul du prix avant de continuer.");
-      return;
-    }
+  if (!formData.price) {
+    setError("Veuillez attendre le calcul du prix avant de continuer.");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      // Calculate total with extras
-      const extrasTotal = calculateExtrasTotal(selectedExtras);
-      const totalPrice = Number(formData.price) + extrasTotal;
+  setLoading(true);
+  try {
+    // Create array of selected extras for the booking
+    const selectedExtrasArray = Object.entries(selectedExtras)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([extraId, quantity]) => {
+        // Check if this is an extra person selection
+        const isExtraPerson = extraId.endsWith("-extra");
+        const baseExtraId = isExtraPerson
+          ? extraId.replace("-extra", "")
+          : extraId;
 
-      // Create array of selected extras for the booking
-      const selectedExtrasArray = Object.entries(selectedExtras)
-        .filter(([_, quantity]) => quantity > 0)
-        .map(([extraId, quantity]) => {
-          const extra = Object.values(extraCategories)
-            .flatMap((category) => category.items)
-            .find((item) => item.id === extraId);
+        // Find the extra in all categories
+        const extra = Object.values(extraCategories)
+          .flatMap((category) => category.items)
+          .find((item) => item.id === baseExtraId);
+
+        if (!extra) return null;
+
+        if (isExtraPerson) {
           return {
             type: "addon",
-            name: extra.name,
-            amount: extra.price * quantity,
+            name: `${extra.name} - Personne supplémentaire`,
+            amount: extra.extraPersonPrice * quantity,
             quantity: quantity,
             currencyCode: "EUR",
           };
-        });
+        }
 
-      console.log("Submitting booking data:", formData);
-      const response = await api.post("/create-payment-intent", {
+        return {
+          type: "addon",
+          name: extra.name,
+          amount: extra.price * quantity,
+          quantity: quantity,
+          currencyCode: "EUR",
+          extraPersonPrice: extra.extraPersonPrice,
+          extraPersonQuantity: selectedExtras[`${extraId}-extra`] || 0,
+        };
+      })
+      .filter(Boolean); // Remove any null entries
+
+    // Calculate total with extras
+    const extrasTotal = selectedExtrasArray.reduce(
+      (sum, extra) => sum + extra.amount,
+      0
+    );
+    const totalPrice = Number(formData.price) + extrasTotal;
+
+    console.log("Submitting booking data:", formData);
+    const response = await api.post("/create-payment-intent", {
+      price: totalPrice,
+      bookingData: {
+        ...formData,
         price: totalPrice,
-        bookingData: {
-          ...formData,
-          price: totalPrice,
-          extras: selectedExtrasArray,
-          adults: Number(formData.adults),
-          children: Number(formData.children),
-          deposit: Number(formData.deposit),
-        },
-      });
+        extras: selectedExtrasArray,
+        adults: Number(formData.adults),
+        children: Number(formData.children),
+        deposit: Number(formData.deposit),
+      },
+    });
 
-      console.log("Payment intent created:", response.data);
-      setClientSecret(response.data.clientSecret);
-      setShowPayment(true);
-      setError(null);
-    } catch (err) {
-      console.error("Error:", err);
-      setError(err.response?.data?.error || "Une erreur s'est produite");
-    } finally {
-      setLoading(false);
-    }
-  };
+    console.log("Payment intent created:", response.data);
+    setClientSecret(response.data.clientSecret);
+    setShowPayment(true);
+    setError(null);
+  } catch (err) {
+    console.error("Error:", err);
+    setError(err.response?.data?.error || "Une erreur s'est produite");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handlePaymentSuccess = () => {
     setSuccessMessage("Paiement réussi ! Votre réservation est confirmée.");
@@ -310,190 +336,240 @@ const BookingForm = () => {
    
    // Then add the coupon input UI in your form, before the submit button:
 
-  const renderPriceDetails = () => {
-    if (!priceDetails) return null;
+ const renderPriceDetails = () => {
+   if (!priceDetails) return null;
 
-    const selectedExtrasDetails = Object.entries(selectedExtras)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([extraId, quantity]) => {
-        const extra = Object.values(extraCategories)
-          .flatMap((category) => category.items)
-          .find((item) => item.id === extraId);
-        return {
-          name: extra.name,
-          quantity: quantity,
-          price: extra.price,
-          total: extra.price * quantity,
-        };
-      });
+   const selectedExtrasDetails = Object.entries(selectedExtras)
+     .filter(([_, quantity]) => quantity > 0)
+     .map(([extraId, quantity]) => {
+       // Check if this is an extra person selection
+       const isExtraPerson = extraId.endsWith("-extra");
+       const baseExtraId = isExtraPerson
+         ? extraId.replace("-extra", "")
+         : extraId;
 
-    const extrasTotal = selectedExtrasDetails.reduce(
-      (sum, extra) => sum + extra.total,
-      0
-    );
-    const subtotal = priceDetails.finalPrice + extrasTotal;
-    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-    const finalTotal = subtotal - couponDiscount;
+       const extra = Object.values(extraCategories)
+         .flatMap((category) => category.items)
+         .find((item) => item.id === baseExtraId);
 
-    return (
-      <div className="p-4 mt-4 rounded-lg bg-gray-50">
-        <h3 className="mb-2 font-bold">Détail des prix:</h3>
+       if (!extra) return null;
 
-        {/* Base price */}
-        {priceDetails.priceElements.map((element, index) => (
-          <div
-            key={index}
-            className={`flex justify-between items-center ${
-              element.amount < 0 ? "text-green-600" : ""
-            }`}
-          >
-            <span>{element.name}</span>
-            <span>
-              {Math.abs(element.amount).toFixed(2)} {element.currencyCode}
-            </span>
-          </div>
-        ))}
+       return {
+         name: isExtraPerson
+           ? `${extra.name} - Personne supplémentaire`
+           : extra.name,
+         quantity: quantity,
+         price: isExtraPerson ? extra.extraPersonPrice : extra.price,
+         total:
+           (isExtraPerson ? extra.extraPersonPrice : extra.price) * quantity,
+       };
+     })
+     .filter(Boolean);
 
-        {/* Individual extras */}
-        {selectedExtrasDetails.length > 0 && (
-          <>
-            <div className="mt-4 mb-2 font-medium text-gray-700">
-              Extras sélectionnés:
-            </div>
-            {selectedExtrasDetails.map((extra, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between pl-4 text-gray-600"
-              >
-                <span>
-                  {extra.name} ({extra.quantity}x {extra.price.toFixed(2)}€)
-                </span>
-                <span>{extra.total.toFixed(2)} EUR</span>
-              </div>
-            ))}
-          </>
-        )}
+   const extrasTotal = selectedExtrasDetails.reduce(
+     (sum, extra) => sum + extra.total,
+     0
+   );
+   const subtotal = priceDetails.finalPrice + extrasTotal;
+   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+   const finalTotal = subtotal - couponDiscount;
 
-        {/* Coupon discount */}
+   return (
+     <div className="p-4 mt-4 rounded-lg bg-gray-50">
+       <h3 className="mb-2 font-bold">Détail des prix:</h3>
 
+       {/* Base price */}
+       {priceDetails.priceElements.map((element, index) => (
+         <div
+           key={index}
+           className={`flex justify-between items-center ${
+             element.amount < 0 ? "text-green-600" : ""
+           }`}
+         >
+           <span>{element.name}</span>
+           <span>
+             {Math.abs(element.amount).toFixed(2)} {element.currencyCode}
+           </span>
+         </div>
+       ))}
 
-        {/* Final total */}
-        <div className="flex items-center justify-between pt-2 mt-4 font-bold border-t border-gray-200">
-          <span>Prix final</span>
-          <span>{finalTotal.toFixed(2)} EUR</span>
-        </div>
-      </div>
-    );
-  };
+       {/* Individual extras */}
+       {selectedExtrasDetails.length > 0 && (
+         <>
+           <div className="mt-4 mb-2 font-medium text-gray-700">
+             Extras sélectionnés:
+           </div>
+           {selectedExtrasDetails.map((extra, index) => (
+             <div
+               key={index}
+               className="flex items-center justify-between pl-4 text-gray-600"
+             >
+               <span>
+                 {extra.name} ({extra.quantity}x {extra.price.toFixed(2)}€)
+               </span>
+               <span>{extra.total.toFixed(2)} EUR</span>
+             </div>
+           ))}
+         </>
+       )}
 
-  const renderExtrasSection = () => (
-    <div className="mt-8">
-      {/* Add type="button" to the extras toggle button */}
-      <button
-        type="button" // Important!
-        onClick={() => setShowExtras(!showExtras)}
-        className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
-      >
-        <span className="text-[18px] font-normal">Extras</span>
-        <svg
-          className={`w-6 h-6 transform transition-transform ${
-            showExtras ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
+       {/* Coupon discount */}
 
-      {showExtras && (
-        <div className="mt-6 space-y-8">
-          {/* Add type="button" to category filter buttons */}
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(extraCategories).map(([key, category]) => (
-              <button
-                key={key}
-                type="button" // Important!
-                onClick={() => setSelectedCategory(key)}
-                className={`px-5 py-2 rounded-lg transition-all text-[16px] font-normal ${
-                  selectedCategory === key
-                    ? "bg-[#668E73] text-white"
-                    : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
+       {/* Final total */}
+       <div className="flex items-center justify-between pt-2 mt-4 font-bold border-t border-gray-200">
+         <span>Prix final</span>
+         <span>{finalTotal.toFixed(2)} EUR</span>
+       </div>
+     </div>
+   );
+ };
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {extraCategories[selectedCategory].items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="object-cover w-24 h-24 rounded-lg"
-                />
-                <div className="flex-grow space-y-2">
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-[16px] font-medium text-gray-900">
-                      {item.name}
-                    </h3>
-                    <div className="bg-[#668E73] px-3 py-1 rounded text-white text-[14px] font-medium">
-                      {item.price}€
-                    </div>
-                  </div>
-                  <p className="text-[14px] text-gray-600 line-clamp-2">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center gap-3">
-                    {/* Add type="button" to the increment/decrement buttons */}
-                    <button
-                      type="button" // Important!
-                      onClick={() =>
-                        handleExtraChange(
-                          item.id,
-                          (selectedExtras[item.id] || 0) - 1
-                        )
-                      }
-                      disabled={(selectedExtras[item.id] || 0) === 0}
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 font-medium text-center text-gray-900">
-                      {selectedExtras[item.id] || 0}
-                    </span>
-                    <button
-                      type="button" // Important!
-                      onClick={() =>
-                        handleExtraChange(
-                          item.id,
-                          (selectedExtras[item.id] || 0) + 1
-                        )
-                      }
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+ const renderExtrasSection = () => (
+   <div className="mt-8">
+     <button
+       type="button"
+       onClick={() => setShowExtras(!showExtras)}
+       className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
+     >
+       <span className="text-[18px] font-normal">Extras</span>
+       <svg
+         className={`w-6 h-6 transform transition-transform ${
+           showExtras ? "rotate-180" : ""
+         }`}
+         fill="none"
+         stroke="currentColor"
+         viewBox="0 0 24 24"
+       >
+         <path
+           strokeLinecap="round"
+           strokeLinejoin="round"
+           strokeWidth="2"
+           d="M19 9l-7 7-7-7"
+         />
+       </svg>
+     </button>
+
+     {showExtras && (
+       <div className="mt-6 space-y-8">
+         <div className="flex flex-wrap gap-3">
+           {Object.entries(extraCategories).map(([key, category]) => (
+             <button
+               key={key}
+               type="button"
+               onClick={() => setSelectedCategory(key)}
+               className={`px-5 py-2 rounded-lg transition-all text-[16px] font-normal ${
+                 selectedCategory === key
+                   ? "bg-[#668E73] text-white"
+                   : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
+               }`}
+             >
+               {category.name}
+             </button>
+           ))}
+         </div>
+
+         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+           {extraCategories[selectedCategory].items.map((item) => (
+             <div
+               key={item.id}
+               className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
+             >
+               <img
+                 src={item.image}
+                 alt={item.name}
+                 className="object-cover w-24 h-24 rounded-lg"
+               />
+               <div className="flex-grow space-y-2">
+                 <div className="flex items-start justify-between">
+                   <h3 className="text-[16px] font-medium text-gray-900">
+                     {item.name}
+                   </h3>
+                   <div className="bg-[#668E73] px-3 py-1 rounded text-white text-[14px] font-medium">
+                     {item.price}€
+                   </div>
+                 </div>
+                 <p className="text-[14px] text-gray-600 line-clamp-2">
+                   {item.description}
+                 </p>
+                 {/* Base quantity selector */}
+                 <div className="flex items-center gap-3">
+                   <button
+                     type="button"
+                     onClick={() =>
+                       handleExtraChange(
+                         item.id,
+                         (selectedExtras[item.id] || 0) - 1
+                       )
+                     }
+                     disabled={(selectedExtras[item.id] || 0) === 0}
+                     className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                   >
+                     -
+                   </button>
+                   <span className="w-8 font-medium text-center text-gray-900">
+                     {selectedExtras[item.id] || 0}
+                   </span>
+                   <button
+                     type="button"
+                     onClick={() =>
+                       handleExtraChange(
+                         item.id,
+                         (selectedExtras[item.id] || 0) + 1
+                       )
+                     }
+                     className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                   >
+                     +
+                   </button>
+                 </div>
+                 {/* Extra person selector - only show if extraPersonPrice exists */}
+                 {item.extraPersonPrice && (
+                   <div className="mt-2">
+                     <p className="text-[14px] text-gray-600 mb-1">
+                       Personne supplémentaire (+{item.extraPersonPrice}€/pers)
+                     </p>
+                     <div className="flex items-center gap-3">
+                       <button
+                         type="button"
+                         onClick={() =>
+                           handleExtraChange(
+                             `${item.id}-extra`,
+                             (selectedExtras[`${item.id}-extra`] || 0) - 1
+                           )
+                         }
+                         disabled={
+                           (selectedExtras[`${item.id}-extra`] || 0) === 0
+                         }
+                         className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                       >
+                         -
+                       </button>
+                       <span className="w-8 font-medium text-center text-gray-900">
+                         {selectedExtras[`${item.id}-extra`] || 0}
+                       </span>
+                       <button
+                         type="button"
+                         onClick={() =>
+                           handleExtraChange(
+                             `${item.id}-extra`,
+                             (selectedExtras[`${item.id}-extra`] || 0) + 1
+                           )
+                         }
+                         className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                       >
+                         +
+                       </button>
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
+           ))}
+         </div>
+       </div>
+     )}
+   </div>
+ );
 
   const renderPaymentForm = () => (
     <div className="mt-8">
