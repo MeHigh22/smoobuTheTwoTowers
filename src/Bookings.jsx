@@ -51,6 +51,8 @@ const BookingForm = () => {
     country: "",
   });
 
+
+  const [currentStep, setCurrentStep] = useState(1); // Step state
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
@@ -462,180 +464,30 @@ const handleSubmit = async (e) => {
     );
   };
 
-  const renderExtrasSection = () => (
-    <div className="mt-8">
-      <button
-        type="button"
-        onClick={toggleExtras} // Use the new toggle function
-        className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
-      >
-        <span className="text-[18px] font-normal">Extras</span>
-        <svg
-          className={`w-6 h-6 transform transition-transform ${
-            showExtras ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
+  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-      {showExtras && (
-        <div className="mt-6 space-y-8 w-full">
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(extraCategories).map(([key, category]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelectedCategory(key)}
-                className={`px-5 py-2 rounded-lg transition-all text-[16px] font-normal ${
-                  selectedCategory === key
-                    ? "bg-[#668E73] text-white"
-                    : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {extraCategories[selectedCategory].items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="object-cover w-24 h-24 rounded-lg"
-                />
-                <div className="flex-grow space-y-2">
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-[16px] font-medium text-gray-900">
-                      {item.name}
-                    </h3>
-                    <div className="bg-[#668E73] px-3 py-1 rounded text-white text-[14px] font-medium">
-                      {item.price}€
-                    </div>
-                  </div>
-                  <p className="text-[14px] text-gray-600 line-clamp-2">
-                    {item.description}
-                  </p>
-                  {/* Base quantity selector */}
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleExtraChange(
-                          item.id,
-                          (selectedExtras[item.id] || 0) - 1
-                        )
-                      }
-                      disabled={(selectedExtras[item.id] || 0) === 0}
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 font-medium text-center text-gray-900">
-                      {selectedExtras[item.id] || 0}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleExtraChange(
-                          item.id,
-                          (selectedExtras[item.id] || 0) + 1
-                        )
-                      }
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                  {/* Extra person selector - only show if extraPersonPrice exists */}
-                  {item.extraPersonPrice && (
-                    <div className="mt-2">
-                      <p className="text-[14px] text-gray-600 mb-1">
-                        Personne supplémentaire (+{item.extraPersonPrice}€/pers)
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleExtraChange(
-                              `${item.id}-extra`,
-                              (selectedExtras[`${item.id}-extra`] || 0) - 1
-                            )
-                          }
-                          disabled={
-                            (selectedExtras[`${item.id}-extra`] || 0) === 0
-                          }
-                          className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
-                        >
-                          -
-                        </button>
-                        <span className="w-8 font-medium text-center text-gray-900">
-                          {selectedExtras[`${item.id}-extra`] || 0}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleExtraChange(
-                              `${item.id}-extra`,
-                              (selectedExtras[`${item.id}-extra`] || 0) + 1
-                            )
-                          }
-                          className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+  const renderProgressBar = () => (
+    <div className="flex justify-between items-center mb-4">
+      <div className="w-full h-2 bg-gray-300 rounded">
+        <div
+          className={`h-2 rounded ${
+            currentStep === 1 ? "w-1/3" : currentStep === 2 ? "w-2/3" : "w-full"
+          } bg-[#668E73]`}
+        ></div>
+      </div>
+      <span className="ml-2 text-sm text-[#668E73]">
+        Étape {currentStep} sur 3
+      </span>
     </div>
   );
 
   const renderContactSection = () => (
-    <div className="mt-8">
-      <button
-        type="button"
-        onClick={toggleContact} // Use the new toggle function
-        className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
-      >
-        <span className="text-[18px] font-normal">Contact</span>
-        <svg
-          className={`w-6 h-6 transform transition-transform ${
-            showContact ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-  
-      {showContact && (
-        <div className="mt-6 space-y-8 w-full">
+    <div>
+      <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+        Contact
+      </h2>
+      <div className="mt-6 space-y-8 w-full">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* Contact form fields */}
                 <div>
@@ -797,37 +649,140 @@ const handleSubmit = async (e) => {
 
               </div>
         </div>
-      )}
     </div>
   );
-  
+
+  const renderExtrasSection = () => (
+    <div>
+      <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+        Extras
+      </h2>
+      <div className="mt-6 space-y-8 w-full">
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(extraCategories).map(([key, category]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSelectedCategory(key)}
+                className={`px-5 py-2 rounded-lg transition-all text-[16px] font-normal ${
+                  selectedCategory === key
+                    ? "bg-[#668E73] text-white"
+                    : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {extraCategories[selectedCategory].items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
+              >
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="object-cover w-24 h-24 rounded-lg"
+                />
+                <div className="flex-grow space-y-2">
+                  <div className="flex items-start justify-between">
+                    <h3 className="text-[16px] font-medium text-gray-900">
+                      {item.name}
+                    </h3>
+                    <div className="bg-[#668E73] px-3 py-1 rounded text-white text-[14px] font-medium">
+                      {item.price}€
+                    </div>
+                  </div>
+                  <p className="text-[14px] text-gray-600 line-clamp-2">
+                    {item.description}
+                  </p>
+                  {/* Base quantity selector */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleExtraChange(
+                          item.id,
+                          (selectedExtras[item.id] || 0) - 1
+                        )
+                      }
+                      disabled={(selectedExtras[item.id] || 0) === 0}
+                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="w-8 font-medium text-center text-gray-900">
+                      {selectedExtras[item.id] || 0}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleExtraChange(
+                          item.id,
+                          (selectedExtras[item.id] || 0) + 1
+                        )
+                      }
+                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                  {/* Extra person selector - only show if extraPersonPrice exists */}
+                  {item.extraPersonPrice && (
+                    <div className="mt-2">
+                      <p className="text-[14px] text-gray-600 mb-1">
+                        Personne supplémentaire (+{item.extraPersonPrice}€/pers)
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleExtraChange(
+                              `${item.id}-extra`,
+                              (selectedExtras[`${item.id}-extra`] || 0) - 1
+                            )
+                          }
+                          disabled={
+                            (selectedExtras[`${item.id}-extra`] || 0) === 0
+                          }
+                          className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 font-medium text-center text-gray-900">
+                          {selectedExtras[`${item.id}-extra`] || 0}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleExtraChange(
+                              `${item.id}-extra`,
+                              (selectedExtras[`${item.id}-extra`] || 0) + 1
+                            )
+                          }
+                          className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+    </div>
+  );
+
   const renderInfoSupSection = () => (
-    <div className="mt-8">
-      <button
-        type="button"
-        onClick={toggleInfoSup} // Use the new toggle function
-        className="w-full flex justify-between items-center p-4 bg-[#668E73] bg-opacity-20 rounded-lg text-[#668E73] hover:bg-opacity-30 transition-all"
-      >
-        <span className="text-[18px] font-normal">Info supplémentaire</span>
-        <svg
-          className={`w-6 h-6 transform transition-transform ${
-            showInfoSup ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-  
-      {showInfoSup && (
-        <div className="mt-6 space-y-8 w-full">
+    <div>
+      <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+        Info Supplémentaire
+      </h2>
+      <div className="mt-6 space-y-8 w-full">
               {/* Notes */}
               <div className="col-span-full">
                   <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -876,9 +831,21 @@ const handleSubmit = async (e) => {
                 )}
               </div>
         </div>
-      )}
     </div>
   );
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return renderContactSection();
+      case 2:
+        return renderExtrasSection();
+      case 3:
+        return renderInfoSupSection();
+      default:
+        return null;
+    }
+  };
 
   const renderPaymentForm = () => (
     <div className="mt-8">
@@ -1071,12 +1038,41 @@ const handleSubmit = async (e) => {
                 Contact
               </h2>
 
-              {/* Render Contact Section */}
-              {renderContactSection()}
-              {/* Extras Section */}
-              {renderExtrasSection()}
-              {/* Info Sup Section */}
-              {renderInfoSupSection()}
+              {/* Render progress bar */}
+              {renderProgressBar()}
+
+              {/* Render current step content */}
+              {renderStepContent()}
+
+              {/* Navigation buttons */}
+                <div className="flex justify-between mt-6">
+                  {currentStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={prevStep}
+                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    >
+                      Précédent
+                    </button>
+                  )}
+                  {currentStep < 3 && (
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                    >
+                      Suivant
+                    </button>
+                  )}
+                  {currentStep === 3 && (
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                    >
+                      Confirmer
+                    </button>
+                  )}
+                </div>
 
               <button
                 type="submit"
