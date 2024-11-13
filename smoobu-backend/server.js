@@ -75,7 +75,7 @@ const calculatePriceWithSettings = (
   const priceElements = [
     {
       type: "basePrice",
-      name: "Base price",
+      name: "Prix de base",
       amount: totalPrice,
       currencyCode: "EUR",
     },
@@ -84,7 +84,7 @@ const calculatePriceWithSettings = (
   if (extraGuestsFee > 0) {
     priceElements.push({
       type: "addon",
-      name: "Extra guests fee",
+      name: "Frais de personne supplémentaire",
       amount: extraGuestsFee,
       currencyCode: "EUR",
     });
@@ -93,7 +93,7 @@ const calculatePriceWithSettings = (
   if (extraChildrenFee > 0) {
     priceElements.push({
       type: "addon",
-      name: "Extra children fee",
+      name: "Frais d'enfants supplémentaires",
       amount: extraChildrenFee,
       currencyCode: "EUR",
     });
@@ -102,7 +102,7 @@ const calculatePriceWithSettings = (
   if (settings.cleaningFee > 0) {
     priceElements.push({
       type: "cleaningFee",
-      name: "Cleaning fee",
+      name: "Frais de nettoyage",
       amount: settings.cleaningFee,
       currencyCode: "EUR",
     });
@@ -111,7 +111,7 @@ const calculatePriceWithSettings = (
   if (discount > 0) {
     priceElements.push({
       type: "longStayDiscount",
-      name: `Long stay discount (${settings.lengthOfStayDiscount.discountPercentage}%)`,
+      name: `Réduction long séjour (${settings.lengthOfStayDiscount.discountPercentage}%)`,
       amount: -discount,
       currencyCode: "EUR",
     });
@@ -338,40 +338,109 @@ app.get("/api/rates", async (req, res) => {
   }
 });
 
-app.post('/api/create-payment-intent', async (req, res) => {
+app.post("/api/create-payment-intent", async (req, res) => {
   try {
     const { price, bookingData } = req.body;
-    
-    const bookingReference = `BOOKING-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    console.log('Generated booking reference:', bookingReference);
-    
+
+    const bookingReference = `BOOKING-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    console.log("Generated booking reference:", bookingReference);
+
     // Store booking data for webhook
     pendingBookings.set(bookingReference, bookingData);
-    console.log('Stored booking data with extras:', bookingData);
+    console.log("Stored booking data with extras:", bookingData);
 
-    // Create payment intent with total price (including extras)
+    // Create payment intent with total price (including extras and discounts)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(price * 100), // Convert to cents
-      currency: 'eur',
+      currency: "eur",
       automatic_payment_methods: {
         enabled: true,
       },
       metadata: {
         bookingReference: bookingReference,
-        basePrice: bookingData.price,
-        extrasTotal: price - bookingData.price
-      }
+        basePrice: bookingData.basePrice.toString(),
+        extrasTotal: (price - bookingData.basePrice).toString(),
+        longStayDiscount: bookingData.priceDetails.discount.toString(),
+        couponDiscount: (bookingData.couponApplied?.discount || "0").toString(),
+      },
     });
 
-    console.log('Created payment intent:', paymentIntent.id);
+    console.log("Created payment intent:", paymentIntent.id);
 
     res.json({
       clientSecret: paymentIntent.client_secret,
-      bookingReference: bookingReference
+      bookingReference: bookingReference,
     });
   } catch (error) {
-    console.error('Error creating payment intent:', error);
-    res.status(500).json({ error: 'Failed to create payment intent' });
+    console.error("Error creating payment intent:", error);
+    res.status(500).json({ error: "Failed to create payment intent" });
+  }
+});
+
+app.get("/api/bookings/:paymentIntentId", async (req, res) => {
+  try {
+    const { paymentIntentId } = req.params;
+
+    // Fetch the payment intent from Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (!paymentIntent) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    const bookingReference = paymentIntent.metadata.bookingReference;
+    const bookingData = pendingBookings.get(bookingReference);
+
+    if (!bookingData) {
+      return res.status(404).json({
+        error: "Booking details not found",
+        paymentIntent: paymentIntentId,
+        bookingReference: bookingReference,
+      });
+    }
+
+    // Récupérer les montants des réductions depuis les metadata
+    const basePrice = parseFloat(paymentIntent.metadata.basePrice);
+    const extrasTotal = parseFloat(paymentIntent.metadata.extrasTotal || 0);
+    const longStayDiscount = parseFloat(
+      paymentIntent.metadata.longStayDiscount || 0
+    );
+    const couponDiscount = parseFloat(
+      paymentIntent.metadata.couponDiscount || 0
+    );
+
+    // Calculer le total final
+    const subtotalBeforeDiscounts = basePrice + extrasTotal;
+    const finalTotal =
+      subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
+
+    const responseData = {
+      ...bookingData,
+      basePrice: basePrice,
+      paymentIntent: {
+        id: paymentIntent.id,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        status: paymentIntent.status,
+      },
+      priceBreakdown: {
+        basePrice: basePrice,
+        extrasTotal: extrasTotal,
+        longStayDiscount: longStayDiscount,
+        couponDiscount: couponDiscount,
+        totalPrice: finalTotal,
+      },
+    };
+
+    res.json(responseData);
+  } catch (error) {
+    console.error("Error fetching booking:", error);
+    res.status(500).json({
+      error: "Failed to fetch booking details",
+      message: error.message,
+    });
   }
 });
 
