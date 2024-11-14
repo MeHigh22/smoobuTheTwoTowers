@@ -1,0 +1,127 @@
+/* Root container styling */
+.container {
+  padding: 3rem 1rem;
+  background-color: #678D73;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Background styling for test div */
+.sky-background {
+  background-color: #0ea5e9; /* Tailwind's bg-sky-500 */
+}
+
+/* Card container */
+.card {
+  width: 100%;
+  max-width: 64rem;
+  padding: 2rem;
+  margin: 0 auto;
+  background-color: white;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+}
+
+/* Flex container for header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+/* Icon background */
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: #d1fae5; /* Tailwind's bg-green-100 */
+  border-radius: 9999px;
+}
+
+/* Icon color */
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #16a34a; /* Tailwind's text-green-600 */
+}
+
+/* Title */
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937; /* Tailwind's text-gray-900 */
+}
+
+/* Subtitle */
+.subtitle {
+  color: #4b5563; /* Tailwind's text-gray-600 */
+}
+
+/* Grid styling */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.actions {
+    padding-top : 2rem;
+    
+}
+
+/* Card styles for details */
+.details-card {
+  padding: 1.5rem;
+  background-color: white;
+  border: 1px solid #f3f4f6; /* Tailwind's border-gray-100 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+}
+
+/* Title styling for confirmation sections */
+.titleConfirmation {
+  font-size: 1.10rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #111827; /* Tailwind's text-gray-800 */
+}
+
+/* Button styles */
+.button-primary {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  background-color: #668e73;
+  color: white;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.button-primary:hover {
+  background-color: #557e64; /* A slightly darker green for hover effect */
+}
+
+.button-secondary {
+  padding: 0.5rem 1.5rem;
+  background-color: white;
+  color: #4b5563; /* Tailwind's text-gray-700 */
+  border: 1px solid #d1d5db; /* Tailwind's border-gray-300 */
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.button-secondary:hover {
+  background-color: #f9fafb; /* Tailwind's bg-gray-50 */
+}
