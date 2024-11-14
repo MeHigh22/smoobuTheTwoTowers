@@ -570,7 +570,7 @@ const renderPriceDetails = () => {
   const renderContactSection = () => (
     <div>
       <div className="mt-6 space-y-8 w-full">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {/* Contact form fields */}
                 <div>
                   <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -766,14 +766,14 @@ const renderPriceDetails = () => {
                 />
                 <div className="flex-grow space-y-2">
                   <div className="flex items-start justify-between">
-                    <h3 className="text-[16px] font-medium text-gray-900">
+                    <h3 className="text-[15px] font-medium text-gray-900">
                       {item.name}
                     </h3>
-                    <div className="bg-[#668E73] px-3 py-1 rounded text-white text-[14px] font-medium">
+                    <div className="bg-[#668E73] px-2 py-1 rounded text-white text-[13px] font-medium">
                       {item.price}€
                     </div>
                   </div>
-                  <p className="text-[14px] text-gray-600 line-clamp-2">
+                  <p className="text-[13px] text-gray-600 line-clamp-2">
                     {item.description}
                   </p>
                   <div className="flex items-center gap-3">
@@ -788,7 +788,7 @@ const renderPriceDetails = () => {
                         }
                       }}
                       disabled={(selectedExtras[item.id] || 0) === 0}
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
                     >
                       -
                     </button>
@@ -803,7 +803,7 @@ const renderPriceDetails = () => {
                           (selectedExtras[item.id] || 0) + 1
                         )
                       }
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                      className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
                     >
                       +
                     </button>
@@ -829,7 +829,7 @@ const renderPriceDetails = () => {
                             disabled={
                               (selectedExtras[`${item.id}-extra`] || 0) === 0
                             }
-                            className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:text-white transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
                           >
                             -
                           </button>
@@ -844,7 +844,7 @@ const renderPriceDetails = () => {
                                 (selectedExtras[`${item.id}-extra`] || 0) + 1
                               )
                             }
-                            className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] hover:bg-[#668E73] hover:text-white transition-colors"
+                            className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
                           >
                             +
                           </button>
@@ -962,10 +962,7 @@ const renderPaymentForm = () => (
 );
 
   return (
-    <div className="p-6 mx-auto h-[100vh] w-full lg:w-[1024px] xl:w-[1440px]">
-      <h1 className="mb-4 text-2xl font-bold">
-        Réserver le Dôme des Libellules
-      </h1>
+    <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px]">
       {error && <p className="mb-4 text-red-500">{error}</p>}
       {successMessage && (
         <p className="mb-4 text-green-500">{successMessage}</p>
@@ -1096,7 +1093,7 @@ const renderPaymentForm = () => (
               <img
                 src="https://images.unsplash.com/photo-1720293315632-37efe958d5ec?q=80&w=3432&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 alt="Property"
-                className="w-[100%] h-[250px] object-cover rounded-[0.3em] mt-4"
+                className="w-[100%] h-[250px] object-cover rounded-[0.3em] my-4"
               />
               <h2 className="text-[18px] md:text-[23px] font-normal text-black">
                 Le dôme des libellules
