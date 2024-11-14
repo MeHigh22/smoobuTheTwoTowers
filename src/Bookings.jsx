@@ -70,8 +70,6 @@ const BookingForm = () => {
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
-  
-
 
 
   // Toggle contact section and close others if open
