@@ -947,7 +947,7 @@ const renderPriceDetails = () => {
 
 
 const renderPaymentForm = () => (
-  <div className="mt-8">
+  <div className="mt-8 w-2/5 mx-auto">
     <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
     {clientSecret && (
       <StripeWrapper
@@ -962,7 +962,7 @@ const renderPaymentForm = () => (
 );
 
   return (
-    <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px]">
+    <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px] flex items-center justify-center">
       {error && <p className="mb-4 text-red-500">{error}</p>}
       {successMessage && (
         <p className="mb-4 text-green-500">{successMessage}</p>
