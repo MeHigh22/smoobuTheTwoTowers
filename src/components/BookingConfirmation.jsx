@@ -6,45 +6,45 @@ const BookingConfirmation = () => {
   const [bookingDetails, setBookingDetails] = useState(null);
   const [searchParams] = useSearchParams();
   const paymentIntent = searchParams.get("payment_intent");
-useEffect(() => {
-  // Try to get booking data from localStorage
-  const storedBookingData = localStorage.getItem("bookingData");
+  useEffect(() => {
+    // Try to get booking data from localStorage
+    const storedBookingData = localStorage.getItem("bookingData");
 
-  if (storedBookingData) {
+    if (storedBookingData) {
+      try {
+        const parsedData = JSON.parse(storedBookingData);
+        console.log("Booking Details from localStorage:", parsedData); // Ajoutez ce log
+        setBookingDetails(parsedData);
+        setStatus("success");
+        // Clear the data from localStorage after retrieving it
+        localStorage.removeItem("bookingData");
+      } catch (error) {
+        console.error("Error parsing booking data:", error);
+        setStatus("error");
+      }
+    } else {
+      // If no data in localStorage, try to fetch from API
+      fetchBookingDetails(paymentIntent);
+    }
+  }, [paymentIntent]);
+
+  const fetchBookingDetails = async (paymentIntentId) => {
     try {
-      const parsedData = JSON.parse(storedBookingData);
-      console.log("Booking Details from localStorage:", parsedData); // Ajoutez ce log
-      setBookingDetails(parsedData);
+      const response = await fetch(
+        `http://localhost:3000/api/bookings/${paymentIntentId}`
+      );
+      const data = await response.json();
+      console.log("Booking Details from API:", data); // Ajoutez ce log
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setBookingDetails(data);
       setStatus("success");
-      // Clear the data from localStorage after retrieving it
-      localStorage.removeItem("bookingData");
     } catch (error) {
-      console.error("Error parsing booking data:", error);
+      console.error("Error fetching booking details:", error);
       setStatus("error");
     }
-  } else {
-    // If no data in localStorage, try to fetch from API
-    fetchBookingDetails(paymentIntent);
-  }
-}, [paymentIntent]);
-
-const fetchBookingDetails = async (paymentIntentId) => {
-  try {
-    const response = await fetch(
-      `http://localhost:3000/api/bookings/${paymentIntentId}`
-    );
-    const data = await response.json();
-    console.log("Booking Details from API:", data); // Ajoutez ce log
-    if (data.error) {
-      throw new Error(data.error);
-    }
-    setBookingDetails(data);
-    setStatus("success");
-  } catch (error) {
-    console.error("Error fetching booking details:", error);
-    setStatus("error");
-  }
-};
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -88,199 +88,176 @@ const fetchBookingDetails = async (paymentIntentId) => {
   }
 
   return (
-    <div className="min-h-screen px-4 py-12 bg-gray-50 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg">
-        {/* Header Section */}
-        <div className="p-8 border-b border-gray-200">
-          <div className="text-center">
-            <div className="mb-6">
-              <svg
-                className="w-12 h-12 mx-auto text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h1 className="mb-4 text-3xl font-bold text-green-600">
-              Réservation Confirmée !
+    <div className="min-h-screen px-4 py-12 bg-gray-100 sm:px-6 lg:px-8">
+      <div className="max-w-4xl p-8 mx-auto bg-white shadow-lg rounded-2xl">
+        {/* Success Header */}
+        <div className="flex items-center gap-4 mb-12">
+          <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
+            <svg
+              className="w-6 h-6 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Réservation Confirmée
             </h1>
-            <p className="text-lg text-gray-600">
-              Merci pour votre réservation. Un email de confirmation a été
-              envoyé à{" "}
-              <span className="font-medium">{bookingDetails?.email}</span>
+            <p className="text-gray-600">
+              Une confirmation a été envoyée à {bookingDetails?.email}
             </p>
           </div>
         </div>
 
-        {/* Booking Details Section */}
-        <div className="p-8">
-          <div className="space-y-8">
-            {/* Accommodation Details */}
-            <div>
-              <h2 className="mb-4 text-xl font-semibold">Détails du séjour</h2>
-              <div className="p-6 space-y-4 rounded-lg bg-gray-50">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <p className="text-gray-600">Check-in</p>
-                    <p className="font-medium">
-                      {formatDate(bookingDetails?.arrivalDate)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Check-out</p>
-                    <p className="font-medium">
-                      {formatDate(bookingDetails?.departureDate)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Nombre de personnes</p>
-                    <p className="font-medium">
-                      {bookingDetails?.adults} adultes
-                      {bookingDetails?.children > 0 &&
-                        `, ${bookingDetails?.children} enfants`}
-                    </p>
-                  </div>
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Stay Details */}
+          <div className="p-6 rounded-lg shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] bg-white border border-gray-100">
+            <h2 className="mb-4 text-lg font-semibold">Détails du séjour</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Check-in</p>
+                  <p className="font-medium">
+                    {formatDate(bookingDetails?.arrivalDate)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Heure d'arrivée</p>
+                  <p className="font-medium">{bookingDetails?.arrivalTime}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Check-out</p>
+                  <p className="font-medium">
+                    {formatDate(bookingDetails?.departureDate)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Voyageurs</p>
+                  <p className="font-medium">
+                    {bookingDetails?.adults} adultes
+                    {bookingDetails?.children > 0 &&
+                      `, ${bookingDetails?.children} enfants`}
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Guest Details */}
-            <div>
-              <h2 className="mb-4 text-xl font-semibold">
-                Informations du client
-              </h2>
-              <div className="p-6 space-y-4 rounded-lg bg-gray-50">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <p className="text-gray-600">Nom</p>
-                    <p className="font-medium">
-                      {bookingDetails?.firstName} {bookingDetails?.lastName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Email</p>
-                    <p className="font-medium">{bookingDetails?.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Téléphone</p>
-                    <p className="font-medium">{bookingDetails?.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Adresse</p>
-                    <p className="font-medium">
-                      {bookingDetails?.street}
-                      <br />
-                      {bookingDetails?.postalCode} {bookingDetails?.location}
-                      <br />
-                      {bookingDetails?.country}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Price Details */}
-            <div>
-              <h2 className="mb-4 text-xl font-semibold">Détails du prix</h2>
-              <div className="p-6 rounded-lg bg-gray-50">
-                <div className="space-y-3">
-                  {/* Base Price */}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Prix de base</span>
-                    <span className="font-medium">
-                      {parseFloat(bookingDetails?.basePrice).toFixed(2)}€
-                    </span>
-                  </div>
-
-                  {/* Extras */}
-                  {bookingDetails?.extras?.map((extra, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span className="text-gray-600">
-                        {extra.name} (x{extra.quantity})
-                      </span>
-                      <span className="font-medium">
-                        {extra.amount?.toFixed(2)}€
-                      </span>
-                    </div>
-                  ))}
-
-                  {/* Long Stay Discount if applicable */}
-                  {bookingDetails?.priceDetails?.discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>
-                        Réduction long séjour (
-                        {
-                          bookingDetails.priceDetails.settings
-                            .lengthOfStayDiscount.discountPercentage
-                        }
-                        %)
-                      </span>
-                      <span>
-                        -{bookingDetails.priceDetails.discount.toFixed(2)}€
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Coupon Discount if applicable */}
-                  {bookingDetails?.couponApplied && (
-                    <div className="flex justify-between text-green-600">
-                      <span>
-                        Code promo ({bookingDetails.couponApplied.code})
-                      </span>
-                      <span>
-                        -{bookingDetails.couponApplied.discount.toFixed(2)}€
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Total */}
-                  <div className="pt-3 mt-3 border-t border-gray-200">
-                    <div className="flex justify-between font-semibold">
-                      <span>Total</span>
-                      <span>{bookingDetails?.price?.toFixed(2)}€</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Notes */}
-            {bookingDetails?.notice && (
+          {/* Guest Details */}
+          <div className="p-6 rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] bg-white">
+            <h2 className="mb-4 text-lg font-semibold">
+              Informations du client
+            </h2>
+            <div className="space-y-3">
               <div>
-                <h2 className="mb-4 text-xl font-semibold">
-                  Notes supplémentaires
-                </h2>
-                <div className="p-6 rounded-lg bg-gray-50">
-                  <p>{bookingDetails.notice}</p>
+                <p className="text-sm text-gray-500">Nom complet</p>
+                <p className="font-medium">
+                  {bookingDetails?.firstName} {bookingDetails?.lastName}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{bookingDetails?.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Téléphone</p>
+                <p className="font-medium">{bookingDetails?.phone || "-"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Price Details */}
+          <div className="p-6 rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] bg-white">
+            <h2 className="mb-4 text-lg font-semibold">Détails du prix</h2>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Prix de base</span>
+                <span className="font-medium">
+                  {bookingDetails?.priceBreakdown?.basePrice?.toFixed(2)}€
+                </span>
+              </div>
+
+              {bookingDetails?.extras?.map((extra, index) => (
+                <div key={index} className="flex justify-between">
+                  <span className="text-gray-500">
+                    {extra.name} (x{extra.quantity})
+                  </span>
+                  <span className="font-medium">
+                    {extra.amount?.toFixed(2)}€
+                  </span>
+                </div>
+              ))}
+
+              {bookingDetails?.priceDetails?.discount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>
+                    Réduction long séjour (
+                    {
+                      bookingDetails.priceDetails.settings.lengthOfStayDiscount
+                        .discountPercentage
+                    }
+                    %)
+                  </span>
+                  <span>
+                    -{bookingDetails.priceDetails.discount.toFixed(2)}€
+                  </span>
+                </div>
+              )}
+
+              {bookingDetails?.couponApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span>Code promo ({bookingDetails.couponApplied.code})</span>
+                  <span>
+                    -{bookingDetails.couponApplied.discount.toFixed(2)}€
+                  </span>
+                </div>
+              )}
+
+              <div className="pt-3 mt-3 border-t border-gray-200">
+                <div className="flex justify-between font-semibold">
+                  <span>Total</span>
+                  <span>{bookingDetails?.price?.toFixed(2)}€</span>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="p-6 rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] bg-white">
+            <h2 className="mb-4 text-lg font-semibold">Adresse</h2>
+            <p className="space-y-1">
+              <span className="block">{bookingDetails?.street}</span>
+              <span className="block">
+                {bookingDetails?.postalCode} {bookingDetails?.location}
+              </span>
+              <span className="block">{bookingDetails?.country}</span>
+            </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="p-8 border-t border-gray-200">
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={() => (window.location.href = "/")}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73]"
-            >
-              Retour à l'accueil
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#668E73]"
-            >
-              Imprimer la confirmation
-            </button>
-          </div>
+        <div className="flex justify-center gap-4 mt-8">
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="px-6 py-2 rounded-lg bg-[#668E73] text-white hover:bg-opacity-90 transition-all"
+          >
+            Retour à l'accueil
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="px-6 py-2 transition-all border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Imprimer
+          </button>
         </div>
       </div>
     </div>
