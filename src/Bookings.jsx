@@ -1192,7 +1192,7 @@ const renderPaymentForm = () => (
                       className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                     >
                       <span className="flex items-center">
-                        <span className="ml-3 block truncate">{formData.children || "Enfants"}</span>
+                        <span className="ml-3 block truncate">{formData.children || "0"}</span>
                       </span>
                       <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                         <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
