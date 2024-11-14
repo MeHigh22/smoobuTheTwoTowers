@@ -964,7 +964,7 @@ const renderPaymentForm = () => (
 );
 
   return (
-    <div className="p-6 mx-auto w-full lg:w-[1024px] xl:w-[1440px]">
+    <div className="p-6 mx-auto h-[100vh] w-full lg:w-[1024px] xl:w-[1440px]">
       <h1 className="mb-4 text-2xl font-bold">
         Réserver le Dôme des Libellules
       </h1>
@@ -1045,7 +1045,7 @@ const renderPaymentForm = () => (
                     }}
                   >
                     {[...Array(10)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
+                      <option key={i + 1} value={i + 1} >
                         {i + 1}
                       </option>
                     ))}
