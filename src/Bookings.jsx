@@ -64,49 +64,10 @@ const BookingForm = () => {
   const [clientSecret, setClientSecret] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("packs");
   const [selectedExtras, setSelectedExtras] = useState({});
-  const [showExtras, setShowExtras] = useState(false);
-  const [showContact, setShowContact] = useState(true);
-  const [showInfoSup, setShowInfoSup] = useState(false);
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
 
-
-  // Toggle contact section and close others if open
-  const toggleContact = () => {
-    setShowContact((prev) => {
-      const isOpening = !prev;
-      if (isOpening) {
-        setShowExtras(false);
-        setShowInfoSup(false);
-      }
-      return isOpening;
-    });
-  };
-
-  // Toggle extras section and close others if open
-  const toggleExtras = () => {
-    setShowExtras((prev) => {
-      const isOpening = !prev;
-      if (isOpening) {
-        setShowContact(false);
-        setShowInfoSup(false);
-      }
-      return isOpening;
-    });
-  };
-
-  // Toggle infoSup section and close others if open
-  const toggleInfoSup = () => {
-    setShowInfoSup((prev) => {
-      const isOpening = !prev;
-      if (isOpening) {
-        setShowContact(false);
-        setShowExtras(false);
-      }
-      return isOpening;
-    });
-  };
 
   const VALID_COUPONS = {
     TESTDISCOUNT: {
@@ -962,7 +923,7 @@ const renderPaymentForm = () => (
 );
 
   return (
-    <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px] flex items-center justify-center">
+    <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px] ">
       {error && <p className="mb-4 text-red-500">{error}</p>}
       {successMessage && (
         <p className="mb-4 text-green-500">{successMessage}</p>
@@ -1089,7 +1050,7 @@ const renderPaymentForm = () => (
           {/* Main Content Section */}
           <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
             {/* Left Column - Property Details */}
-            <div className="w-full p-4 text-left border rounded md:w-1/3">
+            <div className="w-full p-4 text-left border border-[#668E73] rounded md:w-1/3">
               <img
                 src="https://images.unsplash.com/photo-1720293315632-37efe958d5ec?q=80&w=3432&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 alt="Property"
