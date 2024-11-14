@@ -12,6 +12,11 @@ import {
 import Calendar from "./assets/icons8-calendar-50.png";
 import Group from "./assets/icons8-group-48.png";
 
+
+import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
+
+
 // Initialize Stripe
 const stripePromise = loadStripe(
   "pk_test_51QHmafIhkftuEy3nUnQeADHtSgrHJDHFtkQDfKK7dtkN8XwYw4qImtQTAgGiV0o9TR2m2DZfHhc4VmugNUw0pEuF009YsiV98I"
@@ -51,6 +56,45 @@ const BookingForm = () => {
     country: "",
   });
 
+  const timeSlots = [
+    { id: 1, hour: '17:00' },
+    { id: 2, hour: '17:30' },
+    { id: 3, hour: '18:00' },
+    { id: 4, hour: '18:30' },
+    { id: 5, hour: '19:00' },
+    { id: 6, hour: '19:30' },
+    { id: 7, hour: '20:00' },
+    { id: 8, hour: '20:30' },
+    { id: 9, hour: '21:00' }
+  ];
+
+  const adultes = [
+    { id: 1, quantity: '1' },
+    { id: 2, quantity: '2' },
+    { id: 3, quantity: '3' },
+    { id: 4, quantity: '4' },
+    { id: 5, quantity: '5' },
+    { id: 6, quantity: '6' },
+    { id: 7, quantity: '7' },
+    { id: 8, quantity: '8' },
+    { id: 9, quantity: '9' },
+    { id: 10, quantity: '10' }
+  ];
+
+  const childrenOptions = [
+    { id: 1, quantity: '0' },
+    { id: 2, quantity: '1' },
+    { id: 3, quantity: '2' },
+    { id: 4, quantity: '3' },
+    { id: 5, quantity: '4' },
+    { id: 6, quantity: '5' },
+    { id: 7, quantity: '6' },
+    { id: 8, quantity: '7' },
+    { id: 9, quantity: '8' },
+    { id: 10, quantity: '9' },
+    { id: 11, quantity: '10' },
+  ];
+
 
   const [currentStep, setCurrentStep] = useState(1); // Step state
   const [error, setError] = useState(null);
@@ -67,6 +111,9 @@ const BookingForm = () => {
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
+
+
+
 
 
   const VALID_COUPONS = {
@@ -656,7 +703,7 @@ const renderPriceDetails = () => {
                 </div>
 
                 {/* Check-in */}
-                <div>
+                {/* <div>
                   <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                     Check-in*
                     <select
@@ -688,7 +735,54 @@ const renderPriceDetails = () => {
                       <option value="23:00">23:00</option>
                     </select>
                   </label>
+                </div> */}
+
+                <div>
+                  <label
+                    htmlFor="arrivalTime"
+                    className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                  >
+                    Check-in*
+                  </label>
+                  <Listbox
+                    value={formData.arrivalTime}
+                    onChange={(value) => handleChange({ target: { name: "arrivalTime", value: value.hour } })}
+                  >
+                    <div className="relative">
+                      <Listbox.Button
+                        id="arrivalTime"  // Add an id to the Listbox button to associate it with the label
+                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                      >
+                        <span className="flex items-center">
+                          <span className="ml-3 block truncate">{formData.arrivalTime || "Heure d'arrivée"}</span>
+                        </span>
+                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                          <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                        </span>
+                      </Listbox.Button>
+
+                      <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                        {timeSlots.map((timeSlot) => (
+                          <Listbox.Option
+                            key={timeSlot.id}
+                            value={timeSlot}
+                            className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                          >
+                            <div className="flex items-center">
+                              <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                                {timeSlot.hour}
+                              </span>
+                            </div>
+                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                              <CheckIcon aria-hidden="true" className="size-5" />
+                            </span>
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
                 </div>
+
 
               </div>
         </div>
@@ -959,6 +1053,7 @@ const renderPaymentForm = () => (
                 </label>
               </div>
 
+
               {/* Departure Date */}
               <div className="relative">
                 <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -983,8 +1078,9 @@ const renderPaymentForm = () => (
                 </label>
               </div>
 
+
               {/* Adults Dropdown */}
-              <div>
+              {/* <div>
                 <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                   Adultes
                   <select
@@ -1007,10 +1103,56 @@ const renderPaymentForm = () => (
                     ))}
                   </select>
                 </label>
-              </div>
+              </div> */}
+
+              <div>
+                  <label
+                    htmlFor="adults"
+                    className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                  >
+                    Adultes
+                  </label>
+                  <Listbox
+                    value={formData.adults}
+                    onChange={(value) => handleChange({ target: { name: "adults", value: value.quantity } })}
+                  >
+                    <div className="relative">
+                      <Listbox.Button
+                        id="adults"  // Add an id to the Listbox button to associate it with the label
+                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                      >
+                        <span className="flex items-center">
+                          <span className="ml-3 block truncate">{formData.adults || "Adultes"}</span>
+                        </span>
+                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                          <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                        </span>
+                      </Listbox.Button>
+
+                      <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                        {adultes.map((adulte) => (
+                          <Listbox.Option
+                            key={adulte.id}
+                            value={adulte}
+                            className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                          >
+                            <div className="flex items-center">
+                              <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                                {adulte.quantity}
+                              </span>
+                            </div>
+                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                              <CheckIcon aria-hidden="true" className="size-5" />
+                            </span>
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
+                </div>
 
               {/* Children Dropdown */}
-              <div>
+              {/* <div>
                 <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                   Enfants
                   <select
@@ -1032,7 +1174,54 @@ const renderPaymentForm = () => (
                     ))}
                   </select>
                 </label>
+              </div> */}
+
+              <div>
+                <label
+                  htmlFor="childrenDropdown"  // Unique id for the Listbox
+                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                >
+                  Enfants
+                </label>
+                <Listbox
+                  value={formData.children}
+                  onChange={(value) => handleChange({ target: { name: "children", value: value.quantity } })}
+                >
+                  <div className="relative">
+                    <Listbox.Button
+                      id="childrenDropdown"  // Ensure unique id here
+                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    >
+                      <span className="flex items-center">
+                        <span className="ml-3 block truncate">{formData.children || "Enfants"}</span>
+                      </span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                        <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                      </span>
+                    </Listbox.Button>
+
+                    <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      {childrenOptions.map((child) => (
+                        <Listbox.Option
+                          key={child.id}  // Ensure unique key for each option
+                          value={child}
+                          className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                        >
+                          <div className="flex items-center">
+                            <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                              {child.quantity}
+                            </span>
+                          </div>
+                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                            <CheckIcon aria-hidden="true" className="size-5" />
+                          </span>
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
               </div>
+
 
               {/* Check Availability Button */}
               <div className="block align-baseline">
