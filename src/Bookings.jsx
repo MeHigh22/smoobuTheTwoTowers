@@ -4,6 +4,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import PaymentForm from "./components/PaymentForm";
 import StripeWrapper from "./components/StripeWrapper";
+import { fetchAvailability } from "./smoobuService";
 import {
   extraCategories,
   calculateExtrasTotal,
@@ -11,6 +12,12 @@ import {
 
 import Calendar from "./assets/icons8-calendar-50.png";
 import Group from "./assets/icons8-group-48.png";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { registerLocale, setDefaultLocale } from "react-datepicker";
+import fr from 'date-fns/locale/fr';
+
+registerLocale('fr', fr);
 
 
 import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
@@ -114,10 +121,93 @@ const BookingForm = () => {
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
+  const [availableDates, setAvailableDates] = useState({});
+
+  const [startDate, setStartDate] = useState(null);
+const [endDate, setEndDate] = useState(null);
+const [dateError, setDateError] = useState('');
+
+useEffect(() => {
+  const fetchDates = async () => {
+    const startDate = new Date().toISOString().split('T')[0];
+    const endDate = new Date(new Date().setMonth(new Date().getMonth() + 12))
+      .toISOString().split('T')[0];
+    
+    try {
+      const response = await api.get("/rates", {
+        params: {
+          apartments: [formData.apartmentId],
+          start_date: startDate,
+          end_date: endDate,
+        },
+      });
+      
+      if (response.data.data && response.data.data[formData.apartmentId]) {
+        setAvailableDates(response.data.data[formData.apartmentId]);
+      }
+    } catch (error) {
+      console.error('Error fetching dates:', error);
+    }
+  };
+
+  fetchDates();
+}, [formData.apartmentId]);
+
+const isDateUnavailable = (date) => {
+  if (!date) return true;
+  const dateStr = date.toISOString().split('T')[0];
+  const dayData = availableDates[dateStr];
+  
+  // If we have a start date selected, check the entire range for availability
+  if (startDate && date > startDate) {
+    const currentDate = new Date(startDate);
+    while (currentDate <= date) {
+      const checkDateStr = currentDate.toISOString().split('T')[0];
+      const checkDayData = availableDates[checkDateStr];
+      if (!checkDayData || checkDayData.available === 0) {
+        return true;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+  
+  return dayData?.available === 0;
+};
 
 
+const handleDateSelect = (dates, isStart) => {
+  const selectedDate = dates;
+  if (isDateUnavailable(selectedDate)) {
+    setDateError(`La date du ${selectedDate.toLocaleDateString('fr-FR')} n'est pas disponible`);
+    return;
+  }
+  
+  setDateError('');
+  if (isStart) {
+    setStartDate(selectedDate);
+    setEndDate(null); // Reset end date when start date changes
+    handleChange({
+      target: {
+        name: 'arrivalDate',
+        value: selectedDate.toISOString().split('T')[0]
+      }
+    });
+  } else {
+    setEndDate(selectedDate);
+    handleChange({
+      target: {
+        name: 'departureDate',
+        value: selectedDate.toISOString().split('T')[0]
+      }
+    });
+  }
+};
 
-
+{dateError && (
+  <div className="text-red-500 text-sm font-medium mt-2">
+    {dateError}
+  </div>
+)}
 
   const VALID_COUPONS = {
     TESTDISCOUNT: {
@@ -1119,43 +1209,63 @@ const renderPaymentForm = () => (
             <div className="grid grid-cols-1 gap-4 text-left md:grid-cols-4 lg:grid-cols-5">
               {/* Arrival Date */}
               <div className="relative">
-                <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                  Arrivé
-                  <div className="relative">
-                    <input
-                      type="date"
-                      name="arrivalDate"
-                      value={formData.arrivalDate}
-                      onChange={handleChange}
-                      ref={arrivalDateRef}
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      required
-                    />
-                    
-                  </div>
+                <label
+                  htmlFor="arrivalDate"
+                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                >
+                  Arrivée
                 </label>
+                <DatePicker
+                  id="arrivalDate"
+                  selected={startDate}
+                  onChange={(date) => handleDateSelect(date, true)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={new Date()}
+                  locale="fr"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Sélectionnez une date"
+                  className="block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  dayClassName={(date) =>
+                    isDateUnavailable(date) ? "text-gray-300 bg-gray-100" : undefined
+                  }
+                  filterDate={(date) => !isDateUnavailable(date)}
+                />
               </div>
 
-
-              {/* Departure Date */}
               <div className="relative">
-                <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                <label
+                  htmlFor="departureDate"
+                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                >
                   Départ
-                  <div className="relative">
-                    <input
-                      type="date"
-                      name="departureDate"
-                      value={formData.departureDate}
-                      onChange={handleChange}
-                      ref={departureDateRef}
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      required
-                    />
-
-                  </div>
                 </label>
+                <DatePicker
+                  id="departureDate"
+                  selected={endDate}
+                  onChange={(date) => handleDateSelect(date, false)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate || new Date()}
+                  locale="fr"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Sélectionnez une date"
+                  className="block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  dayClassName={(date) =>
+                    isDateUnavailable(date) ? "text-gray-300 bg-gray-100" : undefined
+                  }
+                  filterDate={(date) => !isDateUnavailable(date)}
+                />
               </div>
 
+
+          {dateError && (
+            <div className="text-red-500 text-sm font-medium mt-2">
+              {dateError}
+            </div>
+          )}
 
               {/* Adults Dropdown */}
               {/* <div>
@@ -1313,6 +1423,12 @@ const renderPaymentForm = () => (
               </div>
             </div>
           </div>
+
+          {dateError && (
+ <div className="text-red-500 text-sm font-medium mt-2">
+   {dateError}
+ </div>
+)}
 
           {/* Main Content Section */}
           <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
