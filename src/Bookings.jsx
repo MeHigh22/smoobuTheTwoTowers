@@ -1042,12 +1042,7 @@ const renderPaymentForm = () => (
                       className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 pr-10"
                       required
                     />
-                    <img
-                      src={Calendar}
-                      alt="Calendar Icon"
-                      className="absolute w-6 h-6 transform -translate-y-1/2 cursor-pointer right-3 top-1/2"
-                      onClick={openArrivalDatePicker}
-                    />
+                    
                   </div>
                 </label>
               </div>
@@ -1067,12 +1062,7 @@ const renderPaymentForm = () => (
                       className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 pr-10"
                       required
                     />
-                    <img
-                      src={Calendar}
-                      alt="Calendar Icon"
-                      className="absolute w-6 h-6 transform -translate-y-1/2 cursor-pointer right-3 top-1/2"
-                      onClick={openDepartureDatePicker}
-                    />
+
                   </div>
                 </label>
               </div>

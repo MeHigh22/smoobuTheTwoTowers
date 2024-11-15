@@ -8,6 +8,12 @@
   justify-content: center;
 }
 
+.icon-container img.icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Background styling for test div */
 .sky-background {
   background-color: #0ea5e9; /* Tailwind's bg-sky-500 */
@@ -24,6 +30,22 @@
   border-radius: 1rem;
 }
 
+.discount-text {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.total-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.total-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
 /* Flex container for header */
 .header {
   display: flex;
@@ -37,8 +59,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 9rem;
+  height: 9rem;
   background-color: #d1fae5; /* Tailwind's bg-green-100 */
   border-radius: 9999px;
 }
