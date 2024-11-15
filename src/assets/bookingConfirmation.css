@@ -30,6 +30,22 @@
   border-radius: 1rem;
 }
 
+.discount-text {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.total-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.total-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
 /* Flex container for header */
 .header {
   display: flex;

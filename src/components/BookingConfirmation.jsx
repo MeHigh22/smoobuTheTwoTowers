@@ -117,14 +117,20 @@ const BookingConfirmation = () => {
               </p>
             ))}
             {bookingDetails?.priceDetails?.discount > 0 && (
-              <p>Réduction long séjour ({bookingDetails.priceDetails.settings.lengthOfStayDiscount.discountPercentage}%): 
-                 -{bookingDetails.priceDetails.discount.toFixed(2)}€</p>
+              <p className="discount-text">
+                Réduction long séjour ({bookingDetails.priceDetails.settings.lengthOfStayDiscount.discountPercentage}%): 
+                -{bookingDetails.priceDetails.discount.toFixed(2)}€
+              </p>
             )}
             {bookingDetails?.couponApplied && (
-              <p>Code promo ({bookingDetails.couponApplied.code}): 
-                 -{bookingDetails.couponApplied.discount.toFixed(2)}€</p>
+              <p className="discount-text">
+                Code promo ({bookingDetails.couponApplied.code}): 
+                -{bookingDetails.couponApplied.discount.toFixed(2)}€
+              </p>
             )}
-            <p>Total: {bookingDetails?.price?.toFixed(2)}€</p>
+            <div className="total-section">
+              <p className="total-text">Total: {bookingDetails?.price?.toFixed(2)}€</p>
+            </div>
           </div>
 
           {/* Address */}
