@@ -64,20 +64,8 @@ const StaticBookingConfirmation = () => {
       <div className="card">
         {/* Success Header */}
         <div className="header">
-          <div className="icon-container">
-            <svg
-              className="icon"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+        <div className="icon-container">
+            <img src={logoBaseilles} alt="Logo Baseilles" className="icon" />
           </div>
           <div>
             <h1 className="title">Réservation Confirmée</h1>

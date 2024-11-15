@@ -8,6 +8,12 @@
   justify-content: center;
 }
 
+.icon-container img.icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Background styling for test div */
 .sky-background {
   background-color: #0ea5e9; /* Tailwind's bg-sky-500 */
@@ -37,8 +43,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 9rem;
+  height: 9rem;
   background-color: #d1fae5; /* Tailwind's bg-green-100 */
   border-radius: 9999px;
 }
