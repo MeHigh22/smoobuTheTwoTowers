@@ -130,6 +130,7 @@ const BookingConfirmation = () => {
             )}
             <div className="total-section">
               <p className="total-text">Total: {bookingDetails?.price?.toFixed(2)}€</p>
+              <p>Conditions générales: Acceptée</p>
             </div>
           </div>
 

@@ -54,6 +54,7 @@ const BookingForm = () => {
     postalCode: "",
     location: "",
     country: "",
+    conditions: false,
   });
 
   const timeSlots = [
@@ -65,7 +66,9 @@ const BookingForm = () => {
     { id: 6, hour: '19:30' },
     { id: 7, hour: '20:00' },
     { id: 8, hour: '20:30' },
-    { id: 9, hour: '21:00' }
+    { id: 9, hour: '21:00' },
+    { id: 10, hour: '21:30' },
+    { id: 11, hour: '22:00' }
   ];
 
   const adultes = [
@@ -783,9 +786,47 @@ const handlePaymentSuccess = () => {
                 </div>
 
 
-              </div>
         </div>
-    </div>
+        <div className="grid grid-cols-1">
+          {/* Contact form fields */}
+          <div>
+          <label className="flex items-center text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+            <input
+              type="checkbox"
+              name="conditions"
+              checked={formData.conditions || false}
+              onChange={(e) =>
+                setFormData((prevData) => ({
+                  ...prevData,
+                  conditions: e.target.checked,
+                }))
+              }
+              className="mr-2 rounded border-[#668E73] text-[#668E73] focus:ring-[#668E73]"
+              required
+            />
+            <span>
+              J'accepte les{" "}
+              <a
+                href="https://fermedebasseilles.be/conditions-generales/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#668E73] underline hover:text-[#445E54]"
+              >
+                conditions générales
+              </a>
+              .
+            </span>
+          </label>
+          {!formData.conditions && (
+            <p className="mt-1 text-sm text-red-500">
+              Vous devez accepter les conditions générales pour continuer.
+            </p>
+          )}
+        </div>
+      </div>
+        </div>
+
+      </div>
   );
 
   const renderExtrasSection = () => (
@@ -807,108 +848,155 @@ const handlePaymentSuccess = () => {
               </button>
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-2">
-            {extraCategories[selectedCategory].items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="object-cover w-24 h-24 rounded-lg"
-                />
-                <div className="flex-grow space-y-2">
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-[15px] font-medium text-gray-900">
-                      {item.name}
-                    </h3>
-                    <div className="bg-[#668E73] px-2 py-1 rounded text-white text-[13px] font-medium">
-                      {item.price}€
-                    </div>
-                  </div>
-                  <p className="text-[13px] text-gray-600 line-clamp-2">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newQuantity = (selectedExtras[item.id] || 0) - 1;
-                        handleExtraChange(item.id, newQuantity);
-                        // Si on supprime l'extra complètement, supprimer aussi les personnes supplémentaires
-                        if (newQuantity === 0) {
-                          handleExtraChange(`${item.id}-extra`, 0);
-                        }
-                      }}
-                      disabled={(selectedExtras[item.id] || 0) === 0}
-                      className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 font-medium text-center text-gray-900">
-                      {selectedExtras[item.id] || 0}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleExtraChange(
-                          item.id,
-                          (selectedExtras[item.id] || 0) + 1
-                        )
-                      }
-                      className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
+          <div
+            className={`grid grid-cols-1 gap-6 md:grid-cols-1 ${
+              selectedCategory === "boissons" ? "lg:grid-cols-1" : "lg:grid-cols-2"
+            }`}
+          >
+            {selectedCategory === "boissons" ? (
+              (() => {
+                const groupedBoissons = extraCategories.boissons.items.reduce(
+                  (groups, item) => {
+                    if (!groups[item.type]) {
+                      groups[item.type] = [];
+                    }
+                    groups[item.type].push(item);
+                    return groups;
+                  },
+                  {}
+                );
 
-                  {/* Extra person selector - only show if item has extraPersonPrice AND base item is selected */}
-                  {item.extraPersonPrice &&
-                    (selectedExtras[item.id] || 0) > 0 && (
-                      <div className="mt-2">
-                        <p className="text-[14px] text-gray-600 mb-1">
-                          Personne supplémentaire (+{item.extraPersonPrice}
-                          €/pers)
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleExtraChange(
-                                `${item.id}-extra`,
-                                (selectedExtras[`${item.id}-extra`] || 0) - 1
-                              )
-                            }
-                            disabled={
-                              (selectedExtras[`${item.id}-extra`] || 0) === 0
-                            }
-                            className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 font-medium text-center text-gray-900">
-                            {selectedExtras[`${item.id}-extra`] || 0}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleExtraChange(
-                                `${item.id}-extra`,
-                                (selectedExtras[`${item.id}-extra`] || 0) + 1
-                              )
-                            }
-                            className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
-                          >
-                            +
-                          </button>
+                return Object.entries(groupedBoissons).map(([type, items]) => (
+                  <div key={type} className="mb-8">
+                    {/* Display the subtitle for each type */}
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4 capitalize">
+                      {type === "wine"
+                        ? "Vins"
+                        : type === "beer"
+                        ? "Bières"
+                        : type === "soft"
+                        ? "Boissons non alcoolisées"
+                        : type === "bulles"
+                        ? "Bulles"
+                        : type}
+                    </h2>
+
+                    {/* Display items of this type */}
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md mb-4"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="object-cover w-24 h-24 rounded-lg"
+                        />
+                        <div className="flex-grow space-y-2">
+                          <div className="flex items-start justify-between">
+                            <h3 className="text-[15px] font-medium text-gray-900">
+                              {item.name}
+                            </h3>
+                            <div className="bg-[#668E73] px-2 py-1 rounded text-white text-[13px] font-medium">
+                              {item.price}€
+                            </div>
+                          </div>
+                          <p className="text-[13px] text-gray-600 line-clamp-2">
+                            {item.description}
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newQuantity =
+                                  (selectedExtras[item.id] || 0) - 1;
+                                handleExtraChange(item.id, newQuantity);
+                              }}
+                              disabled={(selectedExtras[item.id] || 0) === 0}
+                              className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                            >
+                              -
+                            </button>
+                            <span className="w-8 font-medium text-center text-gray-900">
+                              {selectedExtras[item.id] || 0}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleExtraChange(
+                                  item.id,
+                                  (selectedExtras[item.id] || 0) + 1
+                                )
+                              }
+                              className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    )}
+                    ))}
+                  </div>
+                ));
+              })()
+            ) : (
+              extraCategories[selectedCategory].items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="object-cover w-24 h-24 rounded-lg"
+                  />
+                  <div className="flex-grow space-y-2">
+                    <div className="flex items-start justify-between">
+                      <h3 className="text-[15px] font-medium text-gray-900">
+                        {item.name}
+                      </h3>
+                      <div className="bg-[#668E73] px-2 py-1 rounded text-white text-[13px] font-medium">
+                        {item.price}€
+                      </div>
+                    </div>
+                    <p className="text-[13px] text-gray-600 line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newQuantity =
+                            (selectedExtras[item.id] || 0) - 1;
+                          handleExtraChange(item.id, newQuantity);
+                        }}
+                        disabled={(selectedExtras[item.id] || 0) === 0}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 font-medium text-center text-gray-900">
+                        {selectedExtras[item.id] || 0}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleExtraChange(
+                            item.id,
+                            (selectedExtras[item.id] || 0) + 1
+                          )
+                        }
+                        className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
+
         </div>
     </div>
   );
@@ -970,29 +1058,30 @@ const handlePaymentSuccess = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return renderContactSection();
-      case 2:
         return renderExtrasSection();
-      case 3:
+      case 2:
         return renderInfoSupSection();
+      case 3:
+        return renderContactSection();
       default:
         return null;
     }
   };
 
   const isStepValid = () => {
-    if (currentStep === 1) {
+    if (currentStep === 3) {
       return (
         formData.firstName &&
         formData.lastName &&
         formData.email &&
-        formData.arrivalTime
+        formData.arrivalTime &&
+        formData.conditions
       );
     }
     if (currentStep === 2) {
       return true; // Adjust based on requirements for step 2
     }
-    if (currentStep === 3) {
+    if (currentStep === 1) {
       return true; // Adjust based on requirements for step 3
     }
     return false;
@@ -1039,7 +1128,7 @@ const renderPaymentForm = () => (
                       value={formData.arrivalDate}
                       onChange={handleChange}
                       ref={arrivalDateRef}
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 pr-10"
+                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                       required
                     />
                     
@@ -1059,7 +1148,7 @@ const renderPaymentForm = () => (
                       value={formData.departureDate}
                       onChange={handleChange}
                       ref={departureDateRef}
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2 pr-10"
+                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                       required
                     />
 
@@ -1272,13 +1361,13 @@ const renderPaymentForm = () => (
 
 
                   {currentStep == 1 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Contact </h2>
-                  )}
-                  {currentStep == 2 && (
                     <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Extras </h2>
                   )}
-                  {currentStep == 3 && (
+                  {currentStep == 2 && (
                     <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Notes </h2>
+                  )}
+                  {currentStep == 3 && (
+                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Contact </h2>
                   )}
 
               {/* Render progress bar */}
@@ -1302,10 +1391,7 @@ const renderPaymentForm = () => (
                     <button
                       type="button"
                       onClick={nextStep}
-                      disabled={!isStepValid()}
-                      className={`px-4 py-2 ${
-                        isStepValid() ? "bg-[#668E73] hover:bg-opacity-90" : "bg-gray-300 cursor-not-allowed"
-                      } text-white rounded`}
+                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
                     >
                       Suivant
                     </button>
@@ -1313,7 +1399,10 @@ const renderPaymentForm = () => (
                   {currentStep === 3 && (
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                      disabled={!isStepValid()}
+                      className={`px-4 py-2 ${
+                        isStepValid() ? "bg-[#668E73] hover:bg-opacity-90" : "bg-gray-300 cursor-not-allowed"
+                      } text-white rounded`}
                     >
                       {loading ? "En cours..." : "Passer au paiement"}
                     </button>

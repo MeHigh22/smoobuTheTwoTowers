@@ -95,6 +95,29 @@ export const extraCategories = {
       },
     ],
   },
+  spa: {
+    name: "Spa",
+    items: [
+      {
+        id: "formuleSpa",
+        name: "Formule SPA (2pers)",
+        description: "Profitez d'un moment de détente au spa.",
+        price: 50,
+        extraPersonPrice: 10, // Added extra person price
+        image: formulespa,
+        type: "formula",
+      },
+      {
+        id: "formuleSpaBottle",
+        name: "Formule SPA + bouteille (2pers)",
+        description: "Spa et bouteille de vin pour une expérience complète.",
+        price: 90,
+        // No extraPersonPrice for this formula
+        image: spabouteille,
+        type: "formula",
+      },
+    ],
+  },
   meals: {
     name: "Les repas de Bossimé",
     items: [
@@ -189,24 +212,6 @@ export const extraCategories = {
     name: "Les formules découverte",
     items: [
       {
-        id: "formuleSpa",
-        name: "Formule SPA (2pers)",
-        description: "Profitez d'un moment de détente au spa.",
-        price: 50,
-        extraPersonPrice: 10, // Added extra person price
-        image: formulespa,
-        type: "formula",
-      },
-      {
-        id: "formuleSpaBottle",
-        name: "Formule SPA + bouteille (2pers)",
-        description: "Spa et bouteille de vin pour une expérience complète.",
-        price: 90,
-        // No extraPersonPrice for this formula
-        image: spabouteille,
-        type: "formula",
-      },
-      {
         id: "formulePassion",
         name: "Formule passion",
         description: "Une formule romantique pour les couples.",
@@ -236,7 +241,7 @@ export const extraCategories = {
         description: "Un vin effervescent local de qualité exceptionnelle.",
         price: 50,
         image: brutBioul,
-        type: "wine",
+        type: "bulles",
       },
       {
         id: "cortilBarco",
