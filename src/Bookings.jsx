@@ -1081,6 +1081,48 @@ const handlePaymentSuccess = () => {
                         +
                       </button>
                     </div>
+                                      {/* Extra person selector - only show if item has extraPersonPrice AND base item is selected */}
+                  {item.extraPersonPrice &&
+                    (selectedExtras[item.id] || 0) > 0 && (
+                      <div className="mt-2">
+                        <p className="text-[14px] text-gray-600 mb-1">
+                          Personne supplémentaire (+{item.extraPersonPrice}
+                          €/pers)
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleExtraChange(
+                                `${item.id}-extra`,
+                                (selectedExtras[`${item.id}-extra`] || 0) - 1
+                              )
+                            }
+                            disabled={
+                              (selectedExtras[`${item.id}-extra`] || 0) === 0
+                            }
+                            className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 font-medium text-center text-gray-900">
+                            {selectedExtras[`${item.id}-extra`] || 0}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleExtraChange(
+                                `${item.id}-extra`,
+                                (selectedExtras[`${item.id}-extra`] || 0) + 1
+                              )
+                            }
+                            className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
