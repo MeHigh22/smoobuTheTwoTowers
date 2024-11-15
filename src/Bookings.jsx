@@ -416,38 +416,38 @@ const handlePaymentSuccess = () => {
   //  };
 
   const handleApplyCoupon = () => {
-     setCouponError(null);
+      setCouponError(null);
 
-     if (!coupon) {
-       setCouponError("Veuillez entrer un code promo");
-       return;
-     }
+      if (!coupon) {
+        setCouponError("Veuillez entrer un code promo");
+        return;
+      }
 
-     const couponInfo = VALID_COUPONS[coupon.toUpperCase()];
+      const couponInfo = VALID_COUPONS[coupon.toUpperCase()];
 
-     if (!couponInfo) {
-       setCouponError("Code promo invalide");
-       return;
-     }
+      if (!couponInfo) {
+        setCouponError("Code promo invalide");
+        return;
+      }
 
-     setAppliedCoupon({
-       code: coupon.toUpperCase(),
-       ...couponInfo,
-     });
+      setAppliedCoupon({
+        code: coupon.toUpperCase(),
+        ...couponInfo,
+      });
 
-     // Update price details to include coupon
-     setPriceDetails((prev) => ({
-       ...prev,
-       priceElements: [
-         ...(prev?.priceElements || []),
-         {
-           type: "coupon",
-           name: `Code promo ${coupon.toUpperCase()}`,
-           amount: -couponInfo.discount,
-           currencyCode: couponInfo.currency,
-         },
-       ],
-     }));
+      // Update price details to include coupon
+      setPriceDetails((prev) => ({
+        ...prev,
+        priceElements: [
+          ...(prev?.priceElements || []),
+          {
+            type: "coupon",
+            name: `Code promo ${coupon.toUpperCase()}`,
+            amount: -couponInfo.discount,
+            currencyCode: couponInfo.currency,
+          },
+        ],
+      }));
 
      setCoupon(""); // Clear input
   };
