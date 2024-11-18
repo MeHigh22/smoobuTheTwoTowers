@@ -20,6 +20,7 @@ import fr from 'date-fns/locale/fr';
 registerLocale('fr', fr);
 
 
+
 import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 
@@ -160,31 +161,35 @@ const isDateUnavailable = (date, isStart) => {
 
   // For arrival date selection
   if (isStart) {
-    // Allow booking today
+    // Block today
     if (date.getTime() === today.getTime()) {
-      return false;
+      return true;
     }
 
-    // If date is normally available
+    // For normal available dates
     if (dayData && dayData.available === 1) {
-      // Check if next day is available to prevent booking right before unavailable period
+      // Look ahead one day to prevent booking right before unavailable period
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
       const nextDayStr = nextDay.toISOString().split("T")[0];
       const nextDayData = availableDates[nextDayStr];
 
-      // Only allow if next day is also available
-      return !nextDayData || nextDayData.available === 0;
+      if (!nextDayData || nextDayData.available === 0) {
+        return true;
+      }
+      return false;
     }
 
-    // Check if this is a valid checkout date that can be used for check-in
+    // For checkout dates (like the 23rd)
     const prevDay = new Date(date);
     prevDay.setDate(prevDay.getDate() - 1);
     const prevDayStr = prevDay.toISOString().split("T")[0];
     const prevDayData = availableDates[prevDayStr];
 
-    // Allow check-in on checkout dates (like the 23rd) only if previous day was unavailable
-    if (!prevDayData || prevDayData.available === 0) {
+    if (
+      (!prevDayData || prevDayData.available === 0) &&
+      (!dayData || dayData.available === 0)
+    ) {
       return false;
     }
 
@@ -193,35 +198,38 @@ const isDateUnavailable = (date, isStart) => {
 
   // For departure date selection
   if (startDate) {
-    // If we're on a checkout date (like the 23rd), allow selecting future available dates
     const startDateStr = startDate.toISOString().split("T")[0];
     const startDayData = availableDates[startDateStr];
 
+    // Special handling for checkout dates like 23rd
     if (!startDayData || startDayData.available === 0) {
-      // When starting on a checkout date, only look at future availability
-      return !dayData || dayData.available === 0;
-    }
-
-    // For normal date ranges, check all dates up to but not including the departure date
-    let currentDate = new Date(startDate);
-    while (currentDate < date) {
-      const currDateStr = currentDate.toISOString().split("T")[0];
-      const currDayData = availableDates[currDateStr];
-
-      if (!currDayData || currDayData.available === 0) {
-        // If we hit an unavailable date, only allow selecting it if it's the departure date
-        return currentDate.getTime() !== date.getTime();
+      // When starting from checkout date, allow selecting any available future date
+      if (date > startDate) {
+        return !dayData || dayData.available === 0;
       }
-      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Allow selecting first unavailable date as departure
+    // For regular dates, find first unavailable date
+    let checkDate = new Date(startDate);
+    while (checkDate <= date) {
+      const checkDateStr = checkDate.toISOString().split("T")[0];
+      const nextDate = new Date(checkDate);
+      nextDate.setDate(nextDate.getDate() + 1);
+      const nextDateStr = nextDate.toISOString().split("T")[0];
+      const nextDayData = availableDates[nextDateStr];
+
+      // If next day is unavailable, this is the last possible departure date
+      if (!nextDayData || nextDayData.available === 0) {
+        return date.getTime() > checkDate.getTime();
+      }
+      checkDate.setDate(checkDate.getDate() + 1);
+    }
+
     return false;
   }
 
   return false;
 };
-
 
 const handleDateSelect = (date, isStart) => {
   if (!date) {
@@ -256,10 +264,13 @@ const handleDateSelect = (date, isStart) => {
   if (isStart) {
     setStartDate(date);
     setEndDate(null);
+    // Add timezone adjustment here
+    const localDate = new Date(date);
+    localDate.setMinutes(localDate.getMinutes() + localDate.getTimezoneOffset());
     handleChange({
       target: {
         name: "arrivalDate",
-        value: date.toISOString().split("T")[0],
+        value: localDate.toISOString().split("T")[0],
       },
     });
     handleChange({
@@ -270,10 +281,13 @@ const handleDateSelect = (date, isStart) => {
     });
   } else {
     setEndDate(date);
+    // Add timezone adjustment here
+    const localDate = new Date(date);
+    localDate.setMinutes(localDate.getMinutes() + localDate.getTimezoneOffset());
     handleChange({
       target: {
         name: "departureDate",
-        value: date.toISOString().split("T")[0],
+        value: localDate.toISOString().split("T")[0],
       },
     });
   }
@@ -543,47 +557,6 @@ const handlePaymentSuccess = () => {
   window.location.href = `/booking-confirmation?payment_intent=${paymentIntent}`;
 };
 
-
-
-  //  const verifyAndApplyCoupon = async (couponCode, reservationId) => {
-  //    try {
-  //      // First create a coupon price element
-  //      const response = await api.post(
-  //        `/reservations/${reservationId}/price-elements`,
-  //        {
-  //          type: "coupon",
-  //          name: `Coupon ${couponCode}`,
-  //          amount: 0, // Initial amount, will be calculated based on the response
-  //          currencyCode: "EUR",
-  //        }
-  //      );
-
-  //      // Get updated price elements to see the applied coupon
-  //      const priceElementsResponse = await api.get(
-  //        `/reservations/${reservationId}/price-elements`
-  //      );
-
-  //      // Find the coupon in the price elements
-  //      const couponElement = priceElementsResponse.data.priceElements.find(
-  //        (element) => element.type === "coupon"
-  //      );
-
-  //      if (couponElement) {
-  //        setAppliedCoupon({
-  //          id: couponElement.id,
-  //          code: couponCode,
-  //          amount: Math.abs(couponElement.amount),
-  //          type: "fixed",
-  //        });
-  //        return true;
-  //      }
-
-  //      return false;
-  //    } catch (error) {
-  //      console.error("Error applying coupon:", error);
-  //      return false;
-  //    }
-  //  };
 
   const handleApplyCoupon = () => {
      setCouponError(null);
