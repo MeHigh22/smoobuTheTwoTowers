@@ -154,42 +154,43 @@ useEffect(() => {
 const isDateUnavailable = (date, isStart) => {
   if (!date) return true;
 
-  const dateStr = date.toISOString().split("T")[0];
+  // Set the time to noon to avoid timezone issues
+  const normalizedDate = new Date(date.setHours(12, 0, 0, 0));
+  const dateStr = normalizedDate.toISOString().split('T')[0];
   const dayData = availableDates[dateStr];
+
+  console.log("Checking availability for:", {
+    dateStr,
+    normalizedDate,
+    isStart,
+    dayData,
+    available: dayData?.available
+  });
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  if (normalizedDate.getTime() === today.getTime()) return true;
 
-  // For arrival date selection
   if (isStart) {
-    // Block today
-    if (date.getTime() === today.getTime()) {
-      return true;
-    }
+    if (!dayData) return true;
 
-    // For normal available dates
-    if (dayData && dayData.available === 1) {
-      // Look ahead one day to prevent booking right before unavailable period
-      const nextDay = new Date(date);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const nextDayStr = nextDay.toISOString().split("T")[0];
-      const nextDayData = availableDates[nextDayStr];
-
-      if (!nextDayData || nextDayData.available === 0) {
-        return true;
-      }
-      return false;
-    }
-
-    // For checkout dates (like the 23rd)
-    const prevDay = new Date(date);
-    prevDay.setDate(prevDay.getDate() - 1);
-    const prevDayStr = prevDay.toISOString().split("T")[0];
+    // Check if it's a departure day
+    const prevDate = new Date(normalizedDate);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const prevDayStr = prevDate.toISOString().split('T')[0];
     const prevDayData = availableDates[prevDayStr];
 
-    if (
-      (!prevDayData || prevDayData.available === 0) &&
-      (!dayData || dayData.available === 0)
-    ) {
+    console.log("Departure day check:", {
+      currentDate: dateStr,
+      prevDate: prevDayStr,
+      currentDayData: dayData,
+      prevDayData,
+      isDepartureDay: (!prevDayData || prevDayData.available === 0) && dayData.available === 1
+    });
+
+    // If it's a departure day or normal available day
+    if (dayData.available === 1 || 
+       ((!prevDayData || prevDayData.available === 0) && dayData.available === 1)) {
       return false;
     }
 
@@ -198,29 +199,21 @@ const isDateUnavailable = (date, isStart) => {
 
   // For departure date selection
   if (startDate) {
-    const startDateStr = startDate.toISOString().split("T")[0];
-    const startDayData = availableDates[startDateStr];
-
-    // Special handling for checkout dates like 23rd
-    if (!startDayData || startDayData.available === 0) {
-      // When starting from checkout date, allow selecting any available future date
-      if (date > startDate) {
-        return !dayData || dayData.available === 0;
-      }
-    }
-
-    // For regular dates, find first unavailable date
     let checkDate = new Date(startDate);
-    while (checkDate <= date) {
-      const checkDateStr = checkDate.toISOString().split("T")[0];
-      const nextDate = new Date(checkDate);
-      nextDate.setDate(nextDate.getDate() + 1);
-      const nextDateStr = nextDate.toISOString().split("T")[0];
-      const nextDayData = availableDates[nextDateStr];
+    checkDate.setHours(12, 0, 0, 0);
 
-      // If next day is unavailable, this is the last possible departure date
-      if (!nextDayData || nextDayData.available === 0) {
-        return date.getTime() > checkDate.getTime();
+    while (checkDate < normalizedDate) {
+      const checkDateStr = checkDate.toISOString().split('T')[0];
+      const checkDayData = availableDates[checkDateStr];
+
+      console.log("Checking range date:", {
+        date: checkDateStr,
+        data: checkDayData,
+        available: checkDayData?.available
+      });
+
+      if (!checkDayData || checkDayData.available === 0) {
+        return true;
       }
       checkDate.setDate(checkDate.getDate() + 1);
     }
@@ -253,24 +246,24 @@ const handleDateSelect = (date, isStart) => {
     return;
   }
 
-  if (isDateUnavailable(date, isStart)) {
-    setDateError(
-      `La date du ${date.toLocaleDateString("fr-FR")} n'est pas disponible`
-    );
-    return;
-  }
+  // Create date at noon to avoid timezone issues
+  const selectedDate = new Date(date.setHours(12, 0, 0, 0));
 
-  setDateError("");
   if (isStart) {
-    setStartDate(date);
+    if (isDateUnavailable(selectedDate, isStart)) {
+      setDateError("Cette date n'est pas disponible pour l'arrivée");
+      return;
+    }
+    setStartDate(selectedDate);
     setEndDate(null);
-    // Add timezone adjustment here
-    const localDate = new Date(date);
-    localDate.setMinutes(localDate.getMinutes() + localDate.getTimezoneOffset());
+    setDateError("");
+    
+    // Format date as YYYY-MM-DD without timezone conversion
+    const dateStr = selectedDate.toISOString().split('T')[0];
     handleChange({
       target: {
         name: "arrivalDate",
-        value: localDate.toISOString().split("T")[0],
+        value: dateStr,
       },
     });
     handleChange({
@@ -280,14 +273,19 @@ const handleDateSelect = (date, isStart) => {
       },
     });
   } else {
-    setEndDate(date);
-    // Add timezone adjustment here
-    const localDate = new Date(date);
-    localDate.setMinutes(localDate.getMinutes() + localDate.getTimezoneOffset());
+    if (isDateUnavailable(selectedDate, isStart)) {
+      setDateError("Cette date n'est pas disponible pour le départ");
+      return;
+    }
+    setEndDate(selectedDate);
+    setDateError("");
+    
+    // Format date as YYYY-MM-DD without timezone conversion
+    const dateStr = selectedDate.toISOString().split('T')[0];
     handleChange({
       target: {
         name: "departureDate",
-        value: localDate.toISOString().split("T")[0],
+        value: dateStr,
       },
     });
   }
@@ -424,12 +422,52 @@ const createSelectedExtrasArray = () => {
     }
   };
 
-  const handleCheckAvailability = () => {
-    fetchRates(
-      formData.apartmentId,
-      formData.arrivalDate,
-      formData.departureDate
-    );
+  const handleCheckAvailability = async () => {
+    setError("");
+    setDateError("");
+  
+    if (!formData.arrivalDate || !formData.departureDate) {
+      setDateError("Veuillez sélectionner les dates d'arrivée et de départ");
+      return;
+    }
+  
+    setLoading(true);
+    try {
+      const response = await api.get("/rates", {
+        params: {
+          apartments: [formData.apartmentId],
+          start_date: formData.arrivalDate,
+          end_date: formData.departureDate,
+          adults: formData.adults,
+          children: formData.children
+        },
+      });
+  
+      if (response.data.data && response.data.data[formData.apartmentId]) {
+        // If there's a price calculated, the dates are available
+        if (response.data.priceDetails && response.data.priceDetails.finalPrice > 0) {
+          setPriceDetails(response.data.priceDetails);
+          setFormData(prev => ({
+            ...prev,
+            price: response.data.priceDetails?.finalPrice || 0
+          }));
+          setIsAvailable(true);
+          setShowPriceDetails(true);
+          setError(null);
+        } else {
+          setDateError("Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées");
+          setIsAvailable(false);
+          setShowPriceDetails(false);
+        }
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setIsAvailable(false);
+      setShowPriceDetails(false);
+      setError("Impossible de récupérer les tarifs");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -1176,19 +1214,19 @@ const renderPaymentForm = () => (
                 <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                   Arrivée
                   <DatePicker
-                    selected={startDate}
-                    onChange={(date) => handleDateSelect(date, true)}
-                    selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
-                    minDate={new Date().setHours(0, 0, 0, 0)}
-                    locale="fr"
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Sélectionnez une date"
-                    className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    filterDate={(date) => !isDateUnavailable(date, true)}
-                    isClearable={true}
-                  />
+  selected={startDate}
+  onChange={(date) => handleDateSelect(date, true)}
+  selectsStart
+  startDate={startDate}
+  endDate={endDate}
+  minDate={new Date().setHours(0, 0, 0, 0)}
+  locale="fr"
+  dateFormat="dd/MM/yyyy"
+  placeholderText="Sélectionnez une date"
+  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+  filterDate={(date) => !isDateUnavailable(date, true)}
+  isClearable={true}
+/>
                 </label>
               </div>
 
@@ -1196,20 +1234,20 @@ const renderPaymentForm = () => (
                 <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                   Départ
                   <DatePicker
-                    selected={endDate}
-                    onChange={(date) => handleDateSelect(date, false)}
-                    selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    minDate={startDate || new Date()}
-                    locale="fr"
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Sélectionnez une date"
-                    className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    filterDate={(date) => !isDateUnavailable(date, false)}
-                    isClearable={true}
-                    disabled={!startDate}
-                  />
+  selected={endDate}
+  onChange={(date) => handleDateSelect(date, false)}
+  selectsEnd
+  startDate={startDate}
+  endDate={endDate}
+  minDate={startDate || new Date()}
+  locale="fr"
+  dateFormat="dd/MM/yyyy"
+  placeholderText="Sélectionnez une date"
+  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+  filterDate={(date) => !isDateUnavailable(date, false)}
+  isClearable={true}
+  disabled={!startDate}
+/>
                 </label>
               </div>
 
