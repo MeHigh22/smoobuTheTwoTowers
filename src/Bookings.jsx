@@ -150,58 +150,138 @@ useEffect(() => {
   fetchDates();
 }, [formData.apartmentId]);
 
-const isDateUnavailable = (date) => {
+const isDateUnavailable = (date, isStart) => {
   if (!date) return true;
-  const dateStr = date.toISOString().split('T')[0];
+
+  const dateStr = date.toISOString().split("T")[0];
   const dayData = availableDates[dateStr];
-  
-  // If we have a start date selected, check the entire range for availability
-  if (startDate && date > startDate) {
-    const currentDate = new Date(startDate);
-    while (currentDate <= date) {
-      const checkDateStr = currentDate.toISOString().split('T')[0];
-      const checkDayData = availableDates[checkDateStr];
-      if (!checkDayData || checkDayData.available === 0) {
-        return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // For arrival date selection
+  if (isStart) {
+    // Allow booking today
+    if (date.getTime() === today.getTime()) {
+      return false;
+    }
+
+    // If date is normally available
+    if (dayData && dayData.available === 1) {
+      // Check if next day is available to prevent booking right before unavailable period
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const nextDayStr = nextDay.toISOString().split("T")[0];
+      const nextDayData = availableDates[nextDayStr];
+
+      // Only allow if next day is also available
+      return !nextDayData || nextDayData.available === 0;
+    }
+
+    // Check if this is a valid checkout date that can be used for check-in
+    const prevDay = new Date(date);
+    prevDay.setDate(prevDay.getDate() - 1);
+    const prevDayStr = prevDay.toISOString().split("T")[0];
+    const prevDayData = availableDates[prevDayStr];
+
+    // Allow check-in on checkout dates (like the 23rd) only if previous day was unavailable
+    if (!prevDayData || prevDayData.available === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // For departure date selection
+  if (startDate) {
+    // If we're on a checkout date (like the 23rd), allow selecting future available dates
+    const startDateStr = startDate.toISOString().split("T")[0];
+    const startDayData = availableDates[startDateStr];
+
+    if (!startDayData || startDayData.available === 0) {
+      // When starting on a checkout date, only look at future availability
+      return !dayData || dayData.available === 0;
+    }
+
+    // For normal date ranges, check all dates up to but not including the departure date
+    let currentDate = new Date(startDate);
+    while (currentDate < date) {
+      const currDateStr = currentDate.toISOString().split("T")[0];
+      const currDayData = availableDates[currDateStr];
+
+      if (!currDayData || currDayData.available === 0) {
+        // If we hit an unavailable date, only allow selecting it if it's the departure date
+        return currentDate.getTime() !== date.getTime();
       }
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    // Allow selecting first unavailable date as departure
+    return false;
   }
-  
-  return dayData?.available === 0;
+
+  return false;
 };
 
 
-const handleDateSelect = (dates, isStart) => {
-  const selectedDate = dates;
-  if (isDateUnavailable(selectedDate)) {
-    setDateError(`La date du ${selectedDate.toLocaleDateString('fr-FR')} n'est pas disponible`);
+const handleDateSelect = (date, isStart) => {
+  if (!date) {
+    if (isStart) {
+      setStartDate(null);
+      setEndDate(null);
+      handleChange({
+        target: {
+          name: "arrivalDate",
+          value: "",
+        },
+      });
+      handleChange({
+        target: {
+          name: "departureDate",
+          value: "",
+        },
+      });
+    }
+    setDateError("");
     return;
   }
-  
-  setDateError('');
+
+  if (isDateUnavailable(date, isStart)) {
+    setDateError(
+      `La date du ${date.toLocaleDateString("fr-FR")} n'est pas disponible`
+    );
+    return;
+  }
+
+  setDateError("");
   if (isStart) {
-    setStartDate(selectedDate);
-    setEndDate(null); // Reset end date when start date changes
+    setStartDate(date);
+    setEndDate(null);
     handleChange({
       target: {
-        name: 'arrivalDate',
-        value: selectedDate.toISOString().split('T')[0]
-      }
+        name: "arrivalDate",
+        value: date.toISOString().split("T")[0],
+      },
+    });
+    handleChange({
+      target: {
+        name: "departureDate",
+        value: "",
+      },
     });
   } else {
-    setEndDate(selectedDate);
+    setEndDate(date);
     handleChange({
       target: {
-        name: 'departureDate',
-        value: selectedDate.toISOString().split('T')[0]
-      }
+        name: "departureDate",
+        value: date.toISOString().split("T")[0],
+      },
     });
   }
 };
 
+
 {dateError && (
-  <div className="text-red-500 text-sm font-medium mt-2">
+  <div className="mt-2 text-sm font-medium text-red-500">
     {dateError}
   </div>
 )}
@@ -546,7 +626,7 @@ const handlePaymentSuccess = () => {
 
   const renderPriceDetails = () => {
     if (!priceDetails) {
-      return <div className="text-gray-500 text-sm">Not available</div>;
+      return <div className="text-sm text-gray-500">Not available</div>;
     }
   
     const selectedExtrasDetails = Object.entries(selectedExtras)
@@ -591,7 +671,7 @@ const handlePaymentSuccess = () => {
   
     // If finalTotal is 0, display "Room not available"
     if (finalTotal === 0) {
-      return <div className="text-red-500 text-sm font-bold my-4">Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées.</div>;
+      return <div className="my-4 text-sm font-bold text-red-500">Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées.</div>;
     }
   
     return (
@@ -650,8 +730,8 @@ const handlePaymentSuccess = () => {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const renderProgressBar = () => (
-    <div className="flex justify-between items-center text-center mb-4">
-      <div className="w-3/5 md:w-3/5 lg:w-4/5 h-2 bg-gray-300 rounded">
+    <div className="flex items-center justify-between mb-4 text-center">
+      <div className="w-3/5 h-2 bg-gray-300 rounded md:w-3/5 lg:w-4/5">
         <div
           className={`h-2 rounded ${
             currentStep === 1 ? "w-1/3" : currentStep === 2 ? "w-2/3" : "w-full"
@@ -666,7 +746,7 @@ const handlePaymentSuccess = () => {
 
   const renderContactSection = () => (
     <div>
-      <div className="mt-6 space-y-8 w-full">
+      <div className="w-full mt-6 space-y-8">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {/* Contact form fields */}
                 <div>
@@ -843,14 +923,14 @@ const handlePaymentSuccess = () => {
                         className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                       >
                         <span className="flex items-center">
-                          <span className="ml-3 block truncate">{formData.arrivalTime || "Heure d'arrivée"}</span>
+                          <span className="block ml-3 truncate">{formData.arrivalTime || "Heure d'arrivée"}</span>
                         </span>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                          <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                          <ChevronUpDownIcon aria-hidden="true" className="text-gray-400 size-5" />
                         </span>
                       </Listbox.Button>
 
-                      <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
                         {timeSlots.map((timeSlot) => (
                           <Listbox.Option
                             key={timeSlot.id}
@@ -880,7 +960,7 @@ const handlePaymentSuccess = () => {
 
   const renderExtrasSection = () => (
     <div>
-      <div className="mt-6 space-y-8 w-full">
+      <div className="w-full mt-6 space-y-8">
           <div className="flex flex-wrap gap-3">
             {Object.entries(extraCategories).map(([key, category]) => (
               <button
@@ -1005,7 +1085,7 @@ const handlePaymentSuccess = () => {
 
   const renderInfoSupSection = () => (
     <div>
-      <div className="mt-6 space-y-8 w-full">
+      <div className="w-full mt-6 space-y-8">
               {/* Notes */}
               <div className="col-span-full">
                   <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -1021,7 +1101,7 @@ const handlePaymentSuccess = () => {
                   </label>
                 </div>
 
-              <div className="pt-4 mt-6 pb-4 mb-6 border-t border-b border-gray-200">
+              <div className="pt-4 pb-4 mt-6 mb-6 border-t border-b border-gray-200">
                 <div className="flex items-end gap-4">
                   <div className="flex-grow">
                     <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -1091,7 +1171,7 @@ const handlePaymentSuccess = () => {
 
 
 const renderPaymentForm = () => (
-  <div className="mt-8 w-2/5 mx-auto">
+  <div className="w-2/5 mx-auto mt-8">
     <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
     {clientSecret && (
       <StripeWrapper
@@ -1120,54 +1200,51 @@ const renderPaymentForm = () => (
             <div className="grid grid-cols-1 gap-4 text-left md:grid-cols-4 lg:grid-cols-5">
               {/* Arrival Date */}
               <div className="relative">
-  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-    Arrivée
-    <DatePicker
-      selected={startDate}
-      onChange={(date) => handleDateSelect(date, true)}
-      selectsStart
-      startDate={startDate}
-      endDate={endDate}
-      minDate={new Date()}
-      locale="fr"
-      dateFormat="dd/MM/yyyy"
-      placeholderText="Sélectionnez une date"
-      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-      dayClassName={date =>
-        isDateUnavailable(date) ? "text-gray-300 bg-gray-100" : undefined
-      }
-      filterDate={date => !isDateUnavailable(date)}
-    />
-  </label>
-</div>
+                <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                  Arrivée
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => handleDateSelect(date, true)}
+                    selectsStart
+                    startDate={startDate}
+                    endDate={endDate}
+                    minDate={new Date().setHours(0, 0, 0, 0)}
+                    locale="fr"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Sélectionnez une date"
+                    className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    filterDate={(date) => !isDateUnavailable(date, true)}
+                    isClearable={true}
+                  />
+                </label>
+              </div>
 
-<div className="relative">
-  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-    Départ
-    <DatePicker
-      selected={endDate}
-      onChange={(date) => handleDateSelect(date, false)}
-      selectsEnd
-      startDate={startDate}
-      endDate={endDate}
-      minDate={startDate || new Date()}
-      locale="fr"
-      dateFormat="dd/MM/yyyy"
-      placeholderText="Sélectionnez une date"
-      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-      dayClassName={date =>
-        isDateUnavailable(date) ? "text-gray-300 bg-gray-100" : undefined
-      }
-      filterDate={date => !isDateUnavailable(date)}
-    />
-  </label>
-</div>
+              <div className="relative">
+                <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                  Départ
+                  <DatePicker
+                    selected={endDate}
+                    onChange={(date) => handleDateSelect(date, false)}
+                    selectsEnd
+                    startDate={startDate}
+                    endDate={endDate}
+                    minDate={startDate || new Date()}
+                    locale="fr"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Sélectionnez une date"
+                    className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    filterDate={(date) => !isDateUnavailable(date, false)}
+                    isClearable={true}
+                    disabled={!startDate}
+                  />
+                </label>
+              </div>
 
-{dateError && (
-  <div className="text-red-500 text-sm font-medium mt-2">
-    {dateError}
-  </div>
-)}
+              {dateError && (
+                <div className="mt-2 text-sm font-medium text-red-500">
+                  {dateError}
+                </div>
+              )}
 
               {/* Adults Dropdown */}
               {/* <div>
@@ -1196,50 +1273,59 @@ const renderPaymentForm = () => (
               </div> */}
 
               <div>
-                  <label
-                    htmlFor="adults"
-                    className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
-                  >
-                    Adultes
-                  </label>
-                  <Listbox
-                    value={formData.adults}
-                    onChange={(value) => handleChange({ target: { name: "adults", value: value.quantity } })}
-                  >
-                    <div className="relative">
-                      <Listbox.Button
-                        id="adults"  // Add an id to the Listbox button to associate it with the label
-                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      >
-                        <span className="flex items-center">
-                          <span className="ml-3 block truncate">{formData.adults || "Adultes"}</span>
+                <label
+                  htmlFor="adults"
+                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                >
+                  Adultes
+                </label>
+                <Listbox
+                  value={formData.adults}
+                  onChange={(value) =>
+                    handleChange({
+                      target: { name: "adults", value: value.quantity },
+                    })
+                  }
+                >
+                  <div className="relative">
+                    <Listbox.Button
+                      id="adults" // Add an id to the Listbox button to associate it with the label
+                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    >
+                      <span className="flex items-center">
+                        <span className="block ml-3 truncate">
+                          {formData.adults || "Adultes"}
                         </span>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                          <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
-                        </span>
-                      </Listbox.Button>
+                      </span>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                        <ChevronUpDownIcon
+                          aria-hidden="true"
+                          className="text-gray-400 size-5"
+                        />
+                      </span>
+                    </Listbox.Button>
 
-                      <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                        {adultes.map((adulte) => (
-                          <Listbox.Option
-                            key={adulte.id}
-                            value={adulte}
-                            className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
-                          >
-                            <div className="flex items-center">
-                              <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
-                                {adulte.quantity}
-                              </span>
-                            </div>
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
-                              <CheckIcon aria-hidden="true" className="size-5" />
+                    <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      {adultes.map((adulte) => (
+                        <Listbox.Option
+                          key={adulte.id}
+                          value={adulte}
+                          className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                        >
+                          <div className="flex items-center">
+                            <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                              {adulte.quantity}
                             </span>
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
-                </div>
+                          </div>
+                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                            <CheckIcon aria-hidden="true" className="size-5" />
+                          </span>
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+              </div>
 
               {/* Children Dropdown */}
               {/* <div>
@@ -1268,32 +1354,41 @@ const renderPaymentForm = () => (
 
               <div>
                 <label
-                  htmlFor="childrenDropdown"  // Unique id for the Listbox
+                  htmlFor="childrenDropdown" // Unique id for the Listbox
                   className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
                 >
                   Enfants
                 </label>
                 <Listbox
                   value={formData.children}
-                  onChange={(value) => handleChange({ target: { name: "children", value: value.quantity } })}
+                  onChange={(value) =>
+                    handleChange({
+                      target: { name: "children", value: value.quantity },
+                    })
+                  }
                 >
                   <div className="relative">
                     <Listbox.Button
-                      id="childrenDropdown"  // Ensure unique id here
+                      id="childrenDropdown" // Ensure unique id here
                       className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                     >
                       <span className="flex items-center">
-                        <span className="ml-3 block truncate">{formData.children || "0"}</span>
+                        <span className="block ml-3 truncate">
+                          {formData.children || "0"}
+                        </span>
                       </span>
-                      <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                        <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                        <ChevronUpDownIcon
+                          aria-hidden="true"
+                          className="text-gray-400 size-5"
+                        />
                       </span>
                     </Listbox.Button>
 
-                    <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                    <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
                       {childrenOptions.map((child) => (
                         <Listbox.Option
-                          key={child.id}  // Ensure unique key for each option
+                          key={child.id} // Ensure unique key for each option
                           value={child}
                           className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
                         >
@@ -1312,7 +1407,6 @@ const renderPaymentForm = () => (
                 </Listbox>
               </div>
 
-
               {/* Check Availability Button */}
               <div className="block align-baseline">
                 <button
@@ -1327,10 +1421,10 @@ const renderPaymentForm = () => (
           </div>
 
           {dateError && (
- <div className="text-red-500 text-sm font-medium mt-2">
-   {dateError}
- </div>
-)}
+            <div className="mt-2 text-sm font-medium text-red-500">
+              {dateError}
+            </div>
+          )}
 
           {/* Main Content Section */}
           <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
@@ -1360,13 +1454,11 @@ const renderPaymentForm = () => (
               <div className="flex items-center justify-between mt-2 mb-5">
                 <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
                 <div className="flex items-center text-[16px] font-light text-black">
-                  {formData.arrivalDate && (
-                    <span>{formatDate(formData.arrivalDate)}</span>
+                  {startDate && <span>{formatDate(startDate)}</span>}
+                  {(startDate || endDate) && (
+                    <span className="mx-2 text-black">→</span>
                   )}
-                  <span className="mx-2 text-black">→</span>
-                  {formData.departureDate && (
-                    <span>{formatDate(formData.departureDate)}</span>
-                  )}
+                  {endDate && <span>{formatDate(endDate)}</span>}
                 </div>
               </div>
 
@@ -1376,17 +1468,24 @@ const renderPaymentForm = () => (
 
             {/* Right Column - Contact Form */}
             <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
-
-
-                  {currentStep == 1 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Contact </h2>
-                  )}
-                  {currentStep == 2 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Extras </h2>
-                  )}
-                  {currentStep == 3 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Notes </h2>
-                  )}
+              {currentStep == 1 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Contact{" "}
+                </h2>
+              )}
+              {currentStep == 2 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Extras{" "}
+                </h2>
+              )}
+              {currentStep == 3 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Notes{" "}
+                </h2>
+              )}
 
               {/* Render progress bar */}
               {renderProgressBar()}
@@ -1395,38 +1494,39 @@ const renderPaymentForm = () => (
               {renderStepContent()}
 
               {/* Navigation buttons */}
-                <div className="flex justify-between mt-6">
-                  {currentStep > 1 && (
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                    >
-                      Précédent
-                    </button>
-                  )}
-                  {currentStep < 3 && (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      disabled={!isStepValid()}
-                      className={`px-4 py-2 ${
-                        isStepValid() ? "bg-[#668E73] hover:bg-opacity-90" : "bg-gray-300 cursor-not-allowed"
-                      } text-white rounded`}
-                    >
-                      Suivant
-                    </button>
-                  )}
-                  {currentStep === 3 && (
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
-                    >
-                      {loading ? "En cours..." : "Passer au paiement"}
-                    </button>
-                  )}
-                </div>
-
+              <div className="flex justify-between mt-6">
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  >
+                    Précédent
+                  </button>
+                )}
+                {currentStep < 3 && (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!isStepValid()}
+                    className={`px-4 py-2 ${
+                      isStepValid()
+                        ? "bg-[#668E73] hover:bg-opacity-90"
+                        : "bg-gray-300 cursor-not-allowed"
+                    } text-white rounded`}
+                  >
+                    Suivant
+                  </button>
+                )}
+                {currentStep === 3 && (
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                  >
+                    {loading ? "En cours..." : "Passer au paiement"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </form>
