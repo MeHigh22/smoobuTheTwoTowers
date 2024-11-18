@@ -1181,20 +1181,20 @@ const handlePaymentSuccess = () => {
 
 
 
-const renderPaymentForm = () => (
-  <div className="w-2/5 mx-auto mt-8">
-    <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
-    {clientSecret && (
-      <StripeWrapper
-        clientSecret={clientSecret}
-        onSuccess={handlePaymentSuccess}
-        onError= 'erreur oops'
-      >
-        <PaymentForm />
-      </StripeWrapper>
-    )}
-  </div>
-);
+  const renderPaymentForm = () => (
+    <div className="w-2/5 mx-auto mt-8">
+      <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
+      {clientSecret && (
+        <StripeWrapper
+          clientSecret={clientSecret}
+          onSuccess={handlePaymentSuccess}
+          onError={(error) => setError(error)}
+        >
+          <PaymentForm />
+        </StripeWrapper>
+      )}
+    </div>
+  );
 
   return (
     <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px] ">

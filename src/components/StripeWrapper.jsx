@@ -12,22 +12,14 @@ const StripeWrapper = ({ clientSecret, children, onSuccess, onError }) => {
     appearance: {
       theme: "stripe",
       variables: {
-        colorPrimary: "#668E73", // Changed to match your green color theme
+        colorPrimary: "#668E73",
       },
     },
   };
 
-  // Clone children with additional props
-  const childrenWithProps = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
-      return React.cloneElement(child, { onSuccess, onError });
-    }
-    return child;
-  });
-
   return (
     <Elements stripe={stripePromise} options={options}>
-      {childrenWithProps}
+      {React.cloneElement(children, { onSuccess, onError })}
     </Elements>
   );
 };
