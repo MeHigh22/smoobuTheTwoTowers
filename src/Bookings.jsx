@@ -227,6 +227,7 @@ const isDateUnavailable = (date, isStart) => {
 const handleDateSelect = (date, isStart) => {
   if (!date) {
     if (isStart) {
+      // If clearing arrival date, also clear departure date
       setStartDate(null);
       setEndDate(null);
       handleChange({
@@ -235,6 +236,15 @@ const handleDateSelect = (date, isStart) => {
           value: "",
         },
       });
+      handleChange({
+        target: {
+          name: "departureDate",
+          value: "",
+        },
+      });
+    } else {
+      // If clearing departure date, only clear departure
+      setEndDate(null);
       handleChange({
         target: {
           name: "departureDate",
@@ -257,9 +267,9 @@ const handleDateSelect = (date, isStart) => {
     setStartDate(selectedDate);
     setEndDate(null);
     setDateError("");
-    
+
     // Format date as YYYY-MM-DD without timezone conversion
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const dateStr = selectedDate.toISOString().split("T")[0];
     handleChange({
       target: {
         name: "arrivalDate",
@@ -279,9 +289,9 @@ const handleDateSelect = (date, isStart) => {
     }
     setEndDate(selectedDate);
     setDateError("");
-    
+
     // Format date as YYYY-MM-DD without timezone conversion
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const dateStr = selectedDate.toISOString().split("T")[0];
     handleChange({
       target: {
         name: "departureDate",
