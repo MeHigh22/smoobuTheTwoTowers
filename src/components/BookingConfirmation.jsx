@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import logoBaseilles from "../assets/logoBaseilles.webp"
+import "../assets/bookingConfirmation.css"
 
 const BookingConfirmation = () => {
   const [status, setStatus] = useState("loading");

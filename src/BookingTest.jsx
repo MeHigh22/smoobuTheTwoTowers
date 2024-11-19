@@ -1,37 +1,28 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import PaymentForm from "./components/PaymentForm";
 import StripeWrapper from "./components/StripeWrapper";
-import { fetchAvailability } from "./smoobuService";
 import {
   extraCategories,
-  calculateExtrasTotal,
 } from "./components/extraCategories";
 
 import Calendar from "./assets/icons8-calendar-50.png";
 import Group from "./assets/icons8-group-48.png";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { registerLocale, setDefaultLocale } from "react-datepicker";
-import fr from 'date-fns/locale/fr';
+import { registerLocale,} from "react-datepicker";
+import fr from "date-fns/locale/fr";
+import { api } from "./components/utils/api";
+import {timeSlots, adultes, childrenOptions} from "./components/utils/constants"
 
-registerLocale('fr', fr);
+registerLocale("fr", fr);
 
+import {
+  Listbox,
 
+} from "@headlessui/react";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
-import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
-
-
-// Create API instance
-const api = axios.create({
-  baseURL: "http://localhost:3000/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 const BookingForm = () => {
   const [formData, setFormData] = useState({
@@ -60,48 +51,8 @@ const BookingForm = () => {
     conditions: false,
   });
 
-  const timeSlots = [
-    { id: 1, hour: '17:00' },
-    { id: 2, hour: '17:30' },
-    { id: 3, hour: '18:00' },
-    { id: 4, hour: '18:30' },
-    { id: 5, hour: '19:00' },
-    { id: 6, hour: '19:30' },
-    { id: 7, hour: '20:00' },
-    { id: 8, hour: '20:30' },
-    { id: 9, hour: '21:00' },
-    { id: 10, hour: '21:30' },
-    { id: 11, hour: '22:00' }
-  ];
-
-  const adultes = [
-    { id: 1, quantity: '1' },
-    { id: 2, quantity: '2' },
-    { id: 3, quantity: '3' },
-    { id: 4, quantity: '4' },
-    { id: 5, quantity: '5' },
-    { id: 6, quantity: '6' },
-    { id: 7, quantity: '7' },
-    { id: 8, quantity: '8' },
-    { id: 9, quantity: '9' },
-    { id: 10, quantity: '10' }
-  ];
-
-  const childrenOptions = [
-    { id: 1, quantity: '0' },
-    { id: 2, quantity: '1' },
-    { id: 3, quantity: '2' },
-    { id: 4, quantity: '3' },
-    { id: 5, quantity: '4' },
-    { id: 6, quantity: '5' },
-    { id: 7, quantity: '6' },
-    { id: 8, quantity: '7' },
-    { id: 9, quantity: '8' },
-    { id: 10, quantity: '9' },
-    { id: 11, quantity: '10' },
-  ];
-
-
+  
+  
   const [currentStep, setCurrentStep] = useState(1); // Step state
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -118,136 +69,178 @@ const BookingForm = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
   const [availableDates, setAvailableDates] = useState({});
-  
 
   const [startDate, setStartDate] = useState(null);
-const [endDate, setEndDate] = useState(null);
-const [dateError, setDateError] = useState('');
+  const [endDate, setEndDate] = useState(null);
+  const [dateError, setDateError] = useState("");
 
-useEffect(() => {
-  const fetchDates = async () => {
-    const startDate = new Date().toISOString().split('T')[0];
-    const endDate = new Date(new Date().setMonth(new Date().getMonth() + 12))
-      .toISOString().split('T')[0];
-    
-    try {
-      const response = await api.get("/rates", {
-        params: {
-          apartments: [formData.apartmentId],
-          start_date: startDate,
-          end_date: endDate,
-        },
-      });
-      
-      if (response.data.data && response.data.data[formData.apartmentId]) {
-        setAvailableDates(response.data.data[formData.apartmentId]);
+  useEffect(() => {
+    const fetchDates = async () => {
+      const startDate = new Date().toISOString().split("T")[0];
+      const endDate = new Date(new Date().setMonth(new Date().getMonth() + 12))
+        .toISOString()
+        .split("T")[0];
+
+      try {
+        const response = await api.get("/rates", {
+          params: {
+            apartments: [formData.apartmentId],
+            start_date: startDate,
+            end_date: endDate,
+          },
+        });
+
+        if (response.data.data && response.data.data[formData.apartmentId]) {
+          setAvailableDates(response.data.data[formData.apartmentId]);
+        }
+      } catch (error) {
+        console.error("Error fetching dates:", error);
       }
-    } catch (error) {
-      console.error('Error fetching dates:', error);
-    }
-  };
+    };
 
-  fetchDates();
-}, [formData.apartmentId]);
+    fetchDates();
+  }, [formData.apartmentId]);
 
-const isDateUnavailable = (date, isStart) => {
-  if (!date) return true;
+  const isDateUnavailable = (date, isStart) => {
+    if (!date) return true;
 
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  const dateStr = localDate.toISOString().split("T")[0];
-  const dayData = availableDates[dateStr];
-
-  // Block today and past dates
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  if (date < tomorrow) return true;
-
-  console.log("Checking date availability:", {
-    date: dateStr,
-    normalizedDate: localDate,
-    isStart,
-    dayData,
-    available: dayData?.available,
-  });
-
-  if (isStart) {
-    if (!dayData) return true;
-
-    // Check if it's a departure day
-    const prevDate = new Date(localDate);
-    prevDate.setDate(prevDate.getDate() - 1);
-    const prevLocalDate = new Date(
-      prevDate.getTime() - prevDate.getTimezoneOffset() * 60000
+    const localDate = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
     );
-    const prevDayStr = prevLocalDate.toISOString().split("T")[0];
-    const prevDayData = availableDates[prevDayStr];
+    const dateStr = localDate.toISOString().split("T")[0];
+    const dayData = availableDates[dateStr];
 
-    console.log("Departure day check:", {
-      currentDate: dateStr,
-      prevDate: prevDayStr,
-      currentDayData: dayData,
-      prevDayData,
-      isDepartureDay:
-        (!prevDayData || prevDayData.available === 0) &&
-        dayData.available === 1,
+    // Block today and past dates
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    if (date < tomorrow) return true;
+
+    console.log("Checking date availability:", {
+      date: dateStr,
+      normalizedDate: localDate,
+      isStart,
+      dayData,
+      available: dayData?.available,
     });
 
-    // If it's a departure day, it's available for new arrivals regardless of next day
-    if (
-      (!prevDayData || prevDayData.available === 0) &&
-      dayData.available === 1
-    ) {
+    if (isStart) {
+      if (!dayData) return true;
+
+      // Check if it's a departure day
+      const prevDate = new Date(localDate);
+      prevDate.setDate(prevDate.getDate() - 1);
+      const prevLocalDate = new Date(
+        prevDate.getTime() - prevDate.getTimezoneOffset() * 60000
+      );
+      const prevDayStr = prevLocalDate.toISOString().split("T")[0];
+      const prevDayData = availableDates[prevDayStr];
+
+      console.log("Departure day check:", {
+        currentDate: dateStr,
+        prevDate: prevDayStr,
+        currentDayData: dayData,
+        prevDayData,
+        isDepartureDay:
+          (!prevDayData || prevDayData.available === 0) &&
+          dayData.available === 1,
+      });
+
+      // If it's a departure day, it's available for new arrivals regardless of next day
+      if (
+        (!prevDayData || prevDayData.available === 0) &&
+        dayData.available === 1
+      ) {
+        return false;
+      }
+
+      // For non-departure days, check if the day is available
+      return dayData.available === 0;
+    }
+
+    // For departure date selection
+    if (startDate) {
+      let checkDate = new Date(startDate);
+
+      // Only check dates between start and end (exclusive of end date)
+      while (checkDate < date) {
+        const checkLocalDate = new Date(
+          checkDate.getTime() - checkDate.getTimezoneOffset() * 60000
+        );
+        const checkDateStr = checkLocalDate.toISOString().split("T")[0];
+        const checkDayData = availableDates[checkDateStr];
+
+        console.log("Checking date in range:", {
+          checkDateStr,
+          checkDayData,
+          available: checkDayData?.available,
+        });
+
+        // Skip availability check for the first day if it's a departure day
+        if (checkDate.getTime() !== startDate.getTime()) {
+          if (!checkDayData || checkDayData.available === 0) {
+            return true;
+          }
+        }
+        checkDate.setDate(checkDate.getDate() + 1);
+      }
+
       return false;
     }
 
-    // For non-departure days, check if the day is available
-    return dayData.available === 0;
-  }
+    return false;
+  };
 
-  // For departure date selection
-  if (startDate) {
-    let checkDate = new Date(startDate);
-
-    // Only check dates between start and end (exclusive of end date)
-    while (checkDate < date) {
-      const checkLocalDate = new Date(
-        checkDate.getTime() - checkDate.getTimezoneOffset() * 60000
-      );
-      const checkDateStr = checkLocalDate.toISOString().split("T")[0];
-      const checkDayData = availableDates[checkDateStr];
-
-      console.log("Checking date in range:", {
-        checkDateStr,
-        checkDayData,
-        available: checkDayData?.available,
-      });
-
-      // Skip availability check for the first day if it's a departure day
-      if (checkDate.getTime() !== startDate.getTime()) {
-        if (!checkDayData || checkDayData.available === 0) {
-          return true;
-        }
+  const handleDateSelect = (date, isStart) => {
+    if (!date) {
+      if (isStart) {
+        // If clearing arrival date, also clear departure date
+        setStartDate(null);
+        setEndDate(null);
+        handleChange({
+          target: {
+            name: "arrivalDate",
+            value: "",
+          },
+        });
+        handleChange({
+          target: {
+            name: "departureDate",
+            value: "",
+          },
+        });
+      } else {
+        // If clearing departure date, only clear departure
+        setEndDate(null);
+        handleChange({
+          target: {
+            name: "departureDate",
+            value: "",
+          },
+        });
       }
-      checkDate.setDate(checkDate.getDate() + 1);
+      setDateError("");
+      return;
     }
 
-    return false;
-  }
+    // Create date at noon to avoid timezone issues
+    const selectedDate = new Date(date.setHours(12, 0, 0, 0));
 
-  return false;
-};
-
-const handleDateSelect = (date, isStart) => {
-  if (!date) {
     if (isStart) {
-      // If clearing arrival date, also clear departure date
-      setStartDate(null);
+      if (isDateUnavailable(selectedDate, isStart)) {
+        setDateError("Cette date n'est pas disponible pour l'arrivée");
+        return;
+      }
+      setStartDate(selectedDate);
       setEndDate(null);
+      setDateError("");
+
+      // Format date as YYYY-MM-DD without timezone conversion
+      const dateStr = selectedDate.toISOString().split("T")[0];
       handleChange({
         target: {
           name: "arrivalDate",
-          value: "",
+          value: dateStr,
         },
       });
       handleChange({
@@ -257,65 +250,23 @@ const handleDateSelect = (date, isStart) => {
         },
       });
     } else {
-      // If clearing departure date, only clear departure
-      setEndDate(null);
+      if (isDateUnavailable(selectedDate, isStart)) {
+        setDateError("Cette date n'est pas disponible pour le départ");
+        return;
+      }
+      setEndDate(selectedDate);
+      setDateError("");
+
+      // Format date as YYYY-MM-DD without timezone conversion
+      const dateStr = selectedDate.toISOString().split("T")[0];
       handleChange({
         target: {
           name: "departureDate",
-          value: "",
+          value: dateStr,
         },
       });
     }
-    setDateError("");
-    return;
-  }
-
-  // Create date at noon to avoid timezone issues
-  const selectedDate = new Date(date.setHours(12, 0, 0, 0));
-
-  if (isStart) {
-    if (isDateUnavailable(selectedDate, isStart)) {
-      setDateError("Cette date n'est pas disponible pour l'arrivée");
-      return;
-    }
-    setStartDate(selectedDate);
-    setEndDate(null);
-    setDateError("");
-
-    // Format date as YYYY-MM-DD without timezone conversion
-    const dateStr = selectedDate.toISOString().split("T")[0];
-    handleChange({
-      target: {
-        name: "arrivalDate",
-        value: dateStr,
-      },
-    });
-    handleChange({
-      target: {
-        name: "departureDate",
-        value: "",
-      },
-    });
-  } else {
-    if (isDateUnavailable(selectedDate, isStart)) {
-      setDateError("Cette date n'est pas disponible pour le départ");
-      return;
-    }
-    setEndDate(selectedDate);
-    setDateError("");
-
-    // Format date as YYYY-MM-DD without timezone conversion
-    const dateStr = selectedDate.toISOString().split("T")[0];
-    handleChange({
-      target: {
-        name: "departureDate",
-        value: dateStr,
-      },
-    });
-  }
-};
-
-
+  };
 
   const VALID_COUPONS = {
     TESTDISCOUNT: {
@@ -326,7 +277,6 @@ const handleDateSelect = (date, isStart) => {
     // Add more coupons as needed
   };
 
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -335,53 +285,53 @@ const handleDateSelect = (date, isStart) => {
     return `${day}.${month}.${year}`;
   };
 
-const createSelectedExtrasArray = () => {
-  return Object.entries(selectedExtras)
-    .filter(([_, quantity]) => quantity > 0)
-    .map(([extraId, quantity]) => {
-      // Check if this is an extra person selection
-      const isExtraPerson = extraId.endsWith("-extra");
-      const baseExtraId = isExtraPerson
-        ? extraId.replace("-extra", "")
-        : extraId;
+  const createSelectedExtrasArray = () => {
+    return Object.entries(selectedExtras)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([extraId, quantity]) => {
+        // Check if this is an extra person selection
+        const isExtraPerson = extraId.endsWith("-extra");
+        const baseExtraId = isExtraPerson
+          ? extraId.replace("-extra", "")
+          : extraId;
 
-      // Find the extra in all categories
-      const extra = Object.values(extraCategories)
-        .flatMap((category) => category.items)
-        .find((item) => item.id === baseExtraId);
+        // Find the extra in all categories
+        const extra = Object.values(extraCategories)
+          .flatMap((category) => category.items)
+          .find((item) => item.id === baseExtraId);
 
-      if (!extra) return null;
+        if (!extra) return null;
 
-      // Return extra person details only when it's an extra person selection
-      if (isExtraPerson) {
+        // Return extra person details only when it's an extra person selection
+        if (isExtraPerson) {
+          return {
+            type: "addon",
+            name: `${extra.name} - Personne supplémentaire`,
+            amount: extra.extraPersonPrice * quantity,
+            quantity: quantity,
+            currencyCode: "EUR",
+          };
+        }
+
+        // For regular extras, include extra person info in the same object
+        const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
         return {
           type: "addon",
-          name: `${extra.name} - Personne supplémentaire`,
-          amount: extra.extraPersonPrice * quantity,
+          name: extra.name,
+          amount: extra.price * quantity,
           quantity: quantity,
           currencyCode: "EUR",
+          extraPersonPrice: extra.extraPersonPrice,
+          extraPersonQuantity: extraPersonQuantity,
+          // Include extra person amount in a separate field if there are extra persons
+          extraPersonAmount:
+            extraPersonQuantity > 0
+              ? extra.extraPersonPrice * extraPersonQuantity
+              : 0,
         };
-      }
-
-      // For regular extras, include extra person info in the same object
-      const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
-      return {
-        type: "addon",
-        name: extra.name,
-        amount: extra.price * quantity,
-        quantity: quantity,
-        currencyCode: "EUR",
-        extraPersonPrice: extra.extraPersonPrice,
-        extraPersonQuantity: extraPersonQuantity,
-        // Include extra person amount in a separate field if there are extra persons
-        extraPersonAmount:
-          extraPersonQuantity > 0
-            ? extra.extraPersonPrice * extraPersonQuantity
-            : 0,
-      };
-    })
-    .filter(Boolean); // Remove any null entries
-};
+      })
+      .filter(Boolean); // Remove any null entries
+  };
 
   const handleExtraChange = (extraId, quantity) => {
     // Prevent event bubbling just in case
@@ -393,16 +343,15 @@ const createSelectedExtrasArray = () => {
     }));
   };
 
-
   const handleCheckAvailability = async () => {
     setError("");
     setDateError("");
-  
+
     if (!formData.arrivalDate || !formData.departureDate) {
       setDateError("Veuillez sélectionner les dates d'arrivée et de départ");
       return;
     }
-  
+
     setLoading(true);
     try {
       const response = await api.get("/rates", {
@@ -411,23 +360,28 @@ const createSelectedExtrasArray = () => {
           start_date: formData.arrivalDate,
           end_date: formData.departureDate,
           adults: formData.adults,
-          children: formData.children
+          children: formData.children,
         },
       });
-  
+
       if (response.data.data && response.data.data[formData.apartmentId]) {
         // If there's a price calculated, the dates are available
-        if (response.data.priceDetails && response.data.priceDetails.finalPrice > 0) {
+        if (
+          response.data.priceDetails &&
+          response.data.priceDetails.finalPrice > 0
+        ) {
           setPriceDetails(response.data.priceDetails);
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            price: response.data.priceDetails?.finalPrice || 0
+            price: response.data.priceDetails?.finalPrice || 0,
           }));
           setIsAvailable(true);
           setShowPriceDetails(true);
           setError(null);
         } else {
-          setDateError("Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées");
+          setDateError(
+            "Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées"
+          );
           setIsAvailable(false);
           setShowPriceDetails(false);
         }
@@ -455,163 +409,161 @@ const createSelectedExtrasArray = () => {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!formData.price) {
-    setError("Veuillez attendre le calcul du prix avant de continuer.");
-    return;
-  }
-  setLoading(true);
-  try {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.price) {
+      setError("Veuillez attendre le calcul du prix avant de continuer.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const selectedExtrasArray = createSelectedExtrasArray();
+
+      // Calculate total with extras
+      const extrasTotal = selectedExtrasArray.reduce(
+        (sum, extra) => sum + extra.amount + (extra.extraPersonAmount || 0),
+        0
+      );
+
+      const basePrice = priceDetails.originalPrice;
+      const subtotalBeforeDiscounts = basePrice + extrasTotal; // 400 + 105 = 505
+
+      // Apply long stay discount
+      const longStayDiscount = priceDetails.discount || 0; // 160
+      // Apply coupon discount
+      const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0; // 10
+
+      // Calculate final total by subtracting both discounts
+      const finalTotal =
+        subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
+      // 505 - 160 - 10 = 335
+
+      console.log("Price calculation:", {
+        basePrice,
+        extrasTotal,
+        subtotalBeforeDiscounts,
+        longStayDiscount,
+        couponDiscount,
+        finalTotal,
+      });
+
+      const response = await api.post("/create-payment-intent", {
+        price: finalTotal, // Using the correct final total
+        bookingData: {
+          ...formData,
+          price: finalTotal, // Using the correct final total here too
+          basePrice: basePrice,
+          extras: selectedExtrasArray,
+          couponApplied: appliedCoupon
+            ? {
+                code: appliedCoupon.code,
+                discount: couponDiscount,
+              }
+            : null,
+          priceDetails: {
+            ...priceDetails,
+            finalPrice: finalTotal,
+            calculatedDiscounts: {
+              longStay: longStayDiscount,
+              coupon: couponDiscount,
+            },
+          },
+          metadata: {
+            basePrice: basePrice.toString(),
+            extrasTotal: extrasTotal.toString(),
+            longStayDiscount: longStayDiscount.toString(),
+            couponDiscount: couponDiscount.toString(),
+          },
+        },
+      });
+
+      console.log("Payment intent created:", response.data);
+      setClientSecret(response.data.clientSecret);
+      setShowPayment(true);
+      setError(null);
+    } catch (err) {
+      console.error("Error:", err);
+      setError(err.response?.data?.error || "Une erreur s'est produite");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
     const selectedExtrasArray = createSelectedExtrasArray();
 
-    // Calculate total with extras
+    // Calculate the total price using the current values
     const extrasTotal = selectedExtrasArray.reduce(
-      (sum, extra) => sum + extra.amount + (extra.extraPersonAmount || 0),
+      (sum, extra) => sum + extra.amount,
       0
     );
 
-    const basePrice = priceDetails.originalPrice;
-    const subtotalBeforeDiscounts = basePrice + extrasTotal; // 400 + 105 = 505
+    const subtotal = priceDetails.finalPrice + extrasTotal;
+    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+    const finalTotal = subtotal - couponDiscount;
 
-    // Apply long stay discount
-    const longStayDiscount = priceDetails.discount || 0; // 160
-    // Apply coupon discount
-    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0; // 10
+    // Pass booking data through localStorage
+    const bookingData = {
+      ...formData,
+      extras: selectedExtrasArray,
+      priceDetails: priceDetails,
+      totalPrice: finalTotal,
+    };
 
-    // Calculate final total by subtracting both discounts
-    const finalTotal =
-      subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
-    // 505 - 160 - 10 = 335
+    // Store booking data in localStorage before redirect
+    localStorage.setItem("bookingData", JSON.stringify(bookingData));
 
-    console.log("Price calculation:", {
-      basePrice,
-      extrasTotal,
-      subtotalBeforeDiscounts,
-      longStayDiscount,
-      couponDiscount,
-      finalTotal,
-    });
+    // Get paymentIntent from clientSecret (it's the first part before the _secret)
+    const paymentIntent = clientSecret.split("_secret")[0];
 
-    const response = await api.post("/create-payment-intent", {
-      price: finalTotal, // Using the correct final total
-      bookingData: {
-        ...formData,
-        price: finalTotal, // Using the correct final total here too
-        basePrice: basePrice,
-        extras: selectedExtrasArray,
-        couponApplied: appliedCoupon
-          ? {
-              code: appliedCoupon.code,
-              discount: couponDiscount,
-            }
-          : null,
-        priceDetails: {
-          ...priceDetails,
-          finalPrice: finalTotal,
-          calculatedDiscounts: {
-            longStay: longStayDiscount,
-            coupon: couponDiscount,
-          },
-        },
-        metadata: {
-          basePrice: basePrice.toString(),
-          extrasTotal: extrasTotal.toString(),
-          longStayDiscount: longStayDiscount.toString(),
-          couponDiscount: couponDiscount.toString(),
-        },
-      },
-    });
-
-    console.log("Payment intent created:", response.data);
-    setClientSecret(response.data.clientSecret);
-    setShowPayment(true);
-    setError(null);
-  } catch (err) {
-    console.error("Error:", err);
-    setError(err.response?.data?.error || "Une erreur s'est produite");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-const handlePaymentSuccess = () => {
-  const selectedExtrasArray = createSelectedExtrasArray();
-
-  // Calculate the total price using the current values
-  const extrasTotal = selectedExtrasArray.reduce(
-    (sum, extra) => sum + extra.amount,
-    0
-  );
-
-  const subtotal = priceDetails.finalPrice + extrasTotal;
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-  const finalTotal = subtotal - couponDiscount;
-
-  // Pass booking data through localStorage
-  const bookingData = {
-    ...formData,
-    extras: selectedExtrasArray,
-    priceDetails: priceDetails,
-    totalPrice: finalTotal,
+    // Redirect to confirmation page
+    window.location.href = `/booking-confirmation?payment_intent=${paymentIntent}`;
   };
-
-  // Store booking data in localStorage before redirect
-  localStorage.setItem("bookingData", JSON.stringify(bookingData));
-
-  // Get paymentIntent from clientSecret (it's the first part before the _secret)
-  const paymentIntent = clientSecret.split("_secret")[0];
-
-  // Redirect to confirmation page
-  window.location.href = `/booking-confirmation?payment_intent=${paymentIntent}`;
-};
-
 
   const handleApplyCoupon = () => {
-      setCouponError(null);
+    setCouponError(null);
 
-      if (!coupon) {
-        setCouponError("Veuillez entrer un code promo");
-        return;
-      }
+    if (!coupon) {
+      setCouponError("Veuillez entrer un code promo");
+      return;
+    }
 
-      const couponInfo = VALID_COUPONS[coupon.toUpperCase()];
+    const couponInfo = VALID_COUPONS[coupon.toUpperCase()];
 
-      if (!couponInfo) {
-        setCouponError("Code promo invalide");
-        return;
-      }
+    if (!couponInfo) {
+      setCouponError("Code promo invalide");
+      return;
+    }
 
-      setAppliedCoupon({
-        code: coupon.toUpperCase(),
-        ...couponInfo,
-      });
+    setAppliedCoupon({
+      code: coupon.toUpperCase(),
+      ...couponInfo,
+    });
 
-      // Update price details to include coupon
-      setPriceDetails((prev) => ({
-        ...prev,
-        priceElements: [
-          ...(prev?.priceElements || []),
-          {
-            type: "coupon",
-            name: `Code promo ${coupon.toUpperCase()}`,
-            amount: -couponInfo.discount,
-            currencyCode: couponInfo.currency,
-          },
-        ],
-      }));
+    // Update price details to include coupon
+    setPriceDetails((prev) => ({
+      ...prev,
+      priceElements: [
+        ...(prev?.priceElements || []),
+        {
+          type: "coupon",
+          name: `Code promo ${coupon.toUpperCase()}`,
+          amount: -couponInfo.discount,
+          currencyCode: couponInfo.currency,
+        },
+      ],
+    }));
 
-     setCoupon(""); // Clear input
+    setCoupon(""); // Clear input
   };
 
-   // Then add the coupon input UI in your form, before the submit button:
+  // Then add the coupon input UI in your form, before the submit button:
 
   const renderPriceDetails = () => {
     if (!priceDetails) {
       return <div className="text-sm text-gray-500">Not available</div>;
     }
-  
+
     const selectedExtrasDetails = Object.entries(selectedExtras)
       .filter(([_, quantity]) => quantity > 0)
       .map(([extraId, quantity]) => {
@@ -634,39 +586,44 @@ const handlePaymentSuccess = () => {
         };
       })
       .filter(Boolean);
-  
+
     // Calculate initial total with extras
     const extrasTotal = selectedExtrasDetails.reduce(
       (sum, extra) => sum + extra.total,
       0
     );
-  
+
     // Base price + extras before any discounts
     const subtotalBeforeDiscounts = priceDetails.originalPrice + extrasTotal;
-  
+
     // IMPORTANT: Make sure these are treated as reductions
     const longStayDiscount = Math.abs(priceDetails.discount || 0);
     const couponDiscount = appliedCoupon ? Math.abs(appliedCoupon.discount) : 0;
-  
+
     // Subtract both discounts from the subtotal
     const finalTotal =
       subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
-  
+
     // If finalTotal is 0, display "Room not available"
     if (finalTotal === 0) {
-      return <div className="my-4 text-sm font-bold text-red-500">Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées.</div>;
+      return (
+        <div className="my-4 text-sm font-bold text-red-500">
+          Cette chambre n'est malheureusement pas disponible pour les dates
+          sélectionnées.
+        </div>
+      );
     }
-  
+
     return (
       <div className="p-4 mt-4 rounded-lg bg-gray-50">
         <h3 className="mb-2 font-bold">Détail des prix:</h3>
-  
+
         {/* Base price */}
         <div className="flex items-center justify-between">
           <span>Prix de base</span>
           <span>{priceDetails.originalPrice.toFixed(2)} EUR</span>
         </div>
-  
+
         {/* Extras */}
         {selectedExtrasDetails.map((extra, index) => (
           <div
@@ -679,7 +636,7 @@ const handlePaymentSuccess = () => {
             <span>{extra.total.toFixed(2)} EUR</span>
           </div>
         ))}
-  
+
         {/* Long stay discount */}
         {longStayDiscount > 0 && (
           <div className="flex items-center justify-between text-green-600">
@@ -690,7 +647,7 @@ const handlePaymentSuccess = () => {
             <span>-{longStayDiscount.toFixed(2)} EUR</span>
           </div>
         )}
-  
+
         {/* Coupon discount */}
         {couponDiscount > 0 && (
           <div className="flex items-center justify-between text-green-600">
@@ -698,7 +655,7 @@ const handlePaymentSuccess = () => {
             <span>-{couponDiscount.toFixed(2)} EUR</span>
           </div>
         )}
-  
+
         {/* Final total */}
         <div className="flex items-center justify-between pt-2 mt-4 font-bold border-t border-gray-200">
           <span>Total</span>
@@ -707,7 +664,6 @@ const handlePaymentSuccess = () => {
       </div>
     );
   };
-  
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
@@ -731,131 +687,131 @@ const handlePaymentSuccess = () => {
     <div>
       <div className="w-full mt-6 space-y-8">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                {/* Contact form fields */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Prénom*
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      placeholder="Prénom"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      required
-                    />
-                  </label>
-                </div>
+          {/* Contact form fields */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Prénom*
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="Prénom"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                required
+              />
+            </label>
+          </div>
 
-                {/* Last Name */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Nom*
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      placeholder="Nom"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      required
-                    />
-                  </label>
-                </div>
+          {/* Last Name */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Nom*
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                placeholder="Nom"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                required
+              />
+            </label>
+          </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Email*
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="Email"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      required
-                    />
-                  </label>
-                </div>
+          {/* Email */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Email*
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                required
+              />
+            </label>
+          </div>
 
-                {/* Phone */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Téléphone
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="Téléphone"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    />
-                  </label>
-                </div>
+          {/* Phone */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Téléphone
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Téléphone"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              />
+            </label>
+          </div>
 
-                {/* Street */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Rue/numéro
-                    <input
-                      type="text"
-                      name="street"
-                      value={formData.street}
-                      onChange={handleChange}
-                      placeholder="Rue/Numéro"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    />
-                  </label>
-                </div>
+          {/* Street */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Rue/numéro
+              <input
+                type="text"
+                name="street"
+                value={formData.street}
+                onChange={handleChange}
+                placeholder="Rue/Numéro"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              />
+            </label>
+          </div>
 
-                {/* Postal Code */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Code postal
-                    <input
-                      type="number"
-                      name="postalCode"
-                      value={formData.postalCode}
-                      onChange={handleChange}
-                      placeholder="Code postal"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    />
-                  </label>
-                </div>
+          {/* Postal Code */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Code postal
+              <input
+                type="number"
+                name="postalCode"
+                value={formData.postalCode}
+                onChange={handleChange}
+                placeholder="Code postal"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              />
+            </label>
+          </div>
 
-                {/* City */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Ville
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      placeholder="Ville"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    />
-                  </label>
-                </div>
+          {/* City */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Ville
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Ville"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              />
+            </label>
+          </div>
 
-                {/* Country */}
-                <div>
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Pays
-                    <input
-                      type="text"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleChange}
-                      placeholder="Pays"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                    />
-                  </label>
-                </div>
+          {/* Country */}
+          <div>
+            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              Pays
+              <input
+                type="text"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                placeholder="Pays"
+                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              />
+            </label>
+          </div>
 
-                {/* Check-in */}
-                {/* <div>
+          {/* Check-in */}
+          {/* <div>
                   <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                     Check-in*
                     <select
@@ -889,122 +845,130 @@ const handlePaymentSuccess = () => {
                   </label>
                 </div> */}
 
-                <div>
-                  <label
-                    htmlFor="arrivalTime"
-                    className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
-                  >
-                    Check-in*
-                  </label>
-                  <Listbox
-                    value={formData.arrivalTime}
-                    onChange={(value) => handleChange({ target: { name: "arrivalTime", value: value.hour } })}
-                  >
-                    <div className="relative">
-                      <Listbox.Button
-                        id="arrivalTime"  // Add an id to the Listbox button to associate it with the label
-                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      >
-                        <span className="flex items-center">
-                          <span className="block ml-3 truncate">{formData.arrivalTime || "Heure d'arrivée"}</span>
+          <div>
+            <label
+              htmlFor="arrivalTime"
+              className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+            >
+              Check-in*
+            </label>
+            <Listbox
+              value={formData.arrivalTime}
+              onChange={(value) =>
+                handleChange({
+                  target: { name: "arrivalTime", value: value.hour },
+                })
+              }
+            >
+              <div className="relative">
+                <Listbox.Button
+                  id="arrivalTime" // Add an id to the Listbox button to associate it with the label
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                >
+                  <span className="flex items-center">
+                    <span className="block ml-3 truncate">
+                      {formData.arrivalTime || "Heure d'arrivée"}
+                    </span>
+                  </span>
+                  <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                    <ChevronUpDownIcon
+                      aria-hidden="true"
+                      className="text-gray-400 size-5"
+                    />
+                  </span>
+                </Listbox.Button>
+
+                <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                  {timeSlots.map((timeSlot) => (
+                    <Listbox.Option
+                      key={timeSlot.id}
+                      value={timeSlot}
+                      className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                    >
+                      <div className="flex items-center">
+                        <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                          {timeSlot.hour}
                         </span>
-                        <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
-                          <ChevronUpDownIcon aria-hidden="true" className="text-gray-400 size-5" />
-                        </span>
-                      </Listbox.Button>
-
-                      <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                        {timeSlots.map((timeSlot) => (
-                          <Listbox.Option
-                            key={timeSlot.id}
-                            value={timeSlot}
-                            className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
-                          >
-                            <div className="flex items-center">
-                              <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
-                                {timeSlot.hour}
-                              </span>
-                            </div>
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
-                              <CheckIcon aria-hidden="true" className="size-5" />
-                            </span>
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
-                </div>
-
-
+                      </div>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                        <CheckIcon aria-hidden="true" className="size-5" />
+                      </span>
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </div>
+            </Listbox>
+          </div>
         </div>
         <div className="grid grid-cols-1">
           {/* Contact form fields */}
           <div>
-          <label className="flex items-center text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-            <input
-              type="checkbox"
-              name="conditions"
-              checked={formData.conditions || false}
-              onChange={(e) =>
-                setFormData((prevData) => ({
-                  ...prevData,
-                  conditions: e.target.checked,
-                }))
-              }
-              className="mr-2 rounded border-[#668E73] text-[#668E73] focus:ring-[#668E73]"
-              required
-            />
-            <span>
-              J'accepte les{" "}
-              <a
-                href="https://fermedebasseilles.be/conditions-generales/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#668E73] underline hover:text-[#445E54]"
-              >
-                conditions générales
-              </a>
-              .
-            </span>
-          </label>
-          {!formData.conditions && (
-            <p className="mt-1 text-sm text-red-500">
-              Vous devez accepter les conditions générales pour continuer.
-            </p>
-          )}
+            <label className="flex items-center text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+              <input
+                type="checkbox"
+                name="conditions"
+                checked={formData.conditions || false}
+                onChange={(e) =>
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    conditions: e.target.checked,
+                  }))
+                }
+                className="mr-2 rounded border-[#668E73] text-[#668E73] focus:ring-[#668E73]"
+                required
+              />
+              <span>
+                J'accepte les{" "}
+                <a
+                  href="https://fermedebasseilles.be/conditions-generales/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#668E73] underline hover:text-[#445E54]"
+                >
+                  conditions générales
+                </a>
+                .
+              </span>
+            </label>
+            {!formData.conditions && (
+              <p className="mt-1 text-sm text-red-500">
+                Vous devez accepter les conditions générales pour continuer.
+              </p>
+            )}
+          </div>
         </div>
       </div>
-        </div>
-
-      </div>
+    </div>
   );
 
   const renderExtrasSection = () => (
     <div>
       <div className="w-full mt-6 space-y-8">
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(extraCategories).map(([key, category]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelectedCategory(key)}
-                className={`px-4 py-2 rounded-lg transition-all text-[14px] font-bolder ${
-                  selectedCategory === key
-                    ? "bg-[#668E73] text-white"
-                    : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-          <div
-            className={`grid grid-cols-1 gap-6 md:grid-cols-1 ${
-              selectedCategory === "boissons" ? "lg:grid-cols-1" : "lg:grid-cols-2"
-            }`}
-          >
-            {selectedCategory === "boissons" ? (
-              (() => {
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(extraCategories).map(([key, category]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSelectedCategory(key)}
+              className={`px-4 py-2 rounded-lg transition-all text-[14px] font-bolder ${
+                selectedCategory === key
+                  ? "bg-[#668E73] text-white"
+                  : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+        <div
+          className={`grid grid-cols-1 gap-6 md:grid-cols-1 ${
+            selectedCategory === "boissons"
+              ? "lg:grid-cols-1"
+              : "lg:grid-cols-2"
+          }`}
+        >
+          {selectedCategory === "boissons"
+            ? (() => {
                 const groupedBoissons = extraCategories.boissons.items.reduce(
                   (groups, item) => {
                     if (!groups[item.type]) {
@@ -1089,8 +1053,7 @@ const handlePaymentSuccess = () => {
                   </div>
                 ));
               })()
-            ) : (
-              extraCategories[selectedCategory].items.map((item) => (
+            : extraCategories[selectedCategory].items.map((item) => (
                 <div
                   key={item.id}
                   className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
@@ -1141,109 +1104,107 @@ const handlePaymentSuccess = () => {
                         +
                       </button>
                     </div>
-                                      {/* Extra person selector - only show if item has extraPersonPrice AND base item is selected */}
-                  {item.extraPersonPrice &&
-                    (selectedExtras[item.id] || 0) > 0 && (
-                      <div className="mt-2">
-                        <p className="text-[14px] text-gray-600 mb-1">
-                          Personne supplémentaire (+{item.extraPersonPrice}
-                          €/pers)
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleExtraChange(
-                                `${item.id}-extra`,
-                                (selectedExtras[`${item.id}-extra`] || 0) - 1
-                              )
-                            }
-                            disabled={
-                              (selectedExtras[`${item.id}-extra`] || 0) === 0
-                            }
-                            className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 font-medium text-center text-gray-900">
-                            {selectedExtras[`${item.id}-extra`] || 0}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleExtraChange(
-                                `${item.id}-extra`,
-                                (selectedExtras[`${item.id}-extra`] || 0) + 1
-                              )
-                            }
-                            className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
-                          >
-                            +
-                          </button>
+                    {/* Extra person selector - only show if item has extraPersonPrice AND base item is selected */}
+                    {item.extraPersonPrice &&
+                      (selectedExtras[item.id] || 0) > 0 && (
+                        <div className="mt-2">
+                          <p className="text-[14px] text-gray-600 mb-1">
+                            Personne supplémentaire (+{item.extraPersonPrice}
+                            €/pers)
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleExtraChange(
+                                  `${item.id}-extra`,
+                                  (selectedExtras[`${item.id}-extra`] || 0) - 1
+                                )
+                              }
+                              disabled={
+                                (selectedExtras[`${item.id}-extra`] || 0) === 0
+                              }
+                              className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#668E73] text-[#668E73] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                            >
+                              -
+                            </button>
+                            <span className="w-8 font-medium text-center text-gray-900">
+                              {selectedExtras[`${item.id}-extra`] || 0}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleExtraChange(
+                                  `${item.id}-extra`,
+                                  (selectedExtras[`${item.id}-extra`] || 0) + 1
+                                )
+                              }
+                              className="w-8 h-8 flex items-center bg-[#668E73] justify-center rounded-full border-2 border-[#668E73] text-white hover:bg-[#668E73] hover:border-[#668E73] hover:text-white transition-colors"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-
+              ))}
         </div>
+      </div>
     </div>
   );
 
   const renderInfoSupSection = () => (
     <div>
       <div className="w-full mt-6 space-y-8">
-              {/* Notes */}
-              <div className="col-span-full">
-                  <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                    Laissez un message pour le propriétaire
-                    <textarea
-                      name="notice"
-                      value={formData.notice}
-                      onChange={handleChange}
-                      rows="3"
-                      placeholder="Laissez un message pour le propriétaire"
-                      className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white p-2"
-                    />
-                  </label>
-                </div>
-
-              <div className="pt-4 pb-4 mt-6 mb-6 border-t border-b border-gray-200">
-                <div className="flex items-end gap-4">
-                  <div className="flex-grow">
-                    <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-                      Code promo
-                      <input
-                        type="text"
-                        value={coupon}
-                        onChange={(e) => setCoupon(e.target.value)}
-                        placeholder="Entrez votre code promo"
-                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      />
-                    </label>
-                    {couponError && (
-                      <p className="mt-1 text-sm text-red-500">{couponError}</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    className="h-12 px-6 rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none"
-                  >
-                    Appliquer
-                  </button>
-                </div>
-                {appliedCoupon && (
-                  <div className="mt-2 text-sm text-green-600">
-                    Code promo {appliedCoupon.code} appliqué : -
-                    {appliedCoupon.discount}€
-                  </div>
-                )}
-              </div>
+        {/* Notes */}
+        <div className="col-span-full">
+          <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+            Laissez un message pour le propriétaire
+            <textarea
+              name="notice"
+              value={formData.notice}
+              onChange={handleChange}
+              rows="3"
+              placeholder="Laissez un message pour le propriétaire"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[16px] placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white p-2"
+            />
+          </label>
         </div>
+
+        <div className="pt-4 pb-4 mt-6 mb-6 border-t border-b border-gray-200">
+          <div className="flex items-end gap-4">
+            <div className="flex-grow">
+              <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
+                Code promo
+                <input
+                  type="text"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
+                  placeholder="Entrez votre code promo"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                />
+              </label>
+              {couponError && (
+                <p className="mt-1 text-sm text-red-500">{couponError}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleApplyCoupon}
+              className="h-12 px-6 rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none"
+            >
+              Appliquer
+            </button>
+          </div>
+          {appliedCoupon && (
+            <div className="mt-2 text-sm text-green-600">
+              Code promo {appliedCoupon.code} appliqué : -
+              {appliedCoupon.discount}€
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 
@@ -1278,8 +1239,6 @@ const handlePaymentSuccess = () => {
     }
     return false;
   };
-
-
 
   const renderPaymentForm = () => (
     <div className="w-2/5 mx-auto mt-8">
@@ -1581,17 +1540,24 @@ const handlePaymentSuccess = () => {
 
             {/* Right Column - Contact Form */}
             <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
-
-
-                  {currentStep == 1 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Extras </h2>
-                  )}
-                  {currentStep == 2 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Notes </h2>
-                  )}
-                  {currentStep == 3 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Contact </h2>
-                  )}
+              {currentStep == 1 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Extras{" "}
+                </h2>
+              )}
+              {currentStep == 2 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Notes{" "}
+                </h2>
+              )}
+              {currentStep == 3 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Contact{" "}
+                </h2>
+              )}
 
               {/* Render progress bar */}
               {renderProgressBar()}
@@ -1600,38 +1566,39 @@ const handlePaymentSuccess = () => {
               {renderStepContent()}
 
               {/* Navigation buttons */}
-                <div className="flex justify-between mt-6">
-                  {currentStep > 1 && (
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                    >
-                      Précédent
-                    </button>
-                  )}
-                  {currentStep < 3 && (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
-                    >
-                      Suivant
-                    </button>
-                  )}
-                  {currentStep === 3 && (
-                    <button
-                      type="submit"
-                      disabled={!isStepValid()}
-                      className={`px-4 py-2 ${
-                        isStepValid() ? "bg-[#668E73] hover:bg-opacity-90" : "bg-gray-300 cursor-not-allowed"
-                      } text-white rounded`}
-                    >
-                      {loading ? "En cours..." : "Passer au paiement"}
-                    </button>
-                  )}
-                </div>
-
+              <div className="flex justify-between mt-6">
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  >
+                    Précédent
+                  </button>
+                )}
+                {currentStep < 3 && (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                  >
+                    Suivant
+                  </button>
+                )}
+                {currentStep === 3 && (
+                  <button
+                    type="submit"
+                    disabled={!isStepValid()}
+                    className={`px-4 py-2 ${
+                      isStepValid()
+                        ? "bg-[#668E73] hover:bg-opacity-90"
+                        : "bg-gray-300 cursor-not-allowed"
+                    } text-white rounded`}
+                  >
+                    {loading ? "En cours..." : "Passer au paiement"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </form>

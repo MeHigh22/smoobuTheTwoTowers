@@ -19,7 +19,7 @@ const pendingBookings = new Map();
 
 // Discount settings
 const discountSettings = {
-  2402388: {
+  2428698: {
     cleaningFee: 0,
     prepayment: 0,
     minDaysBetweenBookingAndArrival: 1,
@@ -252,7 +252,7 @@ app.post(
            },
            {
              headers: {
-               "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+               "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
                "Content-Type": "application/json",
              },
            }
@@ -279,7 +279,7 @@ app.post(
                  },
                  {
                    headers: {
-                     "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+                     "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
                      "Content-Type": "application/json",
                    },
                  }
@@ -299,7 +299,7 @@ app.post(
                    },
                    {
                      headers: {
-                       "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+                       "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
                        "Content-Type": "application/json",
                      },
                    }
@@ -339,9 +339,10 @@ app.post(
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://127.0.0.1:5173",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
 
@@ -360,7 +361,7 @@ app.get("/api/rates", async (req, res) => {
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
-        "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+        "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
         "Content-Type": "application/json",
       },
       params: {
@@ -552,7 +553,7 @@ app.post("/api/test-smoobu", async (req, res) => {
       testBooking,
       {
         headers: {
-          "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+          "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
           "Content-Type": "application/json",
         },
       }

@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import BookingForm from "./Bookings";
 import BookingConfirmation from "./components/BookingConfirmation";
-import DummyComponent from "./components/DummyComponent"
-import StaticBookingConfirmation from "./components/TestBookingConfirmation"
+import Booking2 from "./BookingTest"
+import BookingTest from "./components/booking/BookingForm"
 import './index.css'
 
 function App() {
@@ -12,7 +12,8 @@ function App() {
       <Routes>
         <Route path="/" element={<BookingForm />} />
         <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-        <Route path="/dummy-component" element={<StaticBookingConfirmation />} />
+        <Route path="/dummy-component" element={<Booking2 />} />
+        <Route path="/dummy" element={<BookingTest />} />
       </Routes>
     </Router>
   );
