@@ -49,41 +49,77 @@ const calculatePriceWithSettings = (
   const endDateTime = new Date(endDate);
 
   // Special handling for departure-arrival day
-  const startDateStr = currentDate.toISOString().split('T')[0];
+  const startDateStr = currentDate.toISOString().split("T")[0];
   const prevDay = new Date(currentDate);
   prevDay.setDate(prevDay.getDate() - 1);
-  const prevDayStr = prevDay.toISOString().split('T')[0];
+  const prevDayStr = prevDay.toISOString().split("T")[0];
 
   // If starting on a departure day, don't count it as unavailable
-  const isDepartureDay = (!rates[prevDayStr] || rates[prevDayStr].available === 0) && 
-                        rates[startDateStr] && rates[startDateStr].available === 1;
+  const isDepartureDay =
+    (!rates[prevDayStr] || rates[prevDayStr].available === 0) &&
+    rates[startDateStr] &&
+    rates[startDateStr].available === 1;
+
+  console.log("Calculating price for dates:", {
+    startDate: startDateStr,
+    endDate: endDateTime.toISOString().split("T")[0],
+    numberOfGuests,
+    numberOfChildren,
+  });
 
   while (currentDate < endDateTime) {
-    const dateStr = currentDate.toISOString().split('T')[0];
+    const dateStr = currentDate.toISOString().split("T")[0];
     const dayRate = rates[dateStr];
 
     if (dayRate) {
       // Allow booking if it's either available or it's a departure-arrival day
-      if (dayRate.available === 1 || 
-         (dateStr === startDateStr && isDepartureDay)) {
+      if (
+        dayRate.available === 1 ||
+        (dateStr === startDateStr && isDepartureDay)
+      ) {
         totalPrice += dayRate.price;
         numberOfNights++;
+        console.log(`Adding price for ${dateStr}:`, dayRate.price);
       }
     }
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Rest of your existing price calculation code...
-  const extraGuests = Math.max(0, numberOfGuests - settings.startingAtGuest);
-  const extraGuestsFee = extraGuests * settings.extraGuestsPerNight * numberOfNights;
-  const extraChildrenFee = numberOfChildren * settings.extraChildPerNight * numberOfNights;
+  console.log("Base calculation:", {
+    totalPrice,
+    numberOfNights,
+  });
 
+  // Calculate long stay discount only on the base room price
   let discount = 0;
   if (numberOfNights >= settings.lengthOfStayDiscount.minNights) {
-    discount = (totalPrice * settings.lengthOfStayDiscount.discountPercentage) / 100;
+    discount =
+      (totalPrice * settings.lengthOfStayDiscount.discountPercentage) / 100;
+    console.log("Long stay discount:", {
+      numberOfNights,
+      minimumNights: settings.lengthOfStayDiscount.minNights,
+      discountPercentage: settings.lengthOfStayDiscount.discountPercentage,
+      discountAmount: discount,
+    });
   }
 
+  // Guest fees
+  const extraGuests = Math.max(0, numberOfGuests - settings.startingAtGuest);
+  const extraGuestsFee =
+    extraGuests * settings.extraGuestsPerNight * numberOfNights;
+  const extraChildrenFee =
+    numberOfChildren * settings.extraChildPerNight * numberOfNights;
+
+  console.log("Guest fees:", {
+    extraGuests,
+    extraGuestsFee,
+    extraChildrenFee,
+    extraGuestsPerNight: settings.extraGuestsPerNight,
+    extraChildPerNight: settings.extraChildPerNight,
+  });
+
+  // Build price elements array
   const priceElements = [
     {
       type: "basePrice",
@@ -129,9 +165,22 @@ const calculatePriceWithSettings = (
     });
   }
 
+  // Calculate final price
   const subtotal =
     totalPrice + extraGuestsFee + extraChildrenFee + settings.cleaningFee;
   const finalPrice = subtotal - discount;
+
+  console.log("Final price calculation:", {
+    basePrice: totalPrice,
+    extraGuestsFee,
+    extraChildrenFee,
+    cleaningFee: settings.cleaningFee,
+    subtotal,
+    discount,
+    finalPrice,
+    numberOfNights,
+    priceElements,
+  });
 
   return {
     originalPrice: totalPrice,
