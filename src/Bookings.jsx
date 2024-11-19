@@ -20,6 +20,7 @@ import fr from 'date-fns/locale/fr';
 registerLocale('fr', fr);
 
 
+
 import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 
@@ -153,58 +154,174 @@ useEffect(() => {
   fetchDates();
 }, [formData.apartmentId]);
 
-const isDateUnavailable = (date) => {
+const isDateUnavailable = (date, isStart) => {
   if (!date) return true;
-  const dateStr = date.toISOString().split('T')[0];
+
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  const dateStr = localDate.toISOString().split("T")[0];
   const dayData = availableDates[dateStr];
-  
-  // If we have a start date selected, check the entire range for availability
-  if (startDate && date > startDate) {
-    const currentDate = new Date(startDate);
-    while (currentDate <= date) {
-      const checkDateStr = currentDate.toISOString().split('T')[0];
-      const checkDayData = availableDates[checkDateStr];
-      if (!checkDayData || checkDayData.available === 0) {
-        return true;
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
+
+  // Block today and past dates
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  if (date < tomorrow) return true;
+
+  console.log("Checking date availability:", {
+    date: dateStr,
+    normalizedDate: localDate,
+    isStart,
+    dayData,
+    available: dayData?.available,
+  });
+
+  if (isStart) {
+    if (!dayData) return true;
+
+    // Check if it's a departure day
+    const prevDate = new Date(localDate);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const prevLocalDate = new Date(
+      prevDate.getTime() - prevDate.getTimezoneOffset() * 60000
+    );
+    const prevDayStr = prevLocalDate.toISOString().split("T")[0];
+    const prevDayData = availableDates[prevDayStr];
+
+    console.log("Departure day check:", {
+      currentDate: dateStr,
+      prevDate: prevDayStr,
+      currentDayData: dayData,
+      prevDayData,
+      isDepartureDay:
+        (!prevDayData || prevDayData.available === 0) &&
+        dayData.available === 1,
+    });
+
+    // If it's a departure day, it's available for new arrivals regardless of next day
+    if (
+      (!prevDayData || prevDayData.available === 0) &&
+      dayData.available === 1
+    ) {
+      return false;
     }
+
+    // For non-departure days, check if the day is available
+    return dayData.available === 0;
   }
-  
-  return dayData?.available === 0;
+
+  // For departure date selection
+  if (startDate) {
+    let checkDate = new Date(startDate);
+
+    // Only check dates between start and end (exclusive of end date)
+    while (checkDate < date) {
+      const checkLocalDate = new Date(
+        checkDate.getTime() - checkDate.getTimezoneOffset() * 60000
+      );
+      const checkDateStr = checkLocalDate.toISOString().split("T")[0];
+      const checkDayData = availableDates[checkDateStr];
+
+      console.log("Checking date in range:", {
+        checkDateStr,
+        checkDayData,
+        available: checkDayData?.available,
+      });
+
+      // Skip availability check for the first day if it's a departure day
+      if (checkDate.getTime() !== startDate.getTime()) {
+        if (!checkDayData || checkDayData.available === 0) {
+          return true;
+        }
+      }
+      checkDate.setDate(checkDate.getDate() + 1);
+    }
+
+    return false;
+  }
+
+  return false;
 };
 
-
-const handleDateSelect = (dates, isStart) => {
-  const selectedDate = dates;
-  if (isDateUnavailable(selectedDate)) {
-    setDateError(`La date du ${selectedDate.toLocaleDateString('fr-FR')} n'est pas disponible`);
+const handleDateSelect = (date, isStart) => {
+  if (!date) {
+    if (isStart) {
+      // If clearing arrival date, also clear departure date
+      setStartDate(null);
+      setEndDate(null);
+      handleChange({
+        target: {
+          name: "arrivalDate",
+          value: "",
+        },
+      });
+      handleChange({
+        target: {
+          name: "departureDate",
+          value: "",
+        },
+      });
+    } else {
+      // If clearing departure date, only clear departure
+      setEndDate(null);
+      handleChange({
+        target: {
+          name: "departureDate",
+          value: "",
+        },
+      });
+    }
+    setDateError("");
     return;
   }
-  
-  setDateError('');
+
+  // Create date at noon to avoid timezone issues
+  const selectedDate = new Date(date.setHours(12, 0, 0, 0));
+
   if (isStart) {
+    if (isDateUnavailable(selectedDate, isStart)) {
+      setDateError("Cette date n'est pas disponible pour l'arrivée");
+      return;
+    }
     setStartDate(selectedDate);
-    setEndDate(null); // Reset end date when start date changes
+    setEndDate(null);
+    setDateError("");
+
+    // Format date as YYYY-MM-DD without timezone conversion
+    const dateStr = selectedDate.toISOString().split("T")[0];
     handleChange({
       target: {
-        name: 'arrivalDate',
-        value: selectedDate.toISOString().split('T')[0]
-      }
+        name: "arrivalDate",
+        value: dateStr,
+      },
+    });
+    handleChange({
+      target: {
+        name: "departureDate",
+        value: "",
+      },
     });
   } else {
+    if (isDateUnavailable(selectedDate, isStart)) {
+      setDateError("Cette date n'est pas disponible pour le départ");
+      return;
+    }
     setEndDate(selectedDate);
+    setDateError("");
+
+    // Format date as YYYY-MM-DD without timezone conversion
+    const dateStr = selectedDate.toISOString().split("T")[0];
     handleChange({
       target: {
-        name: 'departureDate',
-        value: selectedDate.toISOString().split('T')[0]
-      }
+        name: "departureDate",
+        value: dateStr,
+      },
     });
   }
 };
 
+
 {dateError && (
-  <div className="text-red-500 text-sm font-medium mt-2">
+  <div className="mt-2 text-sm font-medium text-red-500">
     {dateError}
   </div>
 )}
@@ -218,11 +335,6 @@ const handleDateSelect = (dates, isStart) => {
     // Add more coupons as needed
   };
 
-  const arrivalDateRef = useRef(null);
-  const departureDateRef = useRef(null);
-
-  const openArrivalDatePicker = () => arrivalDateRef.current?.showPicker();
-  const openDepartureDatePicker = () => departureDateRef.current?.showPicker();
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -290,55 +402,53 @@ const createSelectedExtrasArray = () => {
     }));
   };
 
-  const fetchRates = async (apartmentId, startDate, endDate) => {
-    if (!apartmentId || !startDate || !endDate) return;
 
+  const handleCheckAvailability = async () => {
+    setError("");
+    setDateError("");
+  
+    if (!formData.arrivalDate || !formData.departureDate) {
+      setDateError("Veuillez sélectionner les dates d'arrivée et de départ");
+      return;
+    }
+  
     setLoading(true);
     try {
       const response = await api.get("/rates", {
         params: {
-          apartments: [apartmentId],
-          start_date: startDate,
-          end_date: endDate,
+          apartments: [formData.apartmentId],
+          start_date: formData.arrivalDate,
+          end_date: formData.departureDate,
           adults: formData.adults,
-          children: formData.children,
+          children: formData.children
         },
       });
-
-      if (response.data.data && response.data.data[apartmentId]) {
-        setPriceDetails(response.data.priceDetails);
-        setFormData((prevData) => ({
-          ...prevData,
-          price: response.data.priceDetails?.finalPrice || 0,
-        }));
-        setIsAvailable(true);
-        setShowPriceDetails(true);
-        setError(null);
-      } else {
-        setIsAvailable(false);
-        setShowPriceDetails(false);
-        setError("Aucun tarif trouvé pour les dates sélectionnées");
-        setPriceDetails(null);
+  
+      if (response.data.data && response.data.data[formData.apartmentId]) {
+        // If there's a price calculated, the dates are available
+        if (response.data.priceDetails && response.data.priceDetails.finalPrice > 0) {
+          setPriceDetails(response.data.priceDetails);
+          setFormData(prev => ({
+            ...prev,
+            price: response.data.priceDetails?.finalPrice || 0
+          }));
+          setIsAvailable(true);
+          setShowPriceDetails(true);
+          setError(null);
+        } else {
+          setDateError("Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées");
+          setIsAvailable(false);
+          setShowPriceDetails(false);
+        }
       }
     } catch (err) {
+      console.error("Error:", err);
       setIsAvailable(false);
       setShowPriceDetails(false);
-      setError(
-        err.response?.data?.error ||
-          "Impossible de récupérer les tarifs. Veuillez réessayer plus tard."
-      );
-      setPriceDetails(null);
+      setError("Impossible de récupérer les tarifs");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCheckAvailability = () => {
-    fetchRates(
-      formData.apartmentId,
-      formData.arrivalDate,
-      formData.departureDate
-    );
   };
 
   const handleChange = (e) => {
@@ -467,47 +577,6 @@ const handlePaymentSuccess = () => {
 };
 
 
-
-  //  const verifyAndApplyCoupon = async (couponCode, reservationId) => {
-  //    try {
-  //      // First create a coupon price element
-  //      const response = await api.post(
-  //        `/reservations/${reservationId}/price-elements`,
-  //        {
-  //          type: "coupon",
-  //          name: `Coupon ${couponCode}`,
-  //          amount: 0, // Initial amount, will be calculated based on the response
-  //          currencyCode: "EUR",
-  //        }
-  //      );
-
-  //      // Get updated price elements to see the applied coupon
-  //      const priceElementsResponse = await api.get(
-  //        `/reservations/${reservationId}/price-elements`
-  //      );
-
-  //      // Find the coupon in the price elements
-  //      const couponElement = priceElementsResponse.data.priceElements.find(
-  //        (element) => element.type === "coupon"
-  //      );
-
-  //      if (couponElement) {
-  //        setAppliedCoupon({
-  //          id: couponElement.id,
-  //          code: couponCode,
-  //          amount: Math.abs(couponElement.amount),
-  //          type: "fixed",
-  //        });
-  //        return true;
-  //      }
-
-  //      return false;
-  //    } catch (error) {
-  //      console.error("Error applying coupon:", error);
-  //      return false;
-  //    }
-  //  };
-
   const handleApplyCoupon = () => {
       setCouponError(null);
 
@@ -549,7 +618,7 @@ const handlePaymentSuccess = () => {
 
   const renderPriceDetails = () => {
     if (!priceDetails) {
-      return <div className="text-gray-500 text-sm">Not available</div>;
+      return <div className="text-sm text-gray-500">Not available</div>;
     }
   
     const selectedExtrasDetails = Object.entries(selectedExtras)
@@ -594,7 +663,7 @@ const handlePaymentSuccess = () => {
   
     // If finalTotal is 0, display "Room not available"
     if (finalTotal === 0) {
-      return <div className="text-red-500 text-sm font-bold my-4">Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées.</div>;
+      return <div className="my-4 text-sm font-bold text-red-500">Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées.</div>;
     }
   
     return (
@@ -653,8 +722,8 @@ const handlePaymentSuccess = () => {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const renderProgressBar = () => (
-    <div className="flex justify-between items-center text-center mb-4">
-      <div className="w-3/5 md:w-3/5 lg:w-4/5 h-2 bg-gray-300 rounded">
+    <div className="flex items-center justify-between mb-4 text-center">
+      <div className="w-3/5 h-2 bg-gray-300 rounded md:w-3/5 lg:w-4/5">
         <div
           className={`h-2 rounded ${
             currentStep === 1 ? "w-1/3" : currentStep === 2 ? "w-2/3" : "w-full"
@@ -669,7 +738,7 @@ const handlePaymentSuccess = () => {
 
   const renderContactSection = () => (
     <div>
-      <div className="mt-6 space-y-8 w-full">
+      <div className="w-full mt-6 space-y-8">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {/* Contact form fields */}
                 <div>
@@ -846,14 +915,14 @@ const handlePaymentSuccess = () => {
                         className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                       >
                         <span className="flex items-center">
-                          <span className="ml-3 block truncate">{formData.arrivalTime || "Heure d'arrivée"}</span>
+                          <span className="block ml-3 truncate">{formData.arrivalTime || "Heure d'arrivée"}</span>
                         </span>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                          <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                          <ChevronUpDownIcon aria-hidden="true" className="text-gray-400 size-5" />
                         </span>
                       </Listbox.Button>
 
-                      <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
                         {timeSlots.map((timeSlot) => (
                           <Listbox.Option
                             key={timeSlot.id}
@@ -921,7 +990,7 @@ const handlePaymentSuccess = () => {
 
   const renderExtrasSection = () => (
     <div>
-      <div className="mt-6 space-y-8 w-full">
+      <div className="w-full mt-6 space-y-8">
           <div className="flex flex-wrap gap-3">
             {Object.entries(extraCategories).map(([key, category]) => (
               <button
@@ -959,7 +1028,7 @@ const handlePaymentSuccess = () => {
                 return Object.entries(groupedBoissons).map(([type, items]) => (
                   <div key={type} className="mb-8">
                     {/* Display the subtitle for each type */}
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4 capitalize">
+                    <h2 className="mb-4 text-xl font-semibold text-gray-800 capitalize">
                       {type === "wine"
                         ? "Vins"
                         : type === "beer"
@@ -975,7 +1044,7 @@ const handlePaymentSuccess = () => {
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-start gap-4 p-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md mb-4"
+                        className="flex items-start gap-4 p-4 mb-4 transition-shadow bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md"
                       >
                         <img
                           src={item.image}
@@ -1135,7 +1204,7 @@ const handlePaymentSuccess = () => {
 
   const renderInfoSupSection = () => (
     <div>
-      <div className="mt-6 space-y-8 w-full">
+      <div className="w-full mt-6 space-y-8">
               {/* Notes */}
               <div className="col-span-full">
                   <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -1151,7 +1220,7 @@ const handlePaymentSuccess = () => {
                   </label>
                 </div>
 
-              <div className="pt-4 mt-6 pb-4 mb-6 border-t border-b border-gray-200">
+              <div className="pt-4 pb-4 mt-6 mb-6 border-t border-b border-gray-200">
                 <div className="flex items-end gap-4">
                   <div className="flex-grow">
                     <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
@@ -1221,20 +1290,20 @@ const handlePaymentSuccess = () => {
 
 
 
-const renderPaymentForm = () => (
-  <div className="mt-8 w-2/5 mx-auto">
-    <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
-    {clientSecret && (
-      <StripeWrapper
-        clientSecret={clientSecret}
-        onSuccess={handlePaymentSuccess}
-        onError= 'erreur oops'
-      >
-        <PaymentForm />
-      </StripeWrapper>
-    )}
-  </div>
-);
+  const renderPaymentForm = () => (
+    <div className="w-2/5 mx-auto mt-8">
+      <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
+      {clientSecret && (
+        <StripeWrapper
+          clientSecret={clientSecret}
+          onSuccess={handlePaymentSuccess}
+          onError={(error) => setError(error)}
+        >
+          <PaymentForm />
+        </StripeWrapper>
+      )}
+    </div>
+  );
 
   return (
     <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px] ">
@@ -1251,63 +1320,53 @@ const renderPaymentForm = () => (
             <div className="grid grid-cols-1 gap-4 text-left md:grid-cols-4 lg:grid-cols-5">
               {/* Arrival Date */}
               <div className="relative">
-                <label
-                  htmlFor="arrivalDate"
-                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
-                >
+                <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                   Arrivée
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => handleDateSelect(date, true)}
+                    selectsStart
+                    startDate={startDate}
+                    endDate={endDate}
+                    minDate={
+                      new Date(new Date().setDate(new Date().getDate() + 1))
+                    } // This sets minimum date to tomorrow
+                    locale="fr"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Sélectionnez une date"
+                    className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    filterDate={(date) => !isDateUnavailable(date, true)}
+                    isClearable={true}
+                  />
                 </label>
-                <DatePicker
-                  id="arrivalDate"
-                  selected={startDate}
-                  onChange={(date) => handleDateSelect(date, true)}
-                  selectsStart
-                  startDate={startDate}
-                  endDate={endDate}
-                  minDate={new Date()}
-                  locale="fr"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Sélectionnez une date"
-                  className="block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  dayClassName={(date) =>
-                    isDateUnavailable(date) ? "text-gray-300 bg-gray-100" : undefined
-                  }
-                  filterDate={(date) => !isDateUnavailable(date)}
-                />
               </div>
 
               <div className="relative">
-                <label
-                  htmlFor="departureDate"
-                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
-                >
+                <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
                   Départ
+                  <DatePicker
+                    selected={endDate}
+                    onChange={(date) => handleDateSelect(date, false)}
+                    selectsEnd
+                    startDate={startDate}
+                    endDate={endDate}
+                    minDate={startDate || new Date()}
+                    locale="fr"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Sélectionnez une date"
+                    className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    filterDate={(date) => !isDateUnavailable(date, false)}
+                    isClearable={true}
+                    disabled={!startDate}
+                  />
                 </label>
-                <DatePicker
-                  id="departureDate"
-                  selected={endDate}
-                  onChange={(date) => handleDateSelect(date, false)}
-                  selectsEnd
-                  startDate={startDate}
-                  endDate={endDate}
-                  minDate={startDate || new Date()}
-                  locale="fr"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Sélectionnez une date"
-                  className="block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                  dayClassName={(date) =>
-                    isDateUnavailable(date) ? "text-gray-300 bg-gray-100" : undefined
-                  }
-                  filterDate={(date) => !isDateUnavailable(date)}
-                />
               </div>
 
-
-          {dateError && (
-            <div className="text-red-500 text-sm font-medium mt-2">
-              {dateError}
-            </div>
-          )}
+              {dateError && (
+                <div className="mt-2 text-sm font-medium text-red-500">
+                  {dateError}
+                </div>
+              )}
 
               {/* Adults Dropdown */}
               {/* <div>
@@ -1336,50 +1395,59 @@ const renderPaymentForm = () => (
               </div> */}
 
               <div>
-                  <label
-                    htmlFor="adults"
-                    className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
-                  >
-                    Adultes
-                  </label>
-                  <Listbox
-                    value={formData.adults}
-                    onChange={(value) => handleChange({ target: { name: "adults", value: value.quantity } })}
-                  >
-                    <div className="relative">
-                      <Listbox.Button
-                        id="adults"  // Add an id to the Listbox button to associate it with the label
-                        className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                      >
-                        <span className="flex items-center">
-                          <span className="ml-3 block truncate">{formData.adults || "Adultes"}</span>
+                <label
+                  htmlFor="adults"
+                  className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
+                >
+                  Adultes
+                </label>
+                <Listbox
+                  value={formData.adults}
+                  onChange={(value) =>
+                    handleChange({
+                      target: { name: "adults", value: value.quantity },
+                    })
+                  }
+                >
+                  <div className="relative">
+                    <Listbox.Button
+                      id="adults" // Add an id to the Listbox button to associate it with the label
+                      className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    >
+                      <span className="flex items-center">
+                        <span className="block ml-3 truncate">
+                          {formData.adults || "Adultes"}
                         </span>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                          <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
-                        </span>
-                      </Listbox.Button>
+                      </span>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                        <ChevronUpDownIcon
+                          aria-hidden="true"
+                          className="text-gray-400 size-5"
+                        />
+                      </span>
+                    </Listbox.Button>
 
-                      <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                        {adultes.map((adulte) => (
-                          <Listbox.Option
-                            key={adulte.id}
-                            value={adulte}
-                            className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
-                          >
-                            <div className="flex items-center">
-                              <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
-                                {adulte.quantity}
-                              </span>
-                            </div>
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
-                              <CheckIcon aria-hidden="true" className="size-5" />
+                    <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      {adultes.map((adulte) => (
+                        <Listbox.Option
+                          key={adulte.id}
+                          value={adulte}
+                          className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                        >
+                          <div className="flex items-center">
+                            <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                              {adulte.quantity}
                             </span>
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
-                </div>
+                          </div>
+                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                            <CheckIcon aria-hidden="true" className="size-5" />
+                          </span>
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+              </div>
 
               {/* Children Dropdown */}
               {/* <div>
@@ -1408,32 +1476,41 @@ const renderPaymentForm = () => (
 
               <div>
                 <label
-                  htmlFor="childrenDropdown"  // Unique id for the Listbox
+                  htmlFor="childrenDropdown" // Unique id for the Listbox
                   className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1"
                 >
                   Enfants
                 </label>
                 <Listbox
                   value={formData.children}
-                  onChange={(value) => handleChange({ target: { name: "children", value: value.quantity } })}
+                  onChange={(value) =>
+                    handleChange({
+                      target: { name: "children", value: value.quantity },
+                    })
+                  }
                 >
                   <div className="relative">
                     <Listbox.Button
-                      id="childrenDropdown"  // Ensure unique id here
+                      id="childrenDropdown" // Ensure unique id here
                       className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
                     >
                       <span className="flex items-center">
-                        <span className="ml-3 block truncate">{formData.children || "0"}</span>
+                        <span className="block ml-3 truncate">
+                          {formData.children || "0"}
+                        </span>
                       </span>
-                      <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                        <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
+                        <ChevronUpDownIcon
+                          aria-hidden="true"
+                          className="text-gray-400 size-5"
+                        />
                       </span>
                     </Listbox.Button>
 
-                    <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                    <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
                       {childrenOptions.map((child) => (
                         <Listbox.Option
-                          key={child.id}  // Ensure unique key for each option
+                          key={child.id} // Ensure unique key for each option
                           value={child}
                           className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
                         >
@@ -1452,7 +1529,6 @@ const renderPaymentForm = () => (
                 </Listbox>
               </div>
 
-
               {/* Check Availability Button */}
               <div className="block align-baseline">
                 <button
@@ -1467,10 +1543,10 @@ const renderPaymentForm = () => (
           </div>
 
           {dateError && (
- <div className="text-red-500 text-sm font-medium mt-2">
-   {dateError}
- </div>
-)}
+            <div className="mt-2 text-sm font-medium text-red-500">
+              {dateError}
+            </div>
+          )}
 
           {/* Main Content Section */}
           <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
@@ -1500,13 +1576,11 @@ const renderPaymentForm = () => (
               <div className="flex items-center justify-between mt-2 mb-5">
                 <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
                 <div className="flex items-center text-[16px] font-light text-black">
-                  {formData.arrivalDate && (
-                    <span>{formatDate(formData.arrivalDate)}</span>
+                  {startDate && <span>{formatDate(startDate)}</span>}
+                  {(startDate || endDate) && (
+                    <span className="mx-2 text-black">→</span>
                   )}
-                  <span className="mx-2 text-black">→</span>
-                  {formData.departureDate && (
-                    <span>{formatDate(formData.departureDate)}</span>
-                  )}
+                  {endDate && <span>{formatDate(endDate)}</span>}
                 </div>
               </div>
 

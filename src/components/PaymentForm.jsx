@@ -1,9 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  PaymentElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import React, { useState } from "react";
+import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 const PaymentForm = ({ onSuccess, onError }) => {
   const stripe = useStripe();
@@ -23,34 +19,30 @@ const PaymentForm = ({ onSuccess, onError }) => {
     setErrorMessage(null);
 
     try {
-      const result = await stripe.confirmPayment({
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          // Update return URL to include payment_intent parameter
           return_url: `${window.location.origin}/booking-confirmation`,
         },
         redirect: "if_required",
       });
 
-      if (result.error) {
-        setErrorMessage(result.error.message);
-        onError(result.error.message);
-      } else if (
-        result.paymentIntent &&
-        result.paymentIntent.status === "succeeded"
-      ) {
-        // Store booking data in localStorage before redirect
+      if (error) {
+        console.error("Payment error:", error);
+        setErrorMessage(error.message);
+        if (onError) onError(error.message);
+      } else if (paymentIntent && paymentIntent.status === "succeeded") {
         const bookingData = {
-          paymentIntent: result.paymentIntent,
+          paymentIntent,
           timestamp: new Date().toISOString(),
         };
         localStorage.setItem("bookingData", JSON.stringify(bookingData));
-        onSuccess(result.paymentIntent);
+        if (onSuccess) onSuccess(paymentIntent);
       }
     } catch (err) {
       console.error("Payment error:", err);
       setErrorMessage(err.message);
-      onError(err.message);
+      if (onError) onError(err.message);
     } finally {
       setLoading(false);
     }
@@ -58,12 +50,12 @@ const PaymentForm = ({ onSuccess, onError }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
-
+      <div className="mb-4">
+        <PaymentElement />
+      </div>
       {errorMessage && (
         <div className="mt-2 text-sm text-red-500">{errorMessage}</div>
       )}
-
       <button
         type="submit"
         disabled={loading || !stripe || !elements}

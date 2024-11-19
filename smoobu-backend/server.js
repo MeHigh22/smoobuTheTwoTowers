@@ -48,30 +48,78 @@ const calculatePriceWithSettings = (
   const currentDate = new Date(startDate);
   const endDateTime = new Date(endDate);
 
+  // Special handling for departure-arrival day
+  const startDateStr = currentDate.toISOString().split("T")[0];
+  const prevDay = new Date(currentDate);
+  prevDay.setDate(prevDay.getDate() - 1);
+  const prevDayStr = prevDay.toISOString().split("T")[0];
+
+  // If starting on a departure day, don't count it as unavailable
+  const isDepartureDay =
+    (!rates[prevDayStr] || rates[prevDayStr].available === 0) &&
+    rates[startDateStr] &&
+    rates[startDateStr].available === 1;
+
+  console.log("Calculating price for dates:", {
+    startDate: startDateStr,
+    endDate: endDateTime.toISOString().split("T")[0],
+    numberOfGuests,
+    numberOfChildren,
+  });
+
   while (currentDate < endDateTime) {
     const dateStr = currentDate.toISOString().split("T")[0];
     const dayRate = rates[dateStr];
 
-    if (dayRate && dayRate.price !== null && dayRate.available === 1) {
-      totalPrice += dayRate.price;
-      numberOfNights++;
+    if (dayRate) {
+      // Allow booking if it's either available or it's a departure-arrival day
+      if (
+        dayRate.available === 1 ||
+        (dateStr === startDateStr && isDepartureDay)
+      ) {
+        totalPrice += dayRate.price;
+        numberOfNights++;
+        console.log(`Adding price for ${dateStr}:`, dayRate.price);
+      }
     }
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
+  console.log("Base calculation:", {
+    totalPrice,
+    numberOfNights,
+  });
+
+  // Calculate long stay discount only on the base room price
+  let discount = 0;
+  if (numberOfNights >= settings.lengthOfStayDiscount.minNights) {
+    discount =
+      (totalPrice * settings.lengthOfStayDiscount.discountPercentage) / 100;
+    console.log("Long stay discount:", {
+      numberOfNights,
+      minimumNights: settings.lengthOfStayDiscount.minNights,
+      discountPercentage: settings.lengthOfStayDiscount.discountPercentage,
+      discountAmount: discount,
+    });
+  }
+
+  // Guest fees
   const extraGuests = Math.max(0, numberOfGuests - settings.startingAtGuest);
   const extraGuestsFee =
     extraGuests * settings.extraGuestsPerNight * numberOfNights;
   const extraChildrenFee =
     numberOfChildren * settings.extraChildPerNight * numberOfNights;
 
-  let discount = 0;
-  if (numberOfNights >= settings.lengthOfStayDiscount.minNights) {
-    discount =
-      (totalPrice * settings.lengthOfStayDiscount.discountPercentage) / 100;
-  }
+  console.log("Guest fees:", {
+    extraGuests,
+    extraGuestsFee,
+    extraChildrenFee,
+    extraGuestsPerNight: settings.extraGuestsPerNight,
+    extraChildPerNight: settings.extraChildPerNight,
+  });
 
+  // Build price elements array
   const priceElements = [
     {
       type: "basePrice",
@@ -117,9 +165,22 @@ const calculatePriceWithSettings = (
     });
   }
 
+  // Calculate final price
   const subtotal =
     totalPrice + extraGuestsFee + extraChildrenFee + settings.cleaningFee;
   const finalPrice = subtotal - discount;
+
+  console.log("Final price calculation:", {
+    basePrice: totalPrice,
+    extraGuestsFee,
+    extraChildrenFee,
+    cleaningFee: settings.cleaningFee,
+    subtotal,
+    discount,
+    finalPrice,
+    numberOfNights,
+    priceElements,
+  });
 
   return {
     originalPrice: totalPrice,
@@ -292,15 +353,14 @@ app.get("/api/rates", async (req, res) => {
     const settings = discountSettings[apartmentId];
 
     if (!settings) {
-      return res
-        .status(404)
-        .json({ error: "Settings not found for this apartment" });
+      return res.status(404).json({ error: "Settings not found for this apartment" });
     }
+
+    console.log("Fetching rates for dates:", start_date, "to", end_date);
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
-        "Api-Key":
-        "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
+        "Api-Key": "3QrCCtDgMURVQn1DslPKbUu69DReBzWRY0DOe2SIVB",
         "Content-Type": "application/json",
       },
       params: {
@@ -311,8 +371,28 @@ app.get("/api/rates", async (req, res) => {
     });
 
     if (response.data.data && response.data.data[apartmentId]) {
+      const data = response.data.data[apartmentId];
+      
+      // Check if start date is a departure day
+      const startDate = new Date(start_date);
+      const prevDay = new Date(startDate);
+      prevDay.setDate(prevDay.getDate() - 1);
+      const prevDayStr = prevDay.toISOString().split('T')[0];
+      
+      const isDepartureDay = (!data[prevDayStr] || data[prevDayStr].available === 0) && 
+                            data[start_date] && data[start_date].available === 1;
+
+      console.log("Is departure day:", isDepartureDay);
+      console.log("Availability data:", data);
+
+      if (isDepartureDay) {
+        // Mark the start date as explicitly available
+        data[start_date].available = 1;
+        data[start_date].isDepartureDay = true; // Add a flag for departure days
+      }
+
       const priceData = calculatePriceWithSettings(
-        response.data.data[apartmentId],
+        data,
         start_date,
         end_date,
         parseInt(adults) || 1,
@@ -323,15 +403,13 @@ app.get("/api/rates", async (req, res) => {
       res.json({
         ...response.data,
         priceDetails: priceData,
+        isDepartureDay
       });
     } else {
       res.json(response.data);
     }
   } catch (error) {
-    console.error(
-      "Error fetching rates:",
-      error.response?.data || error.message
-    );
+    console.error("Error fetching rates:", error.response?.data || error.message);
     res.status(error.response?.status || 500).json({
       error: error.response?.data?.detail || "Failed to fetch rates",
     });
