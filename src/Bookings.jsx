@@ -1306,7 +1306,7 @@ const handlePaymentSuccess = () => {
   );
 
   return (
-    <div className="p-6 mx-auto h-[100vh] overflow-scroll w-full lg:w-[1024px] xl:w-[1440px] ">
+    <div className="p-6 mx-auto h-[100vh] overflow-y-scroll w-full lg:w-[1024px] xl:w-[1440px] ">
       {error && <p className="mb-4 text-red-500">{error}</p>}
       {successMessage && (
         <p className="mb-4 text-green-500">{successMessage}</p>
