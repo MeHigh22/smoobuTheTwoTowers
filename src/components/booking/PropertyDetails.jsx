@@ -22,9 +22,9 @@ export const PropertyDetails = ({
   };
 
   return (
-    <div className="w-full md:w-2/3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {Object.values(roomsData).map((room) => (
-        <div key={room.id} className="mb-6 p-4 border border-[#668E73] rounded">
+        <div key={room.id} className="p-4 border border-[#668E73] rounded">
           <img
             src={room.image}
             alt={room.name}
@@ -96,25 +96,27 @@ export const PropertyDetails = ({
 
           {/* Select Room Button */}
           <button
-            onClick={() => onRoomSelect(room.id)}
-            className={`w-full mt-4 py-2 rounded transition-colors ${
+            type="button" // Add this to prevent form submission
+            onClick={(e) => {
+              e.preventDefault(); // Add this
+              onRoomSelect(room.id);
+            }}
+            className={`w-full mt-4 py-2 rounded ${
               formData.apartmentId === room.id
                 ? "bg-[#445E54] text-white"
                 : "bg-[#668E73] text-white hover:bg-opacity-90"
             }`}
           >
-            {formData.apartmentId === room.id ? "Selected" : "Select Room"}
+            {formData.apartmentId === room.id ? "Sélectionné" : "Sélectionner"}
           </button>
 
           {/* Price Details */}
           {showPriceDetails && formData.apartmentId === room.id && (
-            <div className="mt-4">
-              <PriceDetails
-                priceDetails={priceDetails}
-                selectedExtras={selectedExtras}
-                appliedCoupon={appliedCoupon}
-              />
-            </div>
+            <PriceDetails
+              priceDetails={priceDetails}
+              selectedExtras={selectedExtras}
+              appliedCoupon={appliedCoupon}
+            />
           )}
         </div>
       ))}

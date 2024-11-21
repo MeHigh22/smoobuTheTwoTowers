@@ -368,5 +368,7 @@ const handleApplyCoupon = (couponCode) => {
     setDateError,
     setSelectedCategory,
     setFormData,
+    setCurrentStep,
+    setShowPayment,
   };
 };

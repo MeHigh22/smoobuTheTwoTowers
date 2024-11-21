@@ -45,20 +45,24 @@ const BookingForm = () => {
     setStartDate,
     setEndDate,
     setDateError,
+    setCurrentStep,
+    setShowPayment,
     setFormData,
     handleApplyCoupon,
   } = useBookingForm();
 
-const { isDateUnavailable } = useAvailabilityCheck(formData);
+  const { isDateUnavailable } = useAvailabilityCheck(formData);
 
   const handleRoomSelect = (roomId) => {
+    // Reset form steps when selecting a new room
+    setCurrentStep(1);
+    setShowPayment(false);
     setFormData((prev) => ({
       ...prev,
       apartmentId: roomId,
     }));
-    handleCheckAvailability(); // Check availability for the selected room
+    handleCheckAvailability();
   };
-
 
   // Props for each section
   const searchSectionProps = {
@@ -133,7 +137,7 @@ const { isDateUnavailable } = useAvailabilityCheck(formData);
     showPriceDetails,
     selectedExtras,
     appliedCoupon,
-    onRoomSelect: handleRoomSelect
+    onRoomSelect: handleRoomSelect,
   };
 
   const extrasSectionProps = {
@@ -144,12 +148,12 @@ const { isDateUnavailable } = useAvailabilityCheck(formData);
     setSelectedCategory,
   };
 
-const infoSupSectionProps = {
-  formData,
-  handleChange,
-  appliedCoupon,
-  handleApplyCoupon : handleApplyCoupon,
-};
+  const infoSupSectionProps = {
+    formData,
+    handleChange,
+    appliedCoupon,
+    handleApplyCoupon: handleApplyCoupon,
+  };
 
   const contactSectionProps = {
     formData,
@@ -180,28 +184,42 @@ const infoSupSectionProps = {
           <SearchSection {...searchSectionProps} />
 
           {/* Main Content */}
-          <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
-            {/* Property Details */}
-            <PropertyDetails {...propertyDetailsProps} />
-
-            {/* Form Steps */}
-            <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
-              <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-                {currentStep === 1 && "Extras"}
-                {currentStep === 2 && "Notes"}
-                {currentStep === 3 && "Contact"}
-              </h2>
-
-              <BookingSteps currentStep={currentStep} />
-
-              {/* Step Content */}
-              {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
-              {currentStep === 2 && <InfoSupSection {...infoSupSectionProps} />}
-              {currentStep === 3 && <ContactSection {...contactSectionProps} />}
-
-              {/* Navigation Buttons */}
-              <NavigationButtons {...navigationButtonsProps} />
+          <div
+            className={`flex flex-col space-y-4 md:flex-row md:space-y-0 ${
+              formData.apartmentId ? "md:space-x-4" : ""
+            }`}
+          >
+            {/* Property Details - Full width when no room selected */}
+            <div
+              className={formData.apartmentId ? "w-full md:w-1/2" : "w-full"}
+            >
+              <PropertyDetails {...propertyDetailsProps} />
             </div>
+
+            {/* Form Steps - Only show when room is selected */}
+            {formData.apartmentId && showPriceDetails && (
+              <div className="w-full md:w-1/2 border border-[#668E73] p-4 rounded space-y-4 text-left">
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {currentStep === 1 && "Extras"}
+                  {currentStep === 2 && "Notes"}
+                  {currentStep === 3 && "Contact"}
+                </h2>
+
+                <BookingSteps currentStep={currentStep} />
+
+                {/* Step Content */}
+                {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
+                {currentStep === 2 && (
+                  <InfoSupSection {...infoSupSectionProps} />
+                )}
+                {currentStep === 3 && (
+                  <ContactSection {...contactSectionProps} />
+                )}
+
+                {/* Navigation Buttons */}
+                <NavigationButtons {...navigationButtonsProps} />
+              </div>
+            )}
           </div>
         </form>
       ) : (
