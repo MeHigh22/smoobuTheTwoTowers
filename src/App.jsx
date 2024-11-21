@@ -9,10 +9,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<BookingForm />} />
+        <Route path="/dummy" element={<BookingForm />} />
         <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-        <Route path="/dummy-component" element={<Booking2 />} />
-        <Route path="/dummy" element={<Booking2 />} />
+        <Route path="/" element={<Booking2 />} />
       </Routes>
     </Router>
   );

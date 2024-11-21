@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../utils/api";
 
+// hooks/useAvailabilityCheck.js
 export const useAvailabilityCheck = (formData) => {
   const [availableDates, setAvailableDates] = useState({});
   const [loading, setLoading] = useState(false);
@@ -10,22 +11,26 @@ export const useAvailabilityCheck = (formData) => {
     const fetchAvailability = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const startDate = new Date();
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 12);
 
+        // Get all apartment IDs
+        const apartments = [2428698, 2428703, 2432648];
+
         const response = await api.get("/rates", {
           params: {
-            apartments: [formData.apartmentId],
+            apartments: apartments,
             start_date: startDate.toISOString().split("T")[0],
             end_date: endDate.toISOString().split("T")[0],
           },
         });
 
-        if (response.data.data && response.data.data[formData.apartmentId]) {
-          setAvailableDates(response.data.data[formData.apartmentId]);
+        console.log('Availability response:', response.data);
+
+        if (response.data.data) {
+          setAvailableDates(response.data.data);
         }
       } catch (error) {
         console.error("Error fetching availability:", error);
@@ -35,62 +40,60 @@ export const useAvailabilityCheck = (formData) => {
       }
     };
 
-    if (formData.apartmentId) {
-      fetchAvailability();
-    }
-  }, [formData.apartmentId]);
+    fetchAvailability();
+  }, []); // Remove formData.apartmentId dependency
 
   const isDateUnavailable = (date, isStart) => {
     if (!date) return true;
 
-    const localDate = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60000
-    );
-    const dateStr = localDate.toISOString().split("T")[0];
-    const dayData = availableDates[dateStr];
-
-    // Block today and past dates
+    // Block past dates
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     if (date < tomorrow) return true;
 
-    if (isStart) {
-      if (!dayData) return true;
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    const dateStr = localDate.toISOString().split("T")[0];
 
+    // If no specific apartment is selected, check all apartments
+    if (!formData.apartmentId) {
+      // Allow date selection if at least one apartment is available
+      return Object.values(availableDates).every(apartmentData => {
+        const dayData = apartmentData[dateStr];
+        return !dayData || dayData.available === 0;
+      });
+    }
+
+    // Check specific apartment
+    const apartmentData = availableDates[formData.apartmentId];
+    if (!apartmentData) return true;
+
+    const dayData = apartmentData[dateStr];
+    if (!dayData) return true;
+
+    if (isStart) {
       // Check if it's a departure day
       const prevDate = new Date(localDate);
       prevDate.setDate(prevDate.getDate() - 1);
-      const prevLocalDate = new Date(
-        prevDate.getTime() - prevDate.getTimezoneOffset() * 60000
-      );
-      const prevDayStr = prevLocalDate.toISOString().split("T")[0];
-      const prevDayData = availableDates[prevDayStr];
+      const prevDayStr = prevDate.toISOString().split("T")[0];
+      const prevDayData = apartmentData[prevDayStr];
 
       // If it's a departure day, it's available for new arrivals
-      if (
-        (!prevDayData || prevDayData.available === 0) &&
-        dayData.available === 1
-      ) {
+      if ((!prevDayData || prevDayData.available === 0) && dayData.available === 1) {
         return false;
       }
 
-      // For non-departure days, check if the day is available
       return dayData.available === 0;
     }
 
     // For departure date selection
-    const startDate = new Date(formData.arrivalDate);
-    if (startDate) {
+    if (formData.arrivalDate) {
+      const startDate = new Date(formData.arrivalDate);
       let checkDate = new Date(startDate);
 
-      // Check all dates between start and end (exclusive of end date)
       while (checkDate < date) {
-        const checkLocalDate = new Date(
-          checkDate.getTime() - checkDate.getTimezoneOffset() * 60000
-        );
-        const checkDateStr = checkLocalDate.toISOString().split("T")[0];
-        const checkDayData = availableDates[checkDateStr];
+        const checkDateStr = checkDate.toISOString().split("T")[0];
+        const checkDayData = apartmentData[checkDateStr];
 
         if (checkDate.getTime() !== startDate.getTime()) {
           if (!checkDayData || checkDayData.available === 0) {

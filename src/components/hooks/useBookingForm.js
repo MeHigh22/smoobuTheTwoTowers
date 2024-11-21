@@ -10,11 +10,11 @@ export const useBookingForm = () => {
     arrivalDate: "",
     departureDate: "",
     channelId: 4033148,
-    apartmentId: 2428698,
+    apartmentId: "",
     arrivalTime: "",
     departureTime: "",
     firstName: "",
-    lastName: "",
+    lastName: "", 
     email: "",
     phone: "",
     notice: "",
@@ -129,57 +129,58 @@ const [startDate, setStartDate] = useState(tomorrow);
       .filter(Boolean);
   };
 
-  const handleCheckAvailability = async () => {
-    setError("");
-    setDateError("");
+const handleCheckAvailability = async () => {
+  setError("");
+  setDateError("");
 
-    if (!formData.arrivalDate || !formData.departureDate) {
-      setDateError("Veuillez sélectionner les dates d'arrivée et de départ");
-      return;
-    }
+  if (!formData.arrivalDate || !formData.departureDate) {
+    setDateError("Veuillez sélectionner les dates d'arrivée et de départ");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const response = await api.get("/rates", {
-        params: {
-          apartments: [formData.apartmentId],
-          start_date: formData.arrivalDate,
-          end_date: formData.departureDate,
-          adults: formData.adults,
-          children: formData.children,
-        },
-      });
+  setLoading(true);
+  try {
+    const response = await api.get("/rates", {
+      params: {
+        apartments: [formData.apartmentId],
+        start_date: formData.arrivalDate,
+        end_date: formData.departureDate,
+        adults: formData.adults,
+        children: formData.children,
+      },
+    });
 
-      if (response.data.data && response.data.data[formData.apartmentId]) {
-        if (
-          response.data.priceDetails &&
-          response.data.priceDetails.finalPrice > 0
-        ) {
-          setPriceDetails(response.data.priceDetails);
-          setFormData((prev) => ({
-            ...prev,
-            price: response.data.priceDetails?.finalPrice || 0,
-          }));
-          setIsAvailable(true);
-          setShowPriceDetails(true);
-          setError(null);
-        } else {
-          setDateError(
-            "Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées"
-          );
-          setIsAvailable(false);
-          setShowPriceDetails(false);
-        }
+    if (response.data.data && response.data.data[formData.apartmentId]) {
+      if (
+        response.data.priceDetails &&
+        response.data.priceDetails.finalPrice > 0
+      ) {
+        setPriceDetails(response.data.priceDetails);
+        setFormData((prev) => ({
+          ...prev,
+          price: response.data.priceDetails?.finalPrice || 0,
+        }));
+        setIsAvailable(true);
+        setShowPriceDetails(true);
+        setError(null);
+        // Don't set showPayment here
+      } else {
+        setDateError(
+          "Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées"
+        );
+        setIsAvailable(false);
+        setShowPriceDetails(false);
       }
-    } catch (err) {
-      console.error("Error:", err);
-      setIsAvailable(false);
-      setShowPriceDetails(false);
-      setError("Impossible de récupérer les tarifs");
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error("Error:", err);
+    setIsAvailable(false);
+    setShowPriceDetails(false);
+    setError("Impossible de récupérer les tarifs");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();

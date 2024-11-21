@@ -32,6 +32,32 @@ const discountSettings = {
       discountPercentage: 40,
     },
   },
+  2428703: {
+    cleaningFee: 0,
+    prepayment: 0,
+    minDaysBetweenBookingAndArrival: 1,
+    extraGuestsPerNight: 20,
+    startingAtGuest: 2,
+    maxGuests: 4,
+    extraChildPerNight: 20,
+    lengthOfStayDiscount: {
+      minNights: 2,
+      discountPercentage: 40,
+    },
+  },
+  2432648: {
+    cleaningFee: 0,
+    prepayment: 0,
+    minDaysBetweenBookingAndArrival: 1,
+    extraGuestsPerNight: 20,
+    startingAtGuest: 2,
+    maxGuests: 4,
+    extraChildPerNight: 20,
+    lengthOfStayDiscount: {
+      minNights: 2,
+      discountPercentage: 40,
+    },
+  },
 };
 
 // Calculate price with settings
@@ -395,15 +421,25 @@ app.get("/api/rates", async (req, res) => {
 
     console.log("Fetching rates for dates:", start_date, "to", end_date);
 
+        console.log("Request params:", {
+          apartments,
+          start_date,
+          end_date,
+          adults,
+          children,
+        });
+
+
     const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
         "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
         "Content-Type": "application/json",
       },
       params: {
-        apartments: apartments,
+        apartments: Array.isArray(apartments) ? apartments : [apartments],
+        apartment_id: apartments,
         start_date: start_date,
-        end_date: end_date,
+        end_date: end_date || start_date,
       },
     });
 

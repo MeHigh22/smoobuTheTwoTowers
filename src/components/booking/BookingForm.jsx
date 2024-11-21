@@ -51,6 +51,15 @@ const BookingForm = () => {
 
 const { isDateUnavailable } = useAvailabilityCheck(formData);
 
+  const handleRoomSelect = (roomId) => {
+    setFormData((prev) => ({
+      ...prev,
+      apartmentId: roomId,
+    }));
+    handleCheckAvailability(); // Check availability for the selected room
+  };
+
+
   // Props for each section
   const searchSectionProps = {
     formData,
@@ -124,6 +133,7 @@ const { isDateUnavailable } = useAvailabilityCheck(formData);
     showPriceDetails,
     selectedExtras,
     appliedCoupon,
+    onRoomSelect: handleRoomSelect
   };
 
   const extrasSectionProps = {
