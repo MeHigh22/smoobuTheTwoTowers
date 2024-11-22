@@ -51,7 +51,19 @@ const BookingForm = () => {
     handleApplyCoupon,
   } = useBookingForm();
 
-  const { isDateUnavailable } = useAvailabilityCheck(formData);
+const {
+  availableDates: roomAvailability,
+  loading: availabilityLoading,
+  error: availabilityError,
+} = useAvailabilityCheck(formData);
+
+ // Add loading state to UI
+ {
+   availabilityLoading && <LoadingSpinner />;
+ }
+ {
+   availabilityError && <ErrorMessage message={availabilityError} />;
+ }
 
   const handleRoomSelect = (roomId) => {
     // Reset form steps when selecting a new room
@@ -71,63 +83,47 @@ const BookingForm = () => {
     startDate,
     endDate,
     handleDateSelect: (date, isStart) => {
-      // Implementation from your current handleDateSelect
       if (!date) {
         if (isStart) {
           setStartDate(null);
           setEndDate(null);
-          handleChange({
-            target: { name: "arrivalDate", value: "" },
-          });
-          handleChange({
-            target: { name: "departureDate", value: "" },
-          });
+          handleChange({ target: { name: "arrivalDate", value: "" } });
+          handleChange({ target: { name: "departureDate", value: "" } });
         } else {
           setEndDate(null);
-          handleChange({
-            target: { name: "departureDate", value: "" },
-          });
+          handleChange({ target: { name: "departureDate", value: "" } });
         }
         setDateError("");
         return;
       }
 
       const selectedDate = new Date(date.setHours(12, 0, 0, 0));
-
       if (isStart) {
-        if (isDateUnavailable(selectedDate, isStart)) {
-          setDateError("Cette date n'est pas disponible pour l'arrivée");
-          return;
-        }
         setStartDate(selectedDate);
         setEndDate(null);
         setDateError("");
-
-        const dateStr = selectedDate.toISOString().split("T")[0];
         handleChange({
-          target: { name: "arrivalDate", value: dateStr },
+          target: {
+            name: "arrivalDate",
+            value: selectedDate.toISOString().split("T")[0],
+          },
         });
-        handleChange({
-          target: { name: "departureDate", value: "" },
-        });
+        handleChange({ target: { name: "departureDate", value: "" } });
       } else {
-        if (isDateUnavailable(selectedDate, isStart)) {
-          setDateError("Cette date n'est pas disponible pour le départ");
-          return;
-        }
         setEndDate(selectedDate);
         setDateError("");
-
-        const dateStr = selectedDate.toISOString().split("T")[0];
         handleChange({
-          target: { name: "departureDate", value: dateStr },
+          target: {
+            name: "departureDate",
+            value: selectedDate.toISOString().split("T")[0],
+          },
         });
       }
     },
-    isDateUnavailable,
-    handleCheckAvailability,
     dateError,
   };
+
+  console.log("Selected dates:", { startDate, endDate }); // Add this to debug
 
   const propertyDetailsProps = {
     formData,
@@ -138,6 +134,8 @@ const BookingForm = () => {
     selectedExtras,
     appliedCoupon,
     onRoomSelect: handleRoomSelect,
+    availableDates : roomAvailability,
+    loading: availabilityLoading,
   };
 
   const extrasSectionProps = {

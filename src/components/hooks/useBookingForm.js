@@ -138,11 +138,18 @@ const handleCheckAvailability = async () => {
     return;
   }
 
+  console.log("Checking availability for dates:", {
+    arrival: formData.arrivalDate,
+    departure: formData.departureDate,
+  });
+
   setLoading(true);
   try {
+    const apartmentIds = Object.keys(roomsData);
+
     const response = await api.get("/rates", {
       params: {
-        apartments: [formData.apartmentId],
+        apartments: apartmentIds,
         start_date: formData.arrivalDate,
         end_date: formData.departureDate,
         adults: formData.adults,
@@ -150,27 +157,17 @@ const handleCheckAvailability = async () => {
       },
     });
 
-    if (response.data.data && response.data.data[formData.apartmentId]) {
-      if (
-        response.data.priceDetails &&
-        response.data.priceDetails.finalPrice > 0
-      ) {
-        setPriceDetails(response.data.priceDetails);
-        setFormData((prev) => ({
-          ...prev,
-          price: response.data.priceDetails?.finalPrice || 0,
-        }));
-        setIsAvailable(true);
-        setShowPriceDetails(true);
-        setError(null);
-        // Don't set showPayment here
-      } else {
-        setDateError(
-          "Cette chambre n'est malheureusement pas disponible pour les dates sélectionnées"
-        );
-        setIsAvailable(false);
-        setShowPriceDetails(false);
-      }
+    console.log("Availability response:", response.data);
+
+    if (response.data.data) {
+      setPriceDetails(response.data.priceDetails);
+      setIsAvailable(true);
+      setShowPriceDetails(true);
+      setError(null);
+    } else {
+      setDateError("Aucune chambre disponible pour les dates sélectionnées");
+      setIsAvailable(false);
+      setShowPriceDetails(false);
     }
   } catch (err) {
     console.error("Error:", err);

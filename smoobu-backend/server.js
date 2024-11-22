@@ -412,6 +412,13 @@ app.get('/api/apartments/:id', async (req, res) => {
 app.get("/api/rates", async (req, res) => {
   try {
     const { apartments, start_date, end_date, adults, children } = req.query;
+
+      console.log("Received request for rates:", {
+        apartments,
+        start_date,
+        end_date,
+      });
+
     const apartmentId = Array.isArray(apartments) ? apartments[0] : apartments;
     const settings = discountSettings[apartmentId];
 
@@ -428,6 +435,9 @@ app.get("/api/rates", async (req, res) => {
           adults,
           children,
         });
+
+        console.log("Sending response:", response.data);
+        res.json(response.data);
 
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {

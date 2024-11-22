@@ -11,14 +11,12 @@ export const SearchSection = ({
   startDate,
   endDate,
   handleDateSelect,
-  isDateUnavailable,
   handleCheckAvailability,
   dateError,
 }) => {
   return (
     <div className="border border-[#668E73] p-5 rounded space-y-4">
       <div className="grid grid-cols-1 gap-4 text-left md:grid-cols-4 lg:grid-cols-5">
-        {/* Arrival Date */}
         <div className="relative">
           <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
             Arrivée
@@ -33,7 +31,6 @@ export const SearchSection = ({
               dateFormat="dd/MM/yyyy"
               placeholderText="Sélectionnez une date"
               className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              filterDate={(date) => !isDateUnavailable(date, true)}
               isClearable={true}
             />
           </label>
@@ -54,7 +51,6 @@ export const SearchSection = ({
               dateFormat="dd/MM/yyyy"
               placeholderText="Sélectionnez une date"
               className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-              filterDate={(date) => !isDateUnavailable(date, false)}
               isClearable={true}
               disabled={!startDate}
             />
