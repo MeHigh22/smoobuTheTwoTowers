@@ -43,13 +43,16 @@ const BookingForm = () => {
     handlePaymentSuccess,
     setError,
     setStartDate,
+    setIsAvailable,
     setEndDate,
     setDateError,
     setCurrentStep,
+    setPriceDetails,
     setShowPriceDetails,
     setShowPayment,
     setFormData,
     handleApplyCoupon,
+
   } = useBookingForm();
 
   const {
@@ -73,44 +76,53 @@ const handleRoomSelect = async (roomId) => {
       // Update prices for the selected room
       await handleCheckAvailability();
       setShowPriceDetails(true);
-    } catch (err) {
+    } catch (err) {F
       console.error("Error updating prices:", err);
       setError("Failed to update prices for the selected room");
     }
   }
 };
 
- const handleAvailabilityCheck = async () => {
-   if (!startDate || !endDate) {
-     setDateError("Please select both arrival and departure dates");
-     return;
-   }
+const handleAvailabilityCheck = async () => {
+  if (!startDate || !endDate) {
+    setDateError("Please select both arrival and departure dates");
+    return;
+  }
 
-   setError("");
-   setDateError("");
+  setError("");
+  setDateError("");
 
-   try {
-     console.log("Checking availability with dates:", {
-       startDate,
-       endDate,
-     });
+  try {
+    console.log("Checking availability with dates:", {
+      startDate,
+      endDate,
+    });
 
-     const availabilityData = await checkAvailability(startDate, endDate);
-     console.log("Received availability data:", availabilityData);
+    const availabilityData = await checkAvailability(startDate, endDate);
+    console.log("Received availability data:", availabilityData);
 
-     if (availabilityData && Object.keys(availabilityData).length > 0) {
-       setShowPriceDetails(true);
-       // Don't call handleCheckAvailability again
-     } else {
-       setDateError("No availability found for selected dates");
-       setShowPriceDetails(false);
-     }
-   } catch (err) {
-     console.error("Error in availability check:", err);
-     setError("Error checking availability");
-     setShowPriceDetails(false);
-   }
- };
+    if (availabilityData) {
+      if (availabilityData.priceDetails) {
+        setPriceDetails(availabilityData.priceDetails);
+        setShowPriceDetails(true);
+        setIsAvailable(true);
+      } else {
+        setDateError("No rates available for selected dates");
+        setShowPriceDetails(false);
+        setIsAvailable(false);
+      }
+    } else {
+      setDateError("No availability found for selected dates");
+      setShowPriceDetails(false);
+      setIsAvailable(false);
+    }
+  } catch (err) {
+    console.error("Error in availability check:", err);
+    setError("Error checking availability");
+    setShowPriceDetails(false);
+    setIsAvailable(false);
+  }
+};
  
   const searchSectionProps = {
     formData,

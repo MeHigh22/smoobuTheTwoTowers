@@ -56,6 +56,12 @@ const [startDate, setStartDate] = useState(tomorrow);
 
   const [endDate, setEndDate] = useState(null);
 
+const calculateNumberOfNights = (startDate, endDate) => {
+  if (!startDate || !endDate) return 0;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return Math.floor((end - start) / (1000 * 60 * 60 * 24));
+};
 
   
   // Coupon State
@@ -135,6 +141,8 @@ const handleCheckAvailability = async () => {
     return;
   }
 
+  const numberOfNights = calculateNumberOfNights(startDate, endDate);
+  console.log(`Number of nights: ${numberOfNights}`);
   setLoading(true);
   setError(null);
 
@@ -362,8 +370,10 @@ const handleApplyCoupon = (couponCode) => {
     isStepValid,
     setError,
     setStartDate,
+    setPriceDetails,
     setEndDate,
     setDateError,
+    setIsAvailable,
     setSelectedCategory,
     setFormData,
     setCurrentStep,
