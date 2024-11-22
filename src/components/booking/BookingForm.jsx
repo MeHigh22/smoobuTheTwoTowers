@@ -63,23 +63,32 @@ const BookingForm = () => {
   } = useAvailabilityCheck(formData);
 
 const handleRoomSelect = async (roomId) => {
-  setCurrentStep(1);
-  setShowPayment(false);
+  // Don't reset everything, just update the apartmentId
   setFormData((prev) => ({
     ...prev,
     apartmentId: roomId,
   }));
 
-  // Check if we have dates selected
+  // Check if we have dates and availability data
   if (startDate && endDate) {
     try {
-      // Update prices for the selected room
-      await handleCheckAvailability();
-      setShowPriceDetails(true);
-    } catch (err) {F
+      // If we already have price details, just update the UI
+      if (priceDetails && priceDetails[roomId]) {
+        setShowPriceDetails(true);
+      } else {
+        // If we don't have price details for this room, fetch them
+        await handleAvailabilityCheck();
+      }
+    } catch (err) {
       console.error("Error updating prices:", err);
       setError("Failed to update prices for the selected room");
     }
+  }
+
+  // Don't reset the step if we're just switching rooms
+  // Only reset if we're selecting a room for the first time
+  if (!formData.apartmentId) {
+    setCurrentStep(1);
   }
 };
 
