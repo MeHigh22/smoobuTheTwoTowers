@@ -409,6 +409,7 @@ app.get('/api/apartments/:id', async (req, res) => {
 });
 
 // Get rates endpoint
+// In your server file where you handle /api/rates endpoint
 app.get("/api/rates", async (req, res) => {
   try {
     const { apartments, start_date, end_date, adults, children } = req.query;
@@ -418,7 +419,7 @@ app.get("/api/rates", async (req, res) => {
       start_date,
       end_date,
       adults,
-      children,
+      children
     });
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {
@@ -433,139 +434,123 @@ app.get("/api/rates", async (req, res) => {
       },
     });
 
-    console.log("Smoobu API raw response:", response.data);
-
     if (!response.data || !response.data.data) {
-      console.log("No data found in Smoobu response");
       return res.status(404).json({ error: "No rates found" });
     }
 
     const formattedData = {};
     const priceDetailsByApartment = {};
 
+    // Helper function to calculate nights
+    const calculateNumberOfNights = (startDate, endDate) => {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return Math.floor((end - start) / (1000 * 60 * 60 * 24));
+    };
+
     // Process each apartment
-    (Array.isArray(apartments) ? apartments : [apartments]).forEach(
-      (apartmentId) => {
-        const apartmentData = response.data.data[apartmentId];
-        if (!apartmentData) return;
+    (Array.isArray(apartments) ? apartments : [apartments]).forEach(apartmentId => {
+      const apartmentData = response.data.data[apartmentId];
+      formattedData[apartmentId] = apartmentData;
 
-        formattedData[apartmentId] = apartmentData;
+      const settings = discountSettings[apartmentId];
+      if (!settings) return;
 
-        // Get apartment settings
-        const settings = discountSettings[apartmentId];
-        if (!settings) return;
-
-        // Calculate nights
-        const startDate = new Date(start_date);
-        const endDate = new Date(end_date);
-        const numberOfNights = Math.floor(
-          (endDate - startDate) / (1000 * 60 * 60 * 24)
-        );
-
-        // Calculate base price
-        let totalPrice = 0;
-        Object.entries(apartmentData).forEach(([date, dayData]) => {
-          if (dayData.available === 1) {
-            totalPrice += dayData.price;
-          }
-        });
-
-        // Calculate discount
-        let discount = 0;
-        if (numberOfNights >= settings.lengthOfStayDiscount.minNights) {
-          discount =
-            (totalPrice * settings.lengthOfStayDiscount.discountPercentage) /
-            100;
+      // Calculate base price
+      let totalPrice = 0;
+      const dates = Object.keys(apartmentData).sort();
+      dates.forEach(date => {
+        if (apartmentData[date].available === 1) {
+          totalPrice += apartmentData[date].price;
         }
+      });
 
-        // Calculate extra fees
-        const extraGuests = Math.max(
-          0,
-          parseInt(adults) - settings.startingAtGuest
-        );
-        const extraGuestsFee =
-          extraGuests * settings.extraGuestsPerNight * numberOfNights;
-        const extraChildrenFee =
-          parseInt(children) * settings.extraChildPerNight * numberOfNights;
-
-        priceDetailsByApartment[apartmentId] = {
-          originalPrice: totalPrice,
-          extraGuestsFee,
-          extraChildrenFee,
-          cleaningFee: settings.cleaningFee,
-          discount,
-          finalPrice:
-            totalPrice +
-            extraGuestsFee +
-            extraChildrenFee +
-            settings.cleaningFee -
-            discount,
-          numberOfNights,
-          pricePerNight: Math.round(totalPrice / numberOfNights),
-          settings,
-          priceElements: [
-            {
-              type: "basePrice",
-              name: "Prix de base",
-              amount: totalPrice,
-              currencyCode: "EUR",
-            },
-          ],
-        };
-
-        // Add additional price elements
-        if (extraGuestsFee > 0) {
-          priceDetailsByApartment[apartmentId].priceElements.push({
-            type: "addon",
-            name: "Frais de personne supplémentaire",
-            amount: extraGuestsFee,
-            currencyCode: "EUR",
-          });
-        }
-
-        if (extraChildrenFee > 0) {
-          priceDetailsByApartment[apartmentId].priceElements.push({
-            type: "addon",
-            name: "Frais d'enfants supplémentaires",
-            amount: extraChildrenFee,
-            currencyCode: "EUR",
-          });
-        }
-
-        if (settings.cleaningFee > 0) {
-          priceDetailsByApartment[apartmentId].priceElements.push({
-            type: "cleaningFee",
-            name: "Frais de nettoyage",
-            amount: settings.cleaningFee,
-            currencyCode: "EUR",
-          });
-        }
-
-        if (discount > 0) {
-          priceDetailsByApartment[apartmentId].priceElements.push({
-            type: "discount",
-            name: `Réduction long séjour (${settings.lengthOfStayDiscount.discountPercentage}%)`,
-            amount: -discount,
-            currencyCode: "EUR",
-          });
-        }
+      // Calculate numbers of nights and discount
+      const numberOfNights = calculateNumberOfNights(start_date, end_date);
+      let discount = 0;
+      if (numberOfNights >= settings.lengthOfStayDiscount.minNights) {
+        discount = (totalPrice * settings.lengthOfStayDiscount.discountPercentage) / 100;
       }
-    );
 
-    console.log("Sending response:", {
-      formattedData,
-      priceDetailsByApartment,
+      // Calculate extra guest fees
+      const extraGuests = Math.max(0, parseInt(adults) - settings.startingAtGuest);
+      const extraGuestsFee = extraGuests * settings.extraGuestsPerNight * numberOfNights;
+      const extraChildrenFee = parseInt(children) * settings.extraChildPerNight * numberOfNights;
+
+      // Store price details for this apartment
+      priceDetailsByApartment[apartmentId] = {
+        originalPrice: totalPrice,
+        extraGuestsFee,
+        extraChildrenFee,
+        cleaningFee: settings.cleaningFee,
+        discount,
+        finalPrice: totalPrice + extraGuestsFee + extraChildrenFee + settings.cleaningFee - discount,
+        numberOfNights,
+        pricePerNight: Math.round(totalPrice / numberOfNights),
+        settings,
+        priceElements: [
+          {
+            type: "basePrice",
+            name: "Prix de base",
+            amount: totalPrice,
+            currencyCode: "EUR"
+          }
+        ]
+      };
+
+      // Add extra fees to price elements if they exist
+      if (extraGuestsFee > 0) {
+        priceDetailsByApartment[apartmentId].priceElements.push({
+          type: "addon",
+          name: "Frais de personne supplémentaire",
+          amount: extraGuestsFee,
+          currencyCode: "EUR"
+        });
+      }
+
+      if (extraChildrenFee > 0) {
+        priceDetailsByApartment[apartmentId].priceElements.push({
+          type: "addon",
+          name: "Frais d'enfants supplémentaires",
+          amount: extraChildrenFee,
+          currencyCode: "EUR"
+        });
+      }
+
+      if (settings.cleaningFee > 0) {
+        priceDetailsByApartment[apartmentId].priceElements.push({
+          type: "cleaningFee",
+          name: "Frais de nettoyage",
+          amount: settings.cleaningFee,
+          currencyCode: "EUR"
+        });
+      }
+
+      if (discount > 0) {
+        priceDetailsByApartment[apartmentId].priceElements.push({
+          type: "discount",
+          name: `Réduction long séjour (${settings.lengthOfStayDiscount.discountPercentage}%)`,
+          amount: -discount,
+          currencyCode: "EUR"
+        });
+      }
+    });
+
+    console.log("Sending response with price details:", {
+      apartmentCount: Object.keys(priceDetailsByApartment).length,
+      priceDetails: priceDetailsByApartment
     });
 
     res.json({
       data: formattedData,
-      priceDetails: priceDetailsByApartment,
+      priceDetails: priceDetailsByApartment
     });
+
   } catch (error) {
-    console.error("Error in rates endpoint:", error);
+    console.error("Error fetching rates:", error);
     res.status(500).json({
       error: "Failed to fetch rates",
-      details: error.message,
+      details: error.message
     });
   }
 });

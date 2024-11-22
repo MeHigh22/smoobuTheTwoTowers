@@ -190,21 +190,78 @@ const handleCheckAvailability = async () => {
 };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.price) {
+
+    // Check if we have a selected room and price details
+    const selectedRoomPrice = priceDetails?.[formData.apartmentId];
+
+    if (!selectedRoomPrice) {
       setError("Veuillez attendre le calcul du prix avant de continuer.");
       return;
     }
 
     setLoading(true);
     try {
-      const selectedExtrasArray = createSelectedExtrasArray();
-      const extrasTotal = calculateExtrasTotal(selectedExtrasArray);
-      const basePrice = priceDetails.originalPrice;
+      const selectedExtrasArray = Object.entries(selectedExtras)
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([extraId, quantity]) => {
+          const isExtraPerson = extraId.endsWith("-extra");
+          const baseExtraId = isExtraPerson
+            ? extraId.replace("-extra", "")
+            : extraId;
+          const extra = Object.values(extraCategories)
+            .flatMap((category) => category.items)
+            .find((item) => item.id === baseExtraId);
+
+          if (!extra) return null;
+
+          if (isExtraPerson) {
+            return {
+              type: "addon",
+              name: `${extra.name} - Personne supplémentaire`,
+              amount: extra.extraPersonPrice * quantity,
+              quantity: quantity,
+              currencyCode: "EUR",
+            };
+          }
+
+          return {
+            type: "addon",
+            name: extra.name,
+            amount: extra.price * quantity,
+            quantity: quantity,
+            currencyCode: "EUR",
+            extraPersonPrice: extra.extraPersonPrice,
+            extraPersonQuantity: selectedExtras[`${extraId}-extra`] || 0,
+          };
+        })
+        .filter(Boolean);
+
+      // Calculate extras total
+      const extrasTotal = selectedExtrasArray.reduce(
+        (sum, extra) => sum + extra.amount,
+        0
+      );
+
+      // Get the base price from price details
+      const basePrice = selectedRoomPrice.originalPrice;
       const subtotalBeforeDiscounts = basePrice + extrasTotal;
-      const longStayDiscount = priceDetails.discount || 0;
+
+      // Get discounts
+      const longStayDiscount = selectedRoomPrice.discount || 0;
       const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+
+      // Calculate final total
       const finalTotal =
         subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
+
+      console.log("Payment calculation:", {
+        basePrice,
+        extrasTotal,
+        subtotalBeforeDiscounts,
+        longStayDiscount,
+        couponDiscount,
+        finalTotal,
+      });
 
       const response = await api.post("/create-payment-intent", {
         price: finalTotal,
@@ -220,18 +277,12 @@ const handleCheckAvailability = async () => {
               }
             : null,
           priceDetails: {
-            ...priceDetails,
+            ...selectedRoomPrice,
             finalPrice: finalTotal,
             calculatedDiscounts: {
               longStay: longStayDiscount,
               coupon: couponDiscount,
             },
-          },
-          metadata: {
-            basePrice: basePrice.toString(),
-            extrasTotal: extrasTotal.toString(),
-            longStayDiscount: longStayDiscount.toString(),
-            couponDiscount: couponDiscount.toString(),
           },
         },
       });
@@ -240,8 +291,11 @@ const handleCheckAvailability = async () => {
       setShowPayment(true);
       setError(null);
     } catch (err) {
-      console.error("Error:", err);
-      setError(err.response?.data?.error || "Une erreur s'est produite");
+      console.error("Error creating payment:", err);
+      setError(
+        err.response?.data?.error ||
+          "Une erreur s'est produite lors de la création du paiement"
+      );
     } finally {
       setLoading(false);
     }

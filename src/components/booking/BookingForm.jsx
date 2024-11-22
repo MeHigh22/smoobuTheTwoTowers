@@ -74,6 +74,11 @@ const handleRoomSelect = async (roomId) => {
     try {
       // If we already have price details, just update the UI
       if (priceDetails && priceDetails[roomId]) {
+        const roomPriceDetails = priceDetails[roomId];
+        setFormData((prev) => ({
+          ...prev,
+          price: roomPriceDetails.finalPrice,
+        }));
         setShowPriceDetails(true);
       } else {
         // If we don't have price details for this room, fetch them
@@ -102,19 +107,25 @@ const handleAvailabilityCheck = async () => {
   setDateError("");
 
   try {
-    console.log("Checking availability with dates:", {
-      startDate,
-      endDate,
-    });
-
     const availabilityData = await checkAvailability(startDate, endDate);
-    console.log("Received availability data:", availabilityData);
 
     if (availabilityData) {
       if (availabilityData.priceDetails) {
         setPriceDetails(availabilityData.priceDetails);
         setShowPriceDetails(true);
         setIsAvailable(true);
+
+        // Update formData price if we have a selected room
+        if (
+          formData.apartmentId &&
+          availabilityData.priceDetails[formData.apartmentId]
+        ) {
+          setFormData((prev) => ({
+            ...prev,
+            price:
+              availabilityData.priceDetails[formData.apartmentId].finalPrice,
+          }));
+        }
       } else {
         setDateError("No rates available for selected dates");
         setShowPriceDetails(false);
