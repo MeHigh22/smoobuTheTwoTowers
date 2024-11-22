@@ -409,92 +409,96 @@ app.get('/api/apartments/:id', async (req, res) => {
 });
 
 // Get rates endpoint
+// In your server file (where you handle /api/rates endpoint)
 app.get("/api/rates", async (req, res) => {
   try {
     const { apartments, start_date, end_date, adults, children } = req.query;
 
-      console.log("Received request for rates:", {
-        apartments,
-        start_date,
-        end_date,
-      });
+    console.log("Received request for rates:", {
+      apartments,
+      start_date,
+      end_date,
+      adults,
+      children
+    });
 
+    if (!start_date || !end_date || !apartments) {
+      return res.status(400).json({ 
+        error: "Missing required parameters" 
+      });
+    }
+
+    // Make sure we have valid apartment IDs
     const apartmentId = Array.isArray(apartments) ? apartments[0] : apartments;
     const settings = discountSettings[apartmentId];
 
     if (!settings) {
-      return res.status(404).json({ error: "Settings not found for this apartment" });
+      return res.status(404).json({ 
+        error: "Settings not found for this apartment" 
+      });
     }
 
-    console.log("Fetching rates for dates:", start_date, "to", end_date);
-
-        console.log("Request params:", {
-          apartments,
-          start_date,
-          end_date,
-          adults,
-          children,
-        });
-
-        console.log("Sending response:", response.data);
-        res.json(response.data);
-
-
-    const response = await axios.get("https://login.smoobu.com/api/rates", {
+    // Make the API call to Smoobu
+    const smoobuResponse = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
         "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
         "Content-Type": "application/json",
       },
       params: {
         apartments: Array.isArray(apartments) ? apartments : [apartments],
-        apartment_id: apartments,
         start_date: start_date,
-        end_date: end_date || start_date,
+        end_date: end_date,
       },
     });
 
-    if (response.data.data && response.data.data[apartmentId]) {
-      const data = response.data.data[apartmentId];
-      
-      // Check if start date is a departure day
-      const startDate = new Date(start_date);
-      const prevDay = new Date(startDate);
-      prevDay.setDate(prevDay.getDate() - 1);
-      const prevDayStr = prevDay.toISOString().split('T')[0];
-      
-      const isDepartureDay = (!data[prevDayStr] || data[prevDayStr].available === 0) && 
-                            data[start_date] && data[start_date].available === 1;
-
-      console.log("Is departure day:", isDepartureDay);
-      console.log("Availability data:", data);
-
-      if (isDepartureDay) {
-        // Mark the start date as explicitly available
-        data[start_date].available = 1;
-        data[start_date].isDepartureDay = true; // Add a flag for departure days
-      }
-
-      const priceData = calculatePriceWithSettings(
-        data,
-        start_date,
-        end_date,
-        parseInt(adults) || 1,
-        parseInt(children) || 0,
-        settings
-      );
-
-      res.json({
-        ...response.data,
-        priceDetails: priceData,
-        isDepartureDay
+    if (!smoobuResponse.data || !smoobuResponse.data.data) {
+      return res.status(404).json({ 
+        error: "No availability data found" 
       });
-    } else {
-      res.json(response.data);
     }
+
+    const data = smoobuResponse.data.data;
+    
+    // Process each apartment's availability
+    const processedData = {};
+    for (const aptId of (Array.isArray(apartments) ? apartments : [apartments])) {
+      if (data[aptId]) {
+        processedData[aptId] = data[aptId];
+      }
+    }
+
+    if (Object.keys(processedData).length === 0) {
+      return res.json({
+        data: {},
+        message: "No availability found for selected dates"
+      });
+    }
+
+    // Calculate price details if needed
+    const priceData = calculatePriceWithSettings(
+      processedData[apartmentId],
+      start_date,
+      end_date,
+      parseInt(adults) || 1,
+      parseInt(children) || 0,
+      settings
+    );
+
+    console.log("Sending response:", {
+      data: processedData,
+      priceDetails: priceData
+    });
+
+    res.json({
+      data: processedData,
+      priceDetails: priceData
+    });
+
   } catch (error) {
-    console.error("Error fetching rates:", error.response?.data || error.message);
-    res.status(error.response?.status || 500).json({
-      error: error.response?.data?.detail || "Failed to fetch rates",
+    console.error("Error fetching rates:", error.message);
+    res.status(500).json({
+      error: "Failed to fetch rates",
+      details: error.message
     });
   }
 });

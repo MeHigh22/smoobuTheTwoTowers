@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+// hooks/useAvailabilityCheck.js
+import { useState } from "react";
 import { api } from "../utils/api";
-import { roomsData } from "../hooks/roomsData";
 
 // hooks/useAvailabilityCheck.js
 export const useAvailabilityCheck = (formData) => {
@@ -8,60 +8,58 @@ export const useAvailabilityCheck = (formData) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      setLoading(true);
-      try {
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + 12);
+  const checkAvailability = async (startDate, endDate) => {
+    if (!startDate || !endDate) {
+      setError("Please select both dates");
+      return null;
+    }
 
-        // Get all apartment IDs
-        const apartmentIds = ["2428698", "2428703", "2432648"]; // Your actual room IDs
+    setLoading(true);
+    setError(null);
 
-        console.log("Fetching availability for:", {
+    try {
+      const apartmentIds = ["2428698", "2428703", "2432648"];
+      
+      console.log("Checking availability for:", {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      });
+
+      const response = await api.get("/rates", {
+        params: {
           apartments: apartmentIds,
-          start_date: startDate.toISOString().split("T")[0],
-          end_date: endDate.toISOString().split("T")[0],
-        });
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          adults: formData.adults || 1,
+          children: formData.children || 0,
+        },
+      });
 
-        const response = await api.get("/rates", {
-          params: {
-            apartments: apartmentIds,
-            start_date: startDate.toISOString().split("T")[0],
-            end_date: endDate.toISOString().split("T")[0],
-          },
-        });
+      console.log("API Response:", response.data);
 
-        console.log("Raw response data:", response.data);
-
-        if (response.data && response.data.data) {
-          // Transform the data if needed
-          const formattedData = Object.keys(response.data.data).reduce(
-            (acc, apartmentId) => {
-              acc[apartmentId] = response.data.data[apartmentId];
-              return acc;
-            },
-            {}
-          );
-
-          console.log("Formatted availability data:", formattedData);
-          setAvailableDates(formattedData);
-        }
-      } catch (error) {
-        console.error("Error fetching availability:", error);
-        setError("Unable to fetch availability data");
-      } finally {
-        setLoading(false);
+      if (response.data && response.data.data) {
+        setAvailableDates(response.data.data);
+        return response.data.data;
+      } else if (response.data.message) {
+        setError(response.data.message);
+      } else {
+        setError("No availability data found");
       }
-    };
+      return null;
 
-    fetchAvailability();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching availability:", error);
+      setError(error.response?.data?.error || "Unable to fetch availability data");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     availableDates,
     loading,
     error,
+    checkAvailability,
   };
 };
