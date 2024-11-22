@@ -80,38 +80,38 @@ const handleRoomSelect = async (roomId) => {
   }
 };
 
-  const handleAvailabilityCheck = async () => {
-    if (!startDate || !endDate) {
-      setDateError("Please select both arrival and departure dates");
-      return;
-    }
+ const handleAvailabilityCheck = async () => {
+   if (!startDate || !endDate) {
+     setDateError("Please select both arrival and departure dates");
+     return;
+   }
 
-    setError("");
-    setDateError("");
+   setError("");
+   setDateError("");
 
-    try {
-      console.log("Checking availability with dates:", {
-        startDate,
-        endDate,
-      });
+   try {
+     console.log("Checking availability with dates:", {
+       startDate,
+       endDate,
+     });
 
-      const availabilityData = await checkAvailability(startDate, endDate);
+     const availabilityData = await checkAvailability(startDate, endDate);
+     console.log("Received availability data:", availabilityData);
 
-      console.log("Received availability data:", availabilityData);
-
-      if (availabilityData) {
-        setShowPriceDetails(true);
-        await handleCheckAvailability(); // This updates prices
-      } else {
-        setDateError("No availability found for selected dates");
-        setShowPriceDetails(false);
-      }
-    } catch (err) {
-      console.error("Error in availability check:", err);
-      setError("Error checking availability");
-      setShowPriceDetails(false);
-    }
-  };
+     if (availabilityData && Object.keys(availabilityData).length > 0) {
+       setShowPriceDetails(true);
+       // Don't call handleCheckAvailability again
+     } else {
+       setDateError("No availability found for selected dates");
+       setShowPriceDetails(false);
+     }
+   } catch (err) {
+     console.error("Error in availability check:", err);
+     setError("Error checking availability");
+     setShowPriceDetails(false);
+   }
+ };
+ 
   const searchSectionProps = {
     formData,
     handleChange,

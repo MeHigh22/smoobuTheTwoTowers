@@ -409,12 +409,13 @@ app.get('/api/apartments/:id', async (req, res) => {
 });
 
 // Get rates endpoint
-// In your server file (where you handle /api/rates endpoint)
+// In your server file
+// In your server file
 app.get("/api/rates", async (req, res) => {
   try {
     const { apartments, start_date, end_date, adults, children } = req.query;
 
-    console.log("Received request for rates:", {
+    console.log("Fetching rates for:", {
       apartments,
       start_date,
       end_date,
@@ -422,80 +423,49 @@ app.get("/api/rates", async (req, res) => {
       children
     });
 
-    if (!start_date || !end_date || !apartments) {
-      return res.status(400).json({ 
-        error: "Missing required parameters" 
-      });
-    }
-
-    // Make sure we have valid apartment IDs
-    const apartmentId = Array.isArray(apartments) ? apartments[0] : apartments;
-    const settings = discountSettings[apartmentId];
-
-    if (!settings) {
-      return res.status(404).json({ 
-        error: "Settings not found for this apartment" 
-      });
-    }
-
-    // Make the API call to Smoobu
-    const smoobuResponse = await axios.get("https://login.smoobu.com/api/rates", {
+    const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
         "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
         "Content-Type": "application/json",
       },
       params: {
         apartments: Array.isArray(apartments) ? apartments : [apartments],
-        start_date: start_date,
-        end_date: end_date,
+        start_date,
+        end_date,
       },
     });
 
-    if (!smoobuResponse.data || !smoobuResponse.data.data) {
-      return res.status(404).json({ 
-        error: "No availability data found" 
-      });
+    console.log("Smoobu response:", response.data);
+
+    if (!response.data || !response.data.data) {
+      return res.status(404).json({ error: "No rates data found" });
     }
 
-    const data = smoobuResponse.data.data;
+    // Make sure the data structure matches what the client expects
+    const formattedData = {};
     
-    // Process each apartment's availability
-    const processedData = {};
-    for (const aptId of (Array.isArray(apartments) ? apartments : [apartments])) {
-      if (data[aptId]) {
-        processedData[aptId] = data[aptId];
-      }
-    }
-
-    if (Object.keys(processedData).length === 0) {
-      return res.json({
-        data: {},
-        message: "No availability found for selected dates"
+    // Format the data for each apartment
+    Object.keys(response.data.data).forEach(apartmentId => {
+      formattedData[apartmentId] = {};
+      
+      // Add availability data for each date
+      Object.keys(response.data.data[apartmentId]).forEach(date => {
+        formattedData[apartmentId][date] = {
+          available: response.data.data[apartmentId][date].available,
+          price: response.data.data[apartmentId][date].price
+        };
       });
-    }
-
-    // Calculate price details if needed
-    const priceData = calculatePriceWithSettings(
-      processedData[apartmentId],
-      start_date,
-      end_date,
-      parseInt(adults) || 1,
-      parseInt(children) || 0,
-      settings
-    );
-
-    console.log("Sending response:", {
-      data: processedData,
-      priceDetails: priceData
     });
 
+    console.log("Sending formatted data:", formattedData);
+
     res.json({
-      data: processedData,
-      priceDetails: priceData
+      data: formattedData,
+      message: "Successfully fetched rates"
     });
 
   } catch (error) {
-    console.error("Error fetching rates:", error.message);
+    console.error("Error fetching rates:", error);
     res.status(500).json({
       error: "Failed to fetch rates",
       details: error.message

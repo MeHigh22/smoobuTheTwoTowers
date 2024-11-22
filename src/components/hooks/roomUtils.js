@@ -9,31 +9,30 @@ export const isRoomAvailable = (roomId, startDate, endDate, availableDates) => {
     fullAvailableDates: availableDates,
   });
 
+  // Guard clauses
   if (!availableDates || !startDate || !endDate) {
-    console.log("Missing required data for availability check:", {
-      hasAvailableDates: !!availableDates,
-      hasStartDate: !!startDate,
-      hasEndDate: !!endDate,
-    });
+    console.log("Missing basic required data");
     return false;
   }
 
   const roomData = availableDates[roomId];
   if (!roomData) {
-    console.log("No room data found for room ID:", roomId);
+    console.log(`No room data found for room ID: ${roomId}`);
     return false;
   }
 
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  // Convert dates to ISO strings for comparison
+  const start = new Date(startDate).toISOString().split("T")[0];
+  const end = new Date(endDate).toISOString().split("T")[0];
 
   let currentDate = new Date(start);
+  const endDateTime = new Date(end);
 
-  while (currentDate <= end) {
+  while (currentDate <= endDateTime) {
     const dateStr = currentDate.toISOString().split("T")[0];
     const dayData = roomData[dateStr];
 
-    console.log(`Checking date ${dateStr}:`, dayData);
+    console.log(`Checking availability for ${dateStr}:`, dayData);
 
     if (!dayData || dayData.available === 0) {
       console.log(`Date ${dateStr} is not available for room ${roomId}`);
@@ -43,6 +42,6 @@ export const isRoomAvailable = (roomId, startDate, endDate, availableDates) => {
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  console.log(`Room ${roomId} is available for the selected dates`);
+  console.log(`Room ${roomId} is available for all selected dates`);
   return true;
 };

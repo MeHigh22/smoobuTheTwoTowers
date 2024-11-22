@@ -130,26 +130,29 @@ const [startDate, setStartDate] = useState(tomorrow);
   };
 
 const handleCheckAvailability = async () => {
-  setError("");
-  setDateError("");
-
   if (!formData.arrivalDate || !formData.departureDate) {
-    setDateError("Veuillez sélectionner les dates d'arrivée et de départ");
+    setDateError("Please select both dates");
     return;
   }
 
-  console.log("Checking availability for dates:", {
-    arrival: formData.arrivalDate,
-    departure: formData.departureDate,
-  });
-
   setLoading(true);
+  setError(null);
+
   try {
-    const apartmentIds = Object.keys(roomsData);
+    console.log("Checking rates for:", {
+      dates: {
+        arrival: formData.arrivalDate,
+        departure: formData.departureDate,
+      },
+      guests: {
+        adults: formData.adults,
+        children: formData.children,
+      },
+    });
 
     const response = await api.get("/rates", {
       params: {
-        apartments: apartmentIds,
+        apartments: formData.apartmentId || ["2428698", "2428703", "2432648"],
         start_date: formData.arrivalDate,
         end_date: formData.departureDate,
         adults: formData.adults,
@@ -157,28 +160,26 @@ const handleCheckAvailability = async () => {
       },
     });
 
-    console.log("Availability response:", response.data);
+    console.log("Rates response:", response.data);
 
-    if (response.data.data) {
+    if (response.data.priceDetails) {
       setPriceDetails(response.data.priceDetails);
-      setIsAvailable(true);
       setShowPriceDetails(true);
-      setError(null);
+      setIsAvailable(true);
     } else {
-      setDateError("Aucune chambre disponible pour les dates sélectionnées");
-      setIsAvailable(false);
+      setError("No rates available for selected dates");
       setShowPriceDetails(false);
+      setIsAvailable(false);
     }
-  } catch (err) {
-    console.error("Error:", err);
-    setIsAvailable(false);
+  } catch (error) {
+    console.error("Error fetching rates:", error);
+    setError(error.response?.data?.error || "Unable to fetch rates");
     setShowPriceDetails(false);
-    setError("Impossible de récupérer les tarifs");
+    setIsAvailable(false);
   } finally {
     setLoading(false);
   }
 };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.price) {
