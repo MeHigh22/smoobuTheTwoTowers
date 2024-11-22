@@ -59,14 +59,26 @@ const BookingForm = () => {
     checkAvailability,
   } = useAvailabilityCheck(formData);
 
-  const handleRoomSelect = (roomId) => {
-    setCurrentStep(1);
-    setShowPayment(false);
-    setFormData((prev) => ({
-      ...prev,
-      apartmentId: roomId,
-    }));
-  };
+const handleRoomSelect = async (roomId) => {
+  setCurrentStep(1);
+  setShowPayment(false);
+  setFormData((prev) => ({
+    ...prev,
+    apartmentId: roomId,
+  }));
+
+  // Check if we have dates selected
+  if (startDate && endDate) {
+    try {
+      // Update prices for the selected room
+      await handleCheckAvailability();
+      setShowPriceDetails(true);
+    } catch (err) {
+      console.error("Error updating prices:", err);
+      setError("Failed to update prices for the selected room");
+    }
+  }
+};
 
   const handleAvailabilityCheck = async () => {
     if (!startDate || !endDate) {
@@ -105,7 +117,6 @@ const BookingForm = () => {
     handleChange,
     startDate,
     endDate,
-    handleCheckAvailability: handleAvailabilityCheck,
     handleDateSelect: (date, isStart) => {
       if (!date) {
         if (isStart) {
