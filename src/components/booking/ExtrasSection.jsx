@@ -8,41 +8,34 @@ export const ExtrasSection = ({
   setSelectedCategory,
 }) => {
   return (
-    <div className="flex flex-col h-full max-h-full">
-      {/* Categories - Fixed at top */}
-      <div className="flex flex-wrap flex-shrink-0 gap-3 mb-4 bg-white">
-        {Object.entries(extraCategories).map(([key, category]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setSelectedCategory(key)}
-            className={`px-4 py-2 rounded-lg transition-all text-[14px] font-bolder ${
-              selectedCategory === key
-                ? "bg-[#668E73] text-white"
-                : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
-            }`}
-          >
-            {category.name}
-          </button>
-        ))}
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Categories */}
+      <div className="mb-4 shrink-0">
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(extraCategories).map(([key, category]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSelectedCategory(key)}
+              className={`px-4 py-2 rounded-lg transition-all text-[14px] font-bolder ${
+                selectedCategory === key
+                  ? "bg-[#668E73] text-white"
+                  : "bg-[#668E73] bg-opacity-10 text-[#668E73] hover:bg-opacity-20"
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Scrollable Content Area */}
-      <div
-        className="flex-1 overflow-y-auto"
-        style={{ height: "calc(100% - 60px)" }}
-      >
-        <div className="h-full pr-4">
-          {selectedCategory === "boissons" ? (
-            // Boissons layout
-            <div className="space-y-6">{renderGroupedBoissons()}</div>
-          ) : (
-            // Regular layout
-            <div className="grid grid-cols-1 gap-6">
-              {renderRegularExtras()}
-            </div>
-          )}
-        </div>
+      {/* Content */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {selectedCategory === "boissons" ? (
+          <div className="pb-4 space-y-6">{renderGroupedBoissons()}</div>
+        ) : (
+          <div className="pb-4 space-y-4">{renderRegularExtras()}</div>
+        )}
       </div>
     </div>
   );

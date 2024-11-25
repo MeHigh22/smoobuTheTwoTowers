@@ -265,39 +265,41 @@ const handleAvailabilityCheck = async () => {
             {formData.apartmentId && showPriceDetails && (
               <div className="w-full md:w-1/2">
                 <div
-                  className="border border-[#668E73] p-4 rounded sticky top-6"
-                  style={{
-                    height: "800px",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
+                  className="border border-[#668E73] p-4 rounded sticky top-6 overflow-hidden"
                 >
-                  {/* Header */}
-                  <div className="flex-shrink-0 mb-4">
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-                      {currentStep === 1 && "Extras"}
-                      {currentStep === 2 && "Notes"}
-                      {currentStep === 3 && "Contact"}
-                    </h2>
-                    <BookingSteps currentStep={currentStep} />
-                  </div>
+                  <div className="flex flex-col h-full">
+                    {/* Header - Fixed height */}
+                    <div className="shrink-0">
+                      <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-4">
+                        {currentStep === 1 && "Extras"}
+                        {currentStep === 2 && "Notes"}
+                        {currentStep === 3 && "Contact"}
+                      </h2>
+                      <BookingSteps currentStep={currentStep} />
+                    </div>
 
-                  {/* Content Area */}
-                  <div className="flex-1 min-h-0">
-                    {currentStep === 1 && (
-                      <ExtrasSection {...extrasSectionProps} />
-                    )}
-                    {currentStep === 2 && (
-                      <InfoSupSection {...infoSupSectionProps} />
-                    )}
-                    {currentStep === 3 && (
-                      <ContactSection {...contactSectionProps} />
-                    )}
-                  </div>
+                    {/* Content - Takes remaining height with scroll */}
+                    <div
+                      className="flex-1 mt-4 overflow-hidden"
+                      style={{ minHeight: 0 }}
+                    >
+                      <div className="h-full px-1 overflow-y-auto">
+                        {currentStep === 1 && (
+                          <ExtrasSection {...extrasSectionProps} />
+                        )}
+                        {currentStep === 2 && (
+                          <InfoSupSection {...infoSupSectionProps} />
+                        )}
+                        {currentStep === 3 && (
+                          <ContactSection {...contactSectionProps} />
+                        )}
+                      </div>
+                    </div>
 
-                  {/* Footer */}
-                  <div className="flex-shrink-0 pt-4 mt-4 border-t border-gray-200">
-                    <NavigationButtons {...navigationButtonsProps} />
+                    {/* Footer - Fixed height */}
+                    <div className="pt-4 mt-4 border-t border-gray-200 shrink-0">
+                      <NavigationButtons {...navigationButtonsProps} />
+                    </div>
                   </div>
                 </div>
               </div>
