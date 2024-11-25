@@ -8,8 +8,9 @@ export const ExtrasSection = ({
   setSelectedCategory,
 }) => {
   return (
-    <div className="w-full mt-6 space-y-8">
-      <div className="flex flex-wrap gap-3">
+    <div className="flex flex-col h-full max-h-full">
+      {/* Categories - Fixed at top */}
+      <div className="flex flex-wrap flex-shrink-0 gap-3 mb-4 bg-white">
         {Object.entries(extraCategories).map(([key, category]) => (
           <button
             key={key}
@@ -26,14 +27,22 @@ export const ExtrasSection = ({
         ))}
       </div>
 
+      {/* Scrollable Content Area */}
       <div
-        className={`grid grid-cols-1 gap-6 md:grid-cols-1 ${
-          selectedCategory === "boissons" ? "lg:grid-cols-1" : "lg:grid-cols-2"
-        }`}
+        className="flex-1 overflow-y-auto"
+        style={{ height: "calc(100% - 60px)" }}
       >
-        {selectedCategory === "boissons"
-          ? renderGroupedBoissons()
-          : renderRegularExtras()}
+        <div className="h-full pr-4">
+          {selectedCategory === "boissons" ? (
+            // Boissons layout
+            <div className="space-y-6">{renderGroupedBoissons()}</div>
+          ) : (
+            // Regular layout
+            <div className="grid grid-cols-1 gap-6">
+              {renderRegularExtras()}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -51,7 +60,7 @@ export const ExtrasSection = ({
     );
 
     return Object.entries(groupedBoissons).map(([type, items]) => (
-      <div key={type} className="mb-8">
+      <div key={type} className="pb-6">
         <h2 className="mb-4 text-xl font-semibold text-gray-800 capitalize">
           {type === "wine"
             ? "Vins"
@@ -63,7 +72,9 @@ export const ExtrasSection = ({
             ? "Bulles"
             : type}
         </h2>
-        {items.map((item) => renderExtraItem(item))}
+        <div className="space-y-4">
+          {items.map((item) => renderExtraItem(item))}
+        </div>
       </div>
     ));
   }
@@ -108,6 +119,7 @@ export const ExtrasSection = ({
   }
 };
 
+// QuantitySelector component remains the same
 const QuantitySelector = ({ item, selectedExtras, handleExtraChange }) => {
   return (
     <>

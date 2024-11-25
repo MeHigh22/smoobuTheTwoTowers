@@ -261,26 +261,45 @@ const handleAvailabilityCheck = async () => {
               <PropertyDetails {...propertyDetailsProps} />
             </div>
 
-            {/* Form Steps */}
+            {/* Form Steps - Fixed height with internal scroll */}
             {formData.apartmentId && showPriceDetails && (
-              <div className="w-full md:w-1/2 border border-[#668E73] p-4 rounded space-y-4 text-left">
-                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
-                  {currentStep === 1 && "Extras"}
-                  {currentStep === 2 && "Notes"}
-                  {currentStep === 3 && "Contact"}
-                </h2>
+              <div className="w-full md:w-1/2">
+                <div
+                  className="border border-[#668E73] p-4 rounded sticky top-6"
+                  style={{
+                    height: "800px",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex-shrink-0 mb-4">
+                    <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                      {currentStep === 1 && "Extras"}
+                      {currentStep === 2 && "Notes"}
+                      {currentStep === 3 && "Contact"}
+                    </h2>
+                    <BookingSteps currentStep={currentStep} />
+                  </div>
 
-                <BookingSteps currentStep={currentStep} />
+                  {/* Content Area */}
+                  <div className="flex-1 min-h-0">
+                    {currentStep === 1 && (
+                      <ExtrasSection {...extrasSectionProps} />
+                    )}
+                    {currentStep === 2 && (
+                      <InfoSupSection {...infoSupSectionProps} />
+                    )}
+                    {currentStep === 3 && (
+                      <ContactSection {...contactSectionProps} />
+                    )}
+                  </div>
 
-                {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
-                {currentStep === 2 && (
-                  <InfoSupSection {...infoSupSectionProps} />
-                )}
-                {currentStep === 3 && (
-                  <ContactSection {...contactSectionProps} />
-                )}
-
-                <NavigationButtons {...navigationButtonsProps} />
+                  {/* Footer */}
+                  <div className="flex-shrink-0 pt-4 mt-4 border-t border-gray-200">
+                    <NavigationButtons {...navigationButtonsProps} />
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -103,6 +103,7 @@ export const PropertyDetails = ({
         className={`p-6 border rounded shadow-sm ${
           isAvailable ? "border-[#668E73]" : "border-gray-300 opacity-75"
         }`}
+        style={{ height: "fit-content" }}
       >
         {/* Show unavailable dates message for unavailable rooms */}
         {!isAvailable && getUnavailableDatesMessage(room.id)}
@@ -123,22 +124,14 @@ export const PropertyDetails = ({
         {/* Capacity and Dates Section */}
         <div className="flex items-center justify-between mt-6 mb-4">
           <div className="flex items-center space-x-2">
-            <img
-              src= {profileIcon}
-              alt="Profile Icon"
-              className="w-6 h-6"
-            />
+            <img src={profileIcon} alt="Profile Icon" className="w-6 h-6" />
             <span className="text-[16px] text-black">
               Max {room.maxGuests} personnes
             </span>
           </div>
           {formData.apartmentId === room.id && isAvailable && (
             <div className="flex items-center space-x-2">
-              <img
-                src= {calendar}
-                alt="Calendar Icon"
-                className="w-6 h-6"
-              />
+              <img src={calendar} alt="Calendar Icon" className="w-6 h-6" />
               <span className="text-[16px] text-black">
                 {startDate && formatDate(startDate)}
                 {(startDate || endDate) && " → "}
