@@ -27,6 +27,53 @@ export const PropertyDetails = ({
     return `${day}.${month}.${year}`;
   };
 
+  // Function to get unavailable dates for a room
+  const getUnavailableDatesMessage = (roomId) => {
+    if (!availableDates || !availableDates[roomId] || !startDate || !endDate)
+      return null;
+
+    const unavailableDates = [];
+    let currentDate = new Date(startDate);
+    const endDateTime = new Date(endDate);
+
+    while (currentDate <= endDateTime) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+      const dayData = availableDates[roomId][dateStr];
+
+      if (!dayData || dayData.available === 0) {
+        unavailableDates.push(new Date(dateStr));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    if (unavailableDates.length > 0) {
+      const formatDate = (date) => {
+        return date.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short",
+        });
+      };
+
+      return (
+        <div className="p-3 mb-4 text-sm text-red-600 rounded-md bg-red-50">
+          <span className="font-medium">Dates non disponibles : </span>
+          {unavailableDates.map(formatDate).join(", ")}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Sort rooms to put selected room first
+  const sortRooms = (rooms) => {
+    return [...rooms].sort((a, b) => {
+      if (a.id === formData.apartmentId) return -1;
+      if (b.id === formData.apartmentId) return 1;
+      return 0;
+    });
+  };
+
   const groupedRooms = Object.values(roomsData).reduce(
     (acc, room) => {
       if (isRoomAvailable(room.id, startDate, endDate, availableDates)) {
@@ -38,6 +85,10 @@ export const PropertyDetails = ({
     },
     { available: [], unavailable: [] }
   );
+
+  // Sort both available and unavailable rooms
+  groupedRooms.available = sortRooms(groupedRooms.available);
+  groupedRooms.unavailable = sortRooms(groupedRooms.unavailable);
 
   console.log("Grouped rooms:", {
     available: groupedRooms.available.length,
@@ -53,6 +104,9 @@ export const PropertyDetails = ({
           isAvailable ? "border-[#668E73]" : "border-gray-300 opacity-75"
         }`}
       >
+        {/* Show unavailable dates message for unavailable rooms */}
+        {!isAvailable && getUnavailableDatesMessage(room.id)}
+
         {/* Room Image */}
         <img
           src={room.image}
@@ -147,16 +201,16 @@ export const PropertyDetails = ({
         </button>
 
         {/* Price Details */}
-        {showPriceDetails && 
-         formData.apartmentId === room.id && 
-         isAvailable && 
-         roomPriceDetails && (
-           <PriceDetails
-             priceDetails={roomPriceDetails}
-             selectedExtras={selectedExtras}
-             appliedCoupon={appliedCoupon}
-           />
-        )}
+        {showPriceDetails &&
+          formData.apartmentId === room.id &&
+          isAvailable &&
+          roomPriceDetails && (
+            <PriceDetails
+              priceDetails={roomPriceDetails}
+              selectedExtras={selectedExtras}
+              appliedCoupon={appliedCoupon}
+            />
+          )}
       </div>
     );
   };
