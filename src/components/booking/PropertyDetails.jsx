@@ -123,21 +123,30 @@ export const PropertyDetails = ({
 
         {/* Capacity and Dates Section */}
         <div className="flex items-center justify-between mt-6 mb-4">
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <img src={profileIcon} alt="Profile Icon" className="w-6 h-6" />
             <span className="text-[16px] text-black">
               Max {room.maxGuests} personnes
+              {formData.adults}
             </span>
-          </div>
+          </div> */}
           {formData.apartmentId === room.id && isAvailable && (
+            <>
             <div className="flex items-center space-x-2">
-              <img src={calendar} alt="Calendar Icon" className="w-6 h-6" />
-              <span className="text-[16px] text-black">
-                {startDate && formatDate(startDate)}
-                {(startDate || endDate) && " → "}
-                {endDate && formatDate(endDate)}
-              </span>
-            </div>
+                <img src={profileIcon} alt="Calendar Icon" className="w-6 h-6 mr-2" />
+                <span className="text-[16px] text-black">
+                  Total: {+formData.adults + +formData.children} personnes
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <img src={calendar} alt="Calendar Icon" className="w-6 h-6 mr-2" />
+                <span className="text-[16px] text-black">
+                  {startDate && formatDate(startDate)}
+                  {(startDate || endDate) && " → "}
+                  {endDate && formatDate(endDate)}
+                </span>
+              </div>
+            </>
           )}
         </div>
 
@@ -166,10 +175,10 @@ export const PropertyDetails = ({
         </div>
 
         {/* Room Size */}
-        <div className="mt-6 text-gray-600">
+        {/* <div className="mt-6 text-gray-600">
           <span className="font-medium">Size: </span>
           {room.size}
-        </div>
+        </div> */}
 
         {/* Select Room Button */}
         <button
@@ -216,7 +225,7 @@ export const PropertyDetails = ({
           <h2 className="text-xl font-semibold text-[#668E73] mb-6">
             Chambres disponibles
           </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2" style={{ height: "screen", overflow: "scroll" }} >
             {groupedRooms.available.map((room) => (
               <RoomCard key={room.id} room={room} isAvailable={true} />
             ))}
