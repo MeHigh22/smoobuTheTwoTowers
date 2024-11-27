@@ -15,7 +15,7 @@ export const BookingSteps = ({ currentStep }) => {
       </div>
 
       {/* Step label */}
-      <span className="w-2/5 md:w-2/5 lg:w-1/5 ml-2 text-sm text-[#668E73]">
+      <span className="w-2/5 md:w-2/5 lg:w-1/5 ml-2 text-md font-semibold text-[#668E73]">
         {stepLabel}
       </span>
     </div>

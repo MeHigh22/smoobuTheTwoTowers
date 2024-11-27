@@ -9,7 +9,7 @@ export const roomsData = {
     description: "Un dôme luxueux avec vue panoramique sur la nature",
     image: tinyHouse, // Store images locally
     maxGuests: 4,
-    features: ["Vue panoramique", "Jacuzzi privé", "Cuisine équipée"],
+    features: ["Vue panoramique", "Jacuzzi privé", "Cuisine équipée", "Vue panoramique", "Jacuzzi privé"],
     amenities: ["WiFi", "TV", "Climatisation", "Parking"],
     size: "40m²",
   },

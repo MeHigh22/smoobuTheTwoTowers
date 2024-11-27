@@ -103,76 +103,67 @@ export const PropertyDetails = ({
         className={`p-6 border rounded shadow-sm ${
           isAvailable ? "border-[#668E73]" : "border-gray-300 opacity-75"
         }`}
-        style={{ height: "fit-content" }}
+        style={{
+          height: formData.apartmentId === room.id ? "80vh" : "fit-content",
+        }}
       >
         {/* Show unavailable dates message for unavailable rooms */}
         {!isAvailable && getUnavailableDatesMessage(room.id)}
 
-        {/* Room Image */}
-        <img
-          src={room.image}
-          alt={room.name}
-          className="w-full h-[250px] object-cover rounded-[0.3em] my-4"
-        />
-
-        {/* Room Title */}
-        <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
-          {room.name}
-        </h2>
-        <p className="text-gray-600">{room.description}</p>
-
-        {/* Capacity and Dates Section */}
-        <div className="flex items-center justify-between mt-6 mb-4">
-          {/* <div className="flex items-center space-x-2">
-            <img src={profileIcon} alt="Profile Icon" className="w-6 h-6" />
-            <span className="text-[16px] text-black">
-              Max {room.maxGuests} personnes
-              {formData.adults}
-            </span>
-          </div> */}
-          {formData.apartmentId === room.id && isAvailable && (
-            <>
-            <div className="flex items-center space-x-2">
-                <img src={profileIcon} alt="Calendar Icon" className="w-6 h-6 mr-2" />
-                <span className="text-[16px] text-black">
-                  Total: {+formData.adults + +formData.children} personnes
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <img src={calendar} alt="Calendar Icon" className="w-6 h-6 mr-2" />
-                <span className="text-[16px] text-black">
-                  {startDate && formatDate(startDate)}
-                  {(startDate || endDate) && " → "}
-                  {endDate && formatDate(endDate)}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Features and Amenities Grid */}
-        <div className="grid grid-cols-2 gap-6 mt-6">
-          <div>
-            <h3 className="font-medium text-[#668E73] mb-3">Features:</h3>
-            <ul className="pl-4 space-y-2 text-gray-600 list-disc">
-              {room.features.map((feature, index) => (
-                <li key={index} className="text-sm">
-                  {feature}
-                </li>
-              ))}
-            </ul>
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left: Room Image */}
+          <div className="w-full md:w-1/2">
+            <img
+              src={room.image}
+              alt={room.name}
+              className="w-full h-[250px] object-cover rounded-[0.3em]"
+            />
           </div>
-          <div>
-            <h3 className="font-medium text-[#668E73] mb-3">Amenities:</h3>
-            <ul className="pl-4 space-y-2 text-gray-600 list-disc">
-              {room.amenities.map((amenity, index) => (
-                <li key={index} className="text-sm">
-                  {amenity}
-                </li>
-              ))}
-            </ul>
+
+          {/* Right: Room Details */}
+          <div className="w-full md:w-1/2">
+            {/* Room Title */}
+            <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
+              {room.name}
+            </h2>
+            <p className="text-gray-600 mb-4">{room.description}</p>
+
+            {/* Capacity and Dates Section */}
+            <div className="flex flex-col gap-4 mt-4">
+              {formData.apartmentId === room.id && isAvailable && (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <img src={profileIcon} alt="Profile Icon" style={{ height: "20px", width: "20px", marginRight:"7px"}}/>
+                    <span className="text-[13px] text-black">
+                      Total: {+formData.adults + +formData.children} personnes
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <img src={calendar} alt="Calendar Icon" style={{ height: "20px", width: "20px", marginRight:"7px"}} />
+                    <span className="text-[13px] text-black">
+                      {startDate && formatDate(startDate)}
+                      {(startDate || endDate) && " → "}
+                      {endDate && formatDate(endDate)}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Features Section */}
+            <div className="mt-6">
+              <h3 className="font-medium text-[#668E73] mb-3">Features:</h3>
+              <ul className="pl-4 text-gray-600 list-disc flex flex-wrap gap-4">
+                {room.features.map((feature, index) => (
+                  <li key={index} className="text-sm">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
+
 
         {/* Room Size */}
         {/* <div className="mt-6 text-gray-600">
@@ -225,7 +216,7 @@ export const PropertyDetails = ({
           <h2 className="text-xl font-semibold text-[#668E73] mb-6">
             Chambres disponibles
           </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2" style={{ height: "screen", overflow: "scroll" }} >
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2" >
             {groupedRooms.available.map((room) => (
               <RoomCard key={room.id} room={room} isAvailable={true} />
             ))}
