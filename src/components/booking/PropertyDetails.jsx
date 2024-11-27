@@ -5,6 +5,7 @@ import { extraCategories } from "../extraCategories";
 import { PriceDetails } from "./PriceDetails";
 import profileIcon from "../../assets/icons8-group-48.png"
 import calendar from "../../assets/icons8-calendar-50.png";
+import { CalendarWidget } from "./CalendarWidget"
 
 
 export const PropertyDetails = ({
@@ -161,6 +162,13 @@ export const PropertyDetails = ({
                 ))}
               </ul>
             </div>
+
+
+            {room.calendarIframe && (
+            <CalendarWidget calendarIframe={room.calendarIframe} />
+          )}
+
+
           </div>
         </div>
 
@@ -210,6 +218,18 @@ export const PropertyDetails = ({
 
   return (
     <div className="space-y-8">
+
+          {/* Add the Smoobu widget */}
+          <div id="smoobuApartment2428698de" className="calendarWidget">
+        <div
+          className="calendarContent"
+          data-load-calendar-url="https://login.smoobu.com/de/cockpit/widget/single-calendar/2428698"
+          data-verification="b0f41e1cdaa98e3e16052ad9121912d4c5971e3457de260cd25d5a54de7fc73e"
+          data-baseUrl="https://login.smoobu.com"
+          data-disable-css="false"
+        ></div>
+      </div>
+      
       {/* Available Rooms */}
       {groupedRooms.available.length > 0 && (
         <div>
