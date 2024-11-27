@@ -270,11 +270,11 @@ const handleAvailabilityCheck = async () => {
                   <div className="flex flex-col h-full">
                     {/* Header - Fixed height */}
                     <div className="shrink-0">
-                      <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-4">
+                      {/* <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-4">
                         {currentStep === 1 && "Extras"}
                         {currentStep === 2 && "Notes"}
                         {currentStep === 3 && "Contact"}
-                      </h2>
+                      </h2> */}
                       <BookingSteps currentStep={currentStep} />
                     </div>
 

@@ -30,7 +30,10 @@ export const ExtrasSection = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div
+        className="flex-1 min-h-0 overflow-y-auto"
+        style={{ height: "400px", overflow: "scroll" }}
+      >
         {selectedCategory === "boissons" ? (
           <div className="pb-4 space-y-6">{renderGroupedBoissons()}</div>
         ) : (
