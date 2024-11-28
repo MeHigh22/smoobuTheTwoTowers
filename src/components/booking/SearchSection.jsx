@@ -30,7 +30,7 @@ export const SearchSection = ({
       </h1>
 
       {/* Search Form */}
-      <div className="max-w-4xl p-6 mx-auto bg-white rounded-lg shadow">
+      <div className="p-6 mx-auto bg-white rounded-lg shadow">
         <div className="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
           {/* Arrival */}
           <div className="md:col-span-1">
@@ -139,7 +139,7 @@ export const RoomNavigation = ({ rooms, onRoomSelect }) => {
           key={room.id}
           type="button"
           onClick={() => onRoomSelect(room.id)}
-          className="px-6 py-2 text-white transition-all rounded-full bg-[#ffffff30] hover:bg-white hover:text-[#668E73] border border-[#668E73]"
+          className="px-6 py-4 mb-6 text-white transition-all rounded-full bg-[#ffffff30] hover:bg-white hover:text-[#668E73] border border-[#668E73]"
         >
           {room.name}
         </button>

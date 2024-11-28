@@ -216,7 +216,7 @@ export const PropertyDetails = ({
           <h2 className="text-xl font-semibold text-[#668E73] mb-6">
             Chambres disponibles
           </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8">
             {groupedRooms.available.map((room) => (
               <RoomCard key={room.id} room={room} isAvailable={true} />
             ))}
@@ -230,7 +230,7 @@ export const PropertyDetails = ({
           <h2 className="mb-6 text-xl font-semibold text-gray-500">
             Chambres non disponibles
           </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8">
             {groupedRooms.unavailable.map((room) => (
               <RoomCard key={room.id} room={room} isAvailable={false} />
             ))}
