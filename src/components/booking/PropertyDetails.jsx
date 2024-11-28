@@ -117,68 +117,66 @@ export const PropertyDetails = ({
       >
         {!isAvailable && getUnavailableDatesMessage(room.id)}
   
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-4 h-full">
           {/* Left: Room Slider */}
-          <div className="w-full md:w-2/5">
+          <div className="w-full md:w-2/5 flex flex-col justify-between h-full">
+            {/* Top Content: Title */}
             <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
               {room.name}
             </h2>
-  
-            {/* Main Image Slider */}
-            <Slider {...sliderSettings} ref={(slider) => setSliderRef(slider)}>
-              <img
-                src={room.images.main}
-                alt={`${room.name} Main`}
-                className="w-full h-[450px] object-cover"
-              />
-              <img
-                src={room.images.secondary}
-                alt={`${room.name} Secondary`}
-                className="w-full h-[450px] object-cover"
-              />
-              <img
-                src={room.images.tertiary}
-                alt={`${room.name} Tertiary`}
-                className="w-full h-[450px] object-cover"
-              />
-            </Slider>
-  
-            {/* Thumbnail Slider */}
-            <div className="mt-4">
-            <Slider {...thumbnailSettings}>
-              <img
-                src={room.images.main}
-                alt={`${room.name} Main Thumbnail`}
-                className="object-cover cursor-pointer h-[100px] w-1/3 pr-1"     
-                />
-              <img
-                src={room.images.secondary}
-                alt={`${room.name} Secondary Thumbnail`}
-                className="object-cover cursor-pointer h-[100px] w-1/3 px-1"
-              />
-              <img
-                src={room.images.tertiary}
-                alt={`${room.name} Tertiary Thumbnail`}
-                className="object-cover cursor-pointer h-[100px] w-1/3 pl-1"
-              />
-            </Slider>
-          </div>
 
-            {/* Feature Section */}
-            <div
-              className="features-container overflow-x-auto w-full mt-4"
-            >
-              <div
-                className="features-list flex"
-                style={{ width: "100%", overflow: "scroll" }}
-              >
+            {/* Middle Content: Main Image Slider and Thumbnails */}
+            <div>
+              {/* Main Image Slider */}
+              <Slider {...sliderSettings} ref={(slider) => setSliderRef(slider)}>
+                <img
+                  src={room.images.main}
+                  alt={`${room.name} Main`}
+                  className="w-full h-[450px] object-cover"
+                />
+                <img
+                  src={room.images.secondary}
+                  alt={`${room.name} Secondary`}
+                  className="w-full h-[450px] object-cover"
+                />
+                <img
+                  src={room.images.tertiary}
+                  alt={`${room.name} Tertiary`}
+                  className="w-full h-[450px] object-cover"
+                />
+              </Slider>
+
+              {/* Thumbnail Slider */}
+              <div className="mt-4">
+                <Slider {...thumbnailSettings}>
+                  <img
+                    src={room.images.main}
+                    alt={`${room.name} Main Thumbnail`}
+                    className="object-cover cursor-pointer h-[100px] w-1/3 pr-1"
+                  />
+                  <img
+                    src={room.images.secondary}
+                    alt={`${room.name} Secondary Thumbnail`}
+                    className="object-cover cursor-pointer h-[100px] w-1/3 px-1"
+                  />
+                  <img
+                    src={room.images.tertiary}
+                    alt={`${room.name} Tertiary Thumbnail`}
+                    className="object-cover cursor-pointer h-[100px] w-1/3 pl-1"
+                  />
+                </Slider>
+              </div>
+            </div>
+
+            {/* Bottom Content: Feature Section */}
+            <div className="features-container overflow-x-auto w-full mt-4">
+              <div className="features-list flex" style={{ width: "100%", overflow: "scroll" }}>
                 {room.features.map((feature, index) => (
                   <div
                     key={index}
                     className="feature-item flex flex-col items-center text-center p-4 bg-[#668E73]"
                     style={{ minWidth: "100px", flex: "0 0 auto" }}
                   >
-                    {/* White icon using CSS filter */}
                     <img
                       src={feature.icon}
                       alt={feature.title}
@@ -188,81 +186,77 @@ export const PropertyDetails = ({
                         filter: "invert(100%)", // Converts the icon color to white
                       }}
                     />
-                    {/* White text */}
                     <span className="text-sm mt-2 text-white">{feature.title}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-  
+
           {/* Right: Room Details */}
-          <div className="w-full md:w-3/5">
-            <div className="flex flex-col gap-4">
-              {formData.apartmentId === room.id && isAvailable && (
-                <>
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={profileIcon}
-                      alt="Profile Icon"
-                      style={{ height: "20px", width: "20px", marginRight: "7px" }}
-                    />
-                    <span className="text-[13px] text-black">
-                      Total: {+formData.adults + +formData.children} personnes
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={calendar}
-                      alt="Calendar Icon"
-                      style={{ height: "20px", width: "20px", marginRight: "7px" }}
-                    />
-                    <span className="text-[13px] text-black">
-                      {startDate && formatDate(startDate)}
-                      {(startDate || endDate) && " → "}
-                      {endDate && formatDate(endDate)}
-                    </span>
-                  </div>
-                </>
-              )}
+          <div className="w-full md:w-3/5 flex flex-col justify-between h-full flex-1">
+            {/* Top Content */}
+            <div>
+              <div className="flex flex-col gap-4">
+                {formData.apartmentId === room.id && isAvailable && (
+                  <>
+                    <div className="flex items-center space-x-2">
+                      <img
+                        src={profileIcon}
+                        alt="Profile Icon"
+                        style={{ height: "20px", width: "20px", marginRight: "7px" }}
+                      />
+                      <span className="text-[13px] text-black">
+                        Total: {+formData.adults + +formData.children} personnes
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <img
+                        src={calendar}
+                        alt="Calendar Icon"
+                        style={{ height: "20px", width: "20px", marginRight: "7px" }}
+                      />
+                      <span className="text-[13px] text-black">
+                        {startDate && formatDate(startDate)}
+                        {(startDate || endDate) && " → "}
+                        {endDate && formatDate(endDate)}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
+                Disponibilités
+              </h2>
+              <CalendarRoom />
+              <p className="text-gray-600 m-4">{room.description}</p>
             </div>
-  
-            <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
-              Disponibilités
-            </h2>
-            {/* {room.calendarIframe && (
-              <CalendarWidget calendarIframe={room.calendarIframe} />
-            )} */}
 
-            <CalendarRoom/>
-  
-            <p className="text-gray-600 m-4">{room.description}</p>
-
+            {/* Bottom Button */}
             <button
-          type="button"
-          onClick={() => {
-            if (isAvailable) onRoomSelect(room.id);
-          }}
-          disabled={!isAvailable}
-          className={`w-full mt-5 py-3 rounded font-medium transition-colors ${
-            isAvailable
-              ? formData.apartmentId === room.id
-                ? "bg-[#445E54] text-white"
-                : "bg-[#668E73] text-white hover:bg-opacity-90"
-              : "bg-gray-300 text-gray-600 cursor-not-allowed"
-          }`}
-        >
-          {formData.apartmentId === room.id
-            ? "Sélectionné"
-            : isAvailable
-            ? "Sélectionner"
-            : "Non disponible"}
-        </button>
-
+              type="button"
+              onClick={() => {
+                if (isAvailable) onRoomSelect(room.id);
+              }}
+              disabled={!isAvailable}
+              className={`w-fit mt-5 py-2 px-5 rounded-full font-medium transition-colors ${
+                isAvailable
+                  ? formData.apartmentId === room.id
+                    ? "bg-[#445E54] text-white"
+                    : "bg-[#668E73] text-white hover:bg-opacity-90"
+                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
+              }`}
+            >
+              {formData.apartmentId === room.id
+                ? "Sélectionné"
+                : isAvailable
+                ? "Sélectionner cette chambre"
+                : "Chambre non disponible"}
+            </button>
           </div>
-
-
         </div>
+
   
   
         {showPriceDetails &&
