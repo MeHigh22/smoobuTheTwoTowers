@@ -31,6 +31,13 @@ export const CalendarWidget = ({ calendarIframe }) => {
       {/* Responsive Styles with Media Queries */}
       <style>
         {`
+          .multiCalendarWidget .btn-next {
+            right: -50px !important;
+          }
+
+          .multiCalendarWidget .btn-prev {
+            left: -5px !important;
+          }
           #smoobuCalendarIframe iframe {
             max-width: 100%; /* Prevent overflow */
             border: none; /* Remove iframe border */

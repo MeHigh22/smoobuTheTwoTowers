@@ -149,25 +149,24 @@ export const PropertyDetails = ({
               <img
                 src={room.images.main}
                 alt={`${room.name} Main Thumbnail`}
-                className="object-cover cursor-pointer h-[50px] w-1/3 pr-1"     
+                className="object-cover cursor-pointer h-[100px] w-1/3 pr-1"     
                 />
               <img
                 src={room.images.secondary}
                 alt={`${room.name} Secondary Thumbnail`}
-                className="object-cover cursor-pointer h-[50px] w-1/3 px-1"
+                className="object-cover cursor-pointer h-[100px] w-1/3 px-1"
               />
               <img
                 src={room.images.tertiary}
                 alt={`${room.name} Tertiary Thumbnail`}
-                className="object-cover cursor-pointer h-[50px] w-1/3 pl-1"
+                className="object-cover cursor-pointer h-[100px] w-1/3 pl-1"
               />
             </Slider>
           </div>
 
             {/* Feature Section */}
             <div
-              className="features-container overflow-x-auto w-full mt-5"
-              style={{ marginTop: "25px" }}
+              className="features-container overflow-x-auto w-full mt-4"
             >
               <div
                 className="features-list flex"
@@ -237,7 +236,7 @@ export const PropertyDetails = ({
 
             <CalendarRoom/>
   
-            <p className="text-gray-600 mb-4">{room.description}</p>
+            <p className="text-gray-600 m-4">{room.description}</p>
 
             <button
           type="button"
@@ -245,7 +244,7 @@ export const PropertyDetails = ({
             if (isAvailable) onRoomSelect(room.id);
           }}
           disabled={!isAvailable}
-          className={`w-full mt-6 py-3 rounded font-medium transition-colors ${
+          className={`w-full mt-5 py-3 rounded font-medium transition-colors ${
             isAvailable
               ? formData.apartmentId === room.id
                 ? "bg-[#445E54] text-white"
