@@ -1,6 +1,6 @@
 // components/booking/BookingForm.jsx
 import React from "react";
-import { SearchSection } from "./SearchSection";
+import { SearchSection, RoomNavigation } from "./SearchSection";
 import { PropertyDetails } from "./PropertyDetails";
 import { BookingSteps } from "./BookingSteps";
 import { ContactSection } from "./ContactSection";
@@ -13,6 +13,7 @@ import { NavigationButtons } from "./NavigationButtons";
 import { ErrorMessage } from "./ErrorMessage";
 import { LoadingSpinner } from "./LoadingSpinner";
 import StripeWrapper from "../StripeWrapper";
+import { roomsData } from "../hooks/roomsData";
 
 const BookingForm = () => {
   const {
@@ -246,7 +247,18 @@ const handleAvailabilityCheck = async () => {
       {!showPayment ? (
         <form onSubmit={handleSubmit} className="mx-auto space-y-4">
           {/* Search Section */}
-          <SearchSection {...searchSectionProps} />
+          <div style={{ backgroundColor: "#668E73" }}>
+            <SearchSection {...searchSectionProps} />
+            <RoomNavigation
+              rooms={Object.values(roomsData)}
+              onRoomSelect={(roomId) => {
+                const element = document.getElementById(`room-${roomId}`);
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            />
+          </div>
 
           {/* Main Content */}
           <div
@@ -264,9 +276,7 @@ const handleAvailabilityCheck = async () => {
             {/* Form Steps - Fixed height with internal scroll */}
             {formData.apartmentId && showPriceDetails && (
               <div className="w-full md:w-1/2">
-                <div
-                  className="border border-[#668E73] p-4 rounded sticky top-6 overflow-hidden"
-                >
+                <div className="border border-[#668E73] p-4 rounded sticky top-6 overflow-hidden">
                   <div className="flex flex-col h-full">
                     {/* Header - Fixed height */}
                     <div className="shrink-0">
