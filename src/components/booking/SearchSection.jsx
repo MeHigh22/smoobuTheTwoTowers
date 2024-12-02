@@ -20,79 +20,130 @@ export const SearchSection = ({
   };
 
   return (
-    <div className="border border-[#668E73] p-5 rounded space-y-4">
-      <form className="w-full">
-        <div className="grid grid-cols-1 gap-4 text-left md:grid-cols-4 lg:grid-cols-5">
-          {/* Arrival Date */}
-          <div className="relative">
-            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-              Arrivée
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => handleDateSelect(date, true)}
-                selectsStart
-                startDate={startDate}
-                endDate={endDate}
-                minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
-                locale="fr"
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Sélectionnez une date"
-                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                isClearable={true}
-              />
+    <div
+      className="w-full text-center"
+      style={{ backgroundColor: "#668E73", padding: "40px 20px" }}
+    >
+      {/* Title */}
+      <h1 className="mb-8 text-3xl font-light text-white">
+        Sélectionnez vos dates
+      </h1>
+
+      {/* Search Form */}
+      <div className="p-6 mx-auto bg-white rounded-lg shadow">
+        <div className="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
+          {/* Arrival */}
+          <div className="md:col-span-1">
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Arrival
             </label>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => handleDateSelect(date, true)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              minDate={new Date().setHours(24, 0, 0, 0)} // This forces tomorrow as minimum
+              locale="fr"
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Sélectionnez une date"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              filterDate={(date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return date > today;
+              }}
+              isClearable={true}
+            />
           </div>
-          {/* Departure Date */}
-          <div className="relative">
-            <label className="block text-[14px] md:text-[16px] font-medium text-[#9a9a9a] mb-1">
-              Départ
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => handleDateSelect(date, false)}
-                selectsEnd
-                startDate={startDate}
-                endDate={endDate}
-                minDate={startDate || new Date()}
-                locale="fr"
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Sélectionnez une date"
-                className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
-                isClearable={true}
-                disabled={!startDate}
-              />
+
+          {/* Departure */}
+          <div className="md:col-span-1">
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Departure
             </label>
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => handleDateSelect(date, false)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate || new Date()}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Sélectionnez une date"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              isClearable={true}
+              disabled={!startDate}
+            />
           </div>
-          {/* Adults Dropdown */}
-          <GuestSelect
-            label="Adultes"
-            name="adults"
-            value={formData.adults}
-            options={adultes}
-            onChange={handleChange}
-          />
-          {/* Children Dropdown */}
-          <GuestSelect
-            label="Enfants"
-            name="children"
-            value={formData.children}
-            options={childrenOptions}
-            onChange={handleChange}
-          />
-          {/* Check Availability Button */}
-          <div className="block align-baseline">
-            <button
-              type="button"
-              onClick={handleSearch}
-              className="w-full h-12 p-2 mt-7 border rounded shadow-sm text-[16px] font-medium text-white bg-[#668E73] hover:bg-opacity-90 focus:outline-none"
+
+          {/* Adults */}
+          <div className="md:col-span-1">
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Adults
+            </label>
+            <select
+              name="adults"
+              value={formData.adults}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73]"
             >
-              Rechercher
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Children */}
+          <div className="md:col-span-1">
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Children
+            </label>
+            <select
+              name="children"
+              value={formData.children}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73]"
+            >
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Search Button */}
+          <div className="md:col-span-1">
+            <button
+              onClick={handleCheckAvailability}
+              type="button"
+              className="w-full p-2 bg-[#668E73] text-white rounded hover:bg-[#557963] transition-colors"
+            >
+              Search
             </button>
           </div>
         </div>
-      </form>
-      {dateError && (
-        <div className="mt-2 text-sm font-medium text-red-500">{dateError}</div>
-      )}
+      </div>
+    </div>
+  );
+};
+
+export const RoomNavigation = ({ rooms, onRoomSelect }) => {
+  return (
+    <div className="flex flex-wrap justify-center gap-4 mt-8">
+      {rooms.map((room) => (
+        <button
+          key={room.id}
+          type="button"
+          onClick={() => onRoomSelect(room.id)}
+          className="px-6 py-4 mb-6 text-white transition-all rounded-full bg-[#ffffff30] hover:bg-white hover:text-[#668E73] border border-[#668E73]"
+        >
+          {room.name}
+        </button>
+      ))}
     </div>
   );
 };

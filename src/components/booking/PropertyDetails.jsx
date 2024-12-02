@@ -108,6 +108,7 @@ export const PropertyDetails = ({
   
     return (
       <div
+        id={`room-${room.id}`}
         className={`p-6 border rounded shadow-sm ${
           isAvailable ? "border-[#668E73]" : "border-gray-300"
         }`}

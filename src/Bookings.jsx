@@ -153,15 +153,19 @@ useEffect(() => {
 const isDateUnavailable = (date, isStart) => {
   if (!date) return true;
 
+  // Block today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const inputDate = new Date(date);
+  inputDate.setHours(0, 0, 0, 0);
+
+  if (inputDate.getTime() === today.getTime()) {
+    return true;
+  }
+
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   const dateStr = localDate.toISOString().split("T")[0];
   const dayData = availableDates[dateStr];
-
-  // Block today and past dates
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  if (date < tomorrow) return true;
 
   console.log("Checking date availability:", {
     date: dateStr,
@@ -169,12 +173,12 @@ const isDateUnavailable = (date, isStart) => {
     isStart,
     dayData,
     available: dayData?.available,
+    isToday: inputDate.getTime() === today.getTime(),
   });
-
+  // Rest of your function remains the same
   if (isStart) {
     if (!dayData) return true;
 
-    // Check if it's a departure day
     const prevDate = new Date(localDate);
     prevDate.setDate(prevDate.getDate() - 1);
     const prevLocalDate = new Date(
@@ -241,36 +245,38 @@ const isDateUnavailable = (date, isStart) => {
 const handleDateSelect = (date, isStart) => {
   if (!date) {
     if (isStart) {
-      // If clearing arrival date, also clear departure date
       setStartDate(null);
       setEndDate(null);
       handleChange({
-        target: {
-          name: "arrivalDate",
-          value: "",
-        },
+        target: { name: "arrivalDate", value: "" },
       });
       handleChange({
-        target: {
-          name: "departureDate",
-          value: "",
-        },
+        target: { name: "departureDate", value: "" },
       });
     } else {
-      // If clearing departure date, only clear departure
       setEndDate(null);
       handleChange({
-        target: {
-          name: "departureDate",
-          value: "",
-        },
+        target: { name: "departureDate", value: "" },
       });
     }
     setDateError("");
     return;
   }
 
-  // Create date at noon to avoid timezone issues
+  // Add this block at the beginning of date selection
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDay = new Date(date);
+  selectedDay.setHours(0, 0, 0, 0);
+
+  if (selectedDay.getTime() <= today.getTime()) {
+    setDateError(
+      "Vous ne pouvez pas sélectionner la date d'aujourd'hui ou une date passée"
+    );
+    return;
+  }
+
+  // Rest of your existing code
   const selectedDate = new Date(date.setHours(12, 0, 0, 0));
 
   if (isStart) {
@@ -282,7 +288,6 @@ const handleDateSelect = (date, isStart) => {
     setEndDate(null);
     setDateError("");
 
-    // Format date as YYYY-MM-DD without timezone conversion
     const dateStr = selectedDate.toISOString().split("T")[0];
     handleChange({
       target: {
@@ -1321,11 +1326,12 @@ const handlePaymentSuccess = () => {
                     endDate={endDate}
                     minDate={
                       new Date(new Date().setDate(new Date().getDate() + 1))
-                    } // This sets minimum date to tomorrow
+                    }
                     locale="fr"
                     dateFormat="dd/MM/yyyy"
                     placeholderText="Sélectionnez une date"
                     className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                    excludeDates={[new Date()]} // Add this line
                     filterDate={(date) => !isDateUnavailable(date, true)}
                     isClearable={true}
                   />
@@ -1581,17 +1587,24 @@ const handlePaymentSuccess = () => {
 
             {/* Right Column - Contact Form */}
             <div className="w-full md:w-2/3 border border-[#668E73] p-4 rounded space-y-4 text-left">
-
-
-                  {currentStep == 1 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Extras </h2>
-                  )}
-                  {currentStep == 2 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Notes </h2>
-                  )}
-                  {currentStep == 3 && (
-                    <h2 className="text-[18px] md:text-[23px] font-normal text-black"> Contact </h2>
-                  )}
+              {currentStep == 1 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Extras{" "}
+                </h2>
+              )}
+              {currentStep == 2 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Notes{" "}
+                </h2>
+              )}
+              {currentStep == 3 && (
+                <h2 className="text-[18px] md:text-[23px] font-normal text-black">
+                  {" "}
+                  Contact{" "}
+                </h2>
+              )}
 
               {/* Render progress bar */}
               {renderProgressBar()}
@@ -1600,38 +1613,39 @@ const handlePaymentSuccess = () => {
               {renderStepContent()}
 
               {/* Navigation buttons */}
-                <div className="flex justify-between mt-6">
-                  {currentStep > 1 && (
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                    >
-                      Précédent
-                    </button>
-                  )}
-                  {currentStep < 3 && (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
-                    >
-                      Suivant
-                    </button>
-                  )}
-                  {currentStep === 3 && (
-                    <button
-                      type="submit"
-                      disabled={!isStepValid()}
-                      className={`px-4 py-2 ${
-                        isStepValid() ? "bg-[#668E73] hover:bg-opacity-90" : "bg-gray-300 cursor-not-allowed"
-                      } text-white rounded`}
-                    >
-                      {loading ? "En cours..." : "Passer au paiement"}
-                    </button>
-                  )}
-                </div>
-
+              <div className="flex justify-between mt-6">
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  >
+                    Précédent
+                  </button>
+                )}
+                {currentStep < 3 && (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="px-4 py-2 bg-[#668E73] text-white rounded hover:bg-opacity-90"
+                  >
+                    Suivant
+                  </button>
+                )}
+                {currentStep === 3 && (
+                  <button
+                    type="submit"
+                    disabled={!isStepValid()}
+                    className={`px-4 py-2 ${
+                      isStepValid()
+                        ? "bg-[#668E73] hover:bg-opacity-90"
+                        : "bg-gray-300 cursor-not-allowed"
+                    } text-white rounded`}
+                  >
+                    {loading ? "En cours..." : "Passer au paiement"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </form>

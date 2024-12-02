@@ -49,12 +49,9 @@ export const useBookingForm = () => {
   const [selectedExtras, setSelectedExtras] = useState({});
 
 
-  const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
 
-const [startDate, setStartDate] = useState(tomorrow);
-
-  const [endDate, setEndDate] = useState(null);
+const [startDate, setStartDate] = useState(null);
+const [endDate, setEndDate] = useState(null);
 
 const calculateNumberOfNights = (startDate, endDate) => {
   if (!startDate || !endDate) return 0;
