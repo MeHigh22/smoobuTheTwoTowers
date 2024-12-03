@@ -1,4 +1,3 @@
-// components/booking/BookingForm.jsx
 import React from "react";
 import { SearchSection, RoomNavigation } from "./SearchSection";
 import { PropertyDetails } from "./PropertyDetails";
@@ -6,7 +5,7 @@ import { BookingSteps } from "./BookingSteps";
 import { ContactSection } from "./ContactSection";
 import { ExtrasSection } from "./ExtrasSection";
 import { InfoSupSection } from "./InfoSupSection";
-import  PaymentForm  from "../PaymentForm";
+import PaymentForm from "../PaymentForm";
 import { useBookingForm } from "../hooks/useBookingForm";
 import { useAvailabilityCheck } from "../hooks/useAvailabiltyCheck";
 import { NavigationButtons } from "./NavigationButtons";
@@ -53,7 +52,6 @@ const BookingForm = () => {
     setShowPayment,
     setFormData,
     handleApplyCoupon,
-
   } = useBookingForm();
 
   const {
@@ -63,131 +61,126 @@ const BookingForm = () => {
     checkAvailability,
   } = useAvailabilityCheck(formData);
 
-const handleRoomSelect = async (roomId) => {
-  // Don't reset everything, just update the apartmentId
-  setFormData((prev) => ({
-    ...prev,
-    apartmentId: roomId,
-  }));
+  const handleRoomSelect = async (roomId) => {
+    setFormData((prev) => ({
+      ...prev,
+      apartmentId: roomId,
+    }));
 
-  // Check if we have dates and availability data
-  if (startDate && endDate) {
-    try {
-      // If we already have price details, just update the UI
-      if (priceDetails && priceDetails[roomId]) {
-        const roomPriceDetails = priceDetails[roomId];
-        setFormData((prev) => ({
-          ...prev,
-          price: roomPriceDetails.finalPrice,
-        }));
-        setShowPriceDetails(true);
-      } else {
-        // If we don't have price details for this room, fetch them
-        await handleAvailabilityCheck();
-      }
-    } catch (err) {
-      console.error("Error updating prices:", err);
-      setError("Failed to update prices for the selected room");
-    }
-  }
-
-  // Don't reset the step if we're just switching rooms
-  // Only reset if we're selecting a room for the first time
-  if (!formData.apartmentId) {
-    setCurrentStep(1);
-  }
-};
-
-const handleAvailabilityCheck = async () => {
-  if (!startDate || !endDate) {
-    setDateError("Please select both arrival and departure dates");
-    return;
-  }
-
-  setError("");
-  setDateError("");
-
-  try {
-    const availabilityData = await checkAvailability(startDate, endDate);
-
-    if (availabilityData) {
-      if (availabilityData.priceDetails) {
-        setPriceDetails(availabilityData.priceDetails);
-        setShowPriceDetails(true);
-        setIsAvailable(true);
-
-        // Update formData price if we have a selected room
-        if (
-          formData.apartmentId &&
-          availabilityData.priceDetails[formData.apartmentId]
-        ) {
+    if (startDate && endDate) {
+      try {
+        if (priceDetails && priceDetails[roomId]) {
+          const roomPriceDetails = priceDetails[roomId];
           setFormData((prev) => ({
             ...prev,
-            price:
-              availabilityData.priceDetails[formData.apartmentId].finalPrice,
+            price: roomPriceDetails.finalPrice,
           }));
+          setShowPriceDetails(true);
+        } else {
+          await handleAvailabilityCheck();
+        }
+      } catch (err) {
+        console.error("Error updating prices:", err);
+        setError("Failed to update prices for the selected room");
+      }
+    }
+
+    if (!formData.apartmentId) {
+      setCurrentStep(1);
+    }
+  };
+
+  const handleAvailabilityCheck = async () => {
+    if (!startDate || !endDate) {
+      setDateError("Please select both arrival and departure dates");
+      return;
+    }
+
+    setError("");
+    setDateError("");
+
+    try {
+      const availabilityData = await checkAvailability(startDate, endDate);
+
+      if (availabilityData) {
+        if (availabilityData.priceDetails) {
+          setPriceDetails(availabilityData.priceDetails);
+          setShowPriceDetails(true);
+          setIsAvailable(true);
+
+          if (
+            formData.apartmentId &&
+            availabilityData.priceDetails[formData.apartmentId]
+          ) {
+            setFormData((prev) => ({
+              ...prev,
+              price:
+                availabilityData.priceDetails[formData.apartmentId].finalPrice,
+            }));
+          }
+        } else {
+          setDateError("No rates available for selected dates");
+          setShowPriceDetails(false);
+          setIsAvailable(false);
         }
       } else {
-        setDateError("No rates available for selected dates");
+        setDateError("No availability found for selected dates");
         setShowPriceDetails(false);
         setIsAvailable(false);
       }
-    } else {
-      setDateError("No availability found for selected dates");
+    } catch (err) {
+      console.error("Error in availability check:", err);
+      setError("Error checking availability");
       setShowPriceDetails(false);
       setIsAvailable(false);
     }
-  } catch (err) {
-    console.error("Error in availability check:", err);
-    setError("Error checking availability");
-    setShowPriceDetails(false);
-    setIsAvailable(false);
-  }
-};
- 
+  };
+
+  const handleDateSelect = (date, isStart) => {
+    if (!date) {
+      if (isStart) {
+        setStartDate(null);
+        setEndDate(null);
+        handleChange({ target: { name: "arrivalDate", value: "" } });
+        handleChange({ target: { name: "departureDate", value: "" } });
+      } else {
+        setEndDate(null);
+        handleChange({ target: { name: "departureDate", value: "" } });
+      }
+      setDateError("");
+      return;
+    }
+
+    const selectedDate = new Date(date.setHours(12, 0, 0, 0));
+    if (isStart) {
+      setStartDate(selectedDate);
+      setEndDate(null);
+      setDateError("");
+      handleChange({
+        target: {
+          name: "arrivalDate",
+          value: selectedDate.toISOString().split("T")[0],
+        },
+      });
+      handleChange({ target: { name: "departureDate", value: "" } });
+    } else {
+      setEndDate(selectedDate);
+      setDateError("");
+      handleChange({
+        target: {
+          name: "departureDate",
+          value: selectedDate.toISOString().split("T")[0],
+        },
+      });
+    }
+  };
+
   const searchSectionProps = {
     formData,
     handleChange,
     startDate,
     endDate,
-    handleDateSelect: (date, isStart) => {
-      if (!date) {
-        if (isStart) {
-          setStartDate(null);
-          setEndDate(null);
-          handleChange({ target: { name: "arrivalDate", value: "" } });
-          handleChange({ target: { name: "departureDate", value: "" } });
-        } else {
-          setEndDate(null);
-          handleChange({ target: { name: "departureDate", value: "" } });
-        }
-        setDateError("");
-        return;
-      }
-
-      const selectedDate = new Date(date.setHours(12, 0, 0, 0));
-      if (isStart) {
-        setStartDate(selectedDate);
-        setEndDate(null);
-        setDateError("");
-        handleChange({
-          target: {
-            name: "arrivalDate",
-            value: selectedDate.toISOString().split("T")[0],
-          },
-        });
-        handleChange({ target: { name: "departureDate", value: "" } });
-      } else {
-        setEndDate(selectedDate);
-        setDateError("");
-        handleChange({
-          target: {
-            name: "departureDate",
-            value: selectedDate.toISOString().split("T")[0],
-          },
-        });
-      }
-    },
+    handleDateSelect,
     dateError,
     handleCheckAvailability: handleAvailabilityCheck,
   };
@@ -201,7 +194,7 @@ const handleAvailabilityCheck = async () => {
     selectedExtras,
     appliedCoupon,
     onRoomSelect: handleRoomSelect,
-    availableDates: availableDates, // Updated to use the correct prop name
+    availableDates,
     loading: availabilityLoading,
   };
 
@@ -234,9 +227,18 @@ const handleAvailabilityCheck = async () => {
     loading,
   };
 
+  const roomNavigationProps = {
+    rooms: Object.values(roomsData),
+    onRoomSelect: (roomId) => {
+      const element = document.getElementById(`room-${roomId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    },
+  };
+
   return (
     <div className="p-6 mx-auto h-[100vh] overflow-y-scroll w-full lg:w-[1024px] xl:w-[1440px]">
-      {/* Error and Success Messages */}
       {error && <ErrorMessage message={error} />}
       {availabilityError && <ErrorMessage message={availabilityError} />}
       {successMessage && (
@@ -245,78 +247,53 @@ const handleAvailabilityCheck = async () => {
       {(loading || availabilityLoading) && <LoadingSpinner />}
 
       {!showPayment ? (
-        <form onSubmit={handleSubmit} className="mx-auto space-y-4">
-          {/* Search Section */}
-          <div style={{ backgroundColor: "#668E73" }}>
-            <SearchSection {...searchSectionProps} />
-            <RoomNavigation
-              rooms={Object.values(roomsData)}
-              onRoomSelect={(roomId) => {
-                const element = document.getElementById(`room-${roomId}`);
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-            />
-          </div>
-
-          {/* Main Content */}
-          <div
-            className={`flex flex-col space-y-4 md:flex-row md:space-y-0 ${
-              formData.apartmentId ? "md:space-x-4" : ""
-            }`}
-          >
-            {/* Property Details */}
-            <div
-              className={formData.apartmentId ? "w-full md:w-1/2" : "w-full"}
-            >
-              <PropertyDetails {...propertyDetailsProps} />
+          <form onSubmit={handleSubmit} className="mx-auto space-y-4">
+            <div style={{ backgroundColor: "#668E73" }}>
+              <SearchSection {...searchSectionProps} />
+              <RoomNavigation {...roomNavigationProps} />
             </div>
 
-            {/* Form Steps - Fixed height with internal scroll */}
-            {formData.apartmentId && showPriceDetails && (
-              <div className="w-full md:w-1/2">
-                <div className="border border-[#668E73] p-4 rounded sticky top-6 overflow-hidden">
-                  <div className="flex flex-col h-full">
-                    {/* Header - Fixed height */}
-                    <div className="shrink-0">
-                      {/* <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-4">
-                        {currentStep === 1 && "Extras"}
-                        {currentStep === 2 && "Notes"}
-                        {currentStep === 3 && "Contact"}
-                      </h2> */}
+            <div className="space-y-8">
+              {formData.apartmentId && showPriceDetails && (
+                <div className="flex gap-4" style={{ height: "calc(100vh - 200px)" }}>
+                  <div className="w-1/2 h-full">
+                    <div className="h-full overflow-auto">
+                      <PropertyDetails
+                        {...propertyDetailsProps}
+                        showOnlySelected={true}
+                        selectedRoomId={formData.apartmentId}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="w-1/2 h-full">
+                    <div className="border border-[#668E73] p-4 rounded h-full flex flex-col">
+                      <h2 className="text-xl font-semibold text-[#668E73] mb-6">
+                        Choix des extras
+                      </h2>
                       <BookingSteps currentStep={currentStep} />
-                    </div>
-
-                    {/* Content - Takes remaining height with scroll */}
-                    <div
-                      className="flex-1 mt-4 overflow-hidden"
-                      style={{ minHeight: 0 }}
-                    >
-                      <div className="h-full px-1 overflow-y-auto">
-                        {currentStep === 1 && (
-                          <ExtrasSection {...extrasSectionProps} />
-                        )}
-                        {currentStep === 2 && (
-                          <InfoSupSection {...infoSupSectionProps} />
-                        )}
-                        {currentStep === 3 && (
-                          <ContactSection {...contactSectionProps} />
-                        )}
+                      <div className="flex-1 overflow-y-auto mt-4">
+                        {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
+                        {currentStep === 2 && <InfoSupSection {...infoSupSectionProps} />}
+                        {currentStep === 3 && <ContactSection {...contactSectionProps} />}
                       </div>
-                    </div>
-
-                    {/* Footer - Fixed height */}
-                    <div className="pt-4 mt-4 border-t border-gray-200 shrink-0">
-                      <NavigationButtons {...navigationButtonsProps} />
+                      <div className="pt-4 mt-4 border-t border-gray-200">
+                        <NavigationButtons {...navigationButtonsProps} />
+                      </div>
                     </div>
                   </div>
                 </div>
+              )}
+
+              <div className="w-full">
+                <PropertyDetails
+                  {...propertyDetailsProps}
+                  showOnlyUnselected={true}
+                />
               </div>
-            )}
-          </div>
-        </form>
-      ) : (
+            </div>
+          </form>
+        ) : (
         <div className="w-2/5 mx-auto mt-8">
           <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
           {clientSecret && (

@@ -20,7 +20,7 @@ export const CalendarRoom = () => {
   return (
     <div
       id="smoobuApartment2428698de"
-      className="calendarWidget overflow-hidden h-[350px] xl:h-[450px] lg:h-[320px] md:h-[400px] sm:h-[370px]"
+      className="calendarWidget overflow-scroll xl:overflow-hidden  h-auto"
     >
       <div
         className="calendarContent"
@@ -35,7 +35,7 @@ export const CalendarRoom = () => {
             display: none !important;
             }
 
-            @media screen and (max-width: 1012px) {
+            @media screen and (max-width: 425px) {
             .multiCalendarWidget .fullCalendar.smallDevices:nth-of-type(1) {
                 padding: 1rem 0;
             }
@@ -43,11 +43,11 @@ export const CalendarRoom = () => {
                 display: none;
             }
 
-            .multiCalendarWidget .btn-prev.smallDevices,
+            {/* .multiCalendarWidget .btn-prev.smallDevices,
             .multiCalendarWidget .btn-next.smallDevices {
                 top: 10px !important;
                 left: 170px;
-            }
+            } */}
             }
 
             .multiCalendarWidget .btn-prev.smallDevices {
@@ -70,6 +70,10 @@ export const CalendarRoom = () => {
             .header {
             margin-bottom: 1rem;
             justify-content: space-evenly;
+            }
+
+            #smoobuApartment2428698de {
+            max-height: auto !important;
             }
         `}
       </style>

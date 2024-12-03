@@ -2,7 +2,7 @@
 .container {
   padding: 3rem 1rem;
   background-color: #678D73;
-  min-height: 100vh;
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;

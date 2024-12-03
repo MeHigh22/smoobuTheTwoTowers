@@ -35,7 +35,7 @@ export const SearchSection = ({
           {/* Arrival */}
           <div className="md:col-span-1">
             <label className="block mb-1 text-sm font-medium text-gray-600">
-              Arrival
+              Arrivée
             </label>
             <DatePicker
               selected={startDate}
@@ -60,7 +60,7 @@ export const SearchSection = ({
           {/* Departure */}
           <div className="md:col-span-1">
             <label className="block mb-1 text-sm font-medium text-gray-600">
-              Departure
+              Départ
             </label>
             <DatePicker
               selected={endDate}
@@ -80,39 +80,113 @@ export const SearchSection = ({
           {/* Adults */}
           <div className="md:col-span-1">
             <label className="block mb-1 text-sm font-medium text-gray-600">
-              Adults
+              Adultes
             </label>
-            <select
+            {/* <select
               name="adults"
               value={formData.adults}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73]"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                 <option key={num} value={num}>
                   {num}
                 </option>
               ))}
-            </select>
+            </select> */}
+            <Listbox
+              value={formData.adults}
+              onChange={(value) => handleChange({ target: { name: "adults", value } })}
+            >
+              <div className="relative">
+                <Listbox.Button
+                  id="adults"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                >
+                  <span className="flex items-center">
+                    <span className="block ml-3 truncate">{formData.adults || "Select a number"}</span>
+                  </span>
+                  <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <ChevronUpDownIcon aria-hidden="true" className="text-gray-400 size-5" />
+                  </span>
+                </Listbox.Button>
+
+                <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                    <Listbox.Option
+                      key={num}
+                      value={num}
+                      className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                    >
+                      <div className="flex items-center">
+                        <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                          {num}
+                        </span>
+                      </div>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                        <CheckIcon aria-hidden="true" className="size-5" />
+                      </span>
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </div>
+            </Listbox>
           </div>
 
           {/* Children */}
           <div className="md:col-span-1">
             <label className="block mb-1 text-sm font-medium text-gray-600">
-              Children
+              Enfants
             </label>
-            <select
+            {/* <select
               name="children"
               value={formData.children}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73]"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
             >
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                 <option key={num} value={num}>
                   {num}
                 </option>
               ))}
-            </select>
+            </select> */}
+            <Listbox
+              value={formData.children}
+              onChange={(value) => handleChange({ target: { name: "children", value } })}
+            >
+              <div className="relative">
+                <Listbox.Button
+                  id="adults"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                >
+                  <span className="flex items-center">
+                    <span className="block ml-3 truncate">{formData.children || "0"}</span>
+                  </span>
+                  <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <ChevronUpDownIcon aria-hidden="true" className="text-gray-400 size-5" />
+                  </span>
+                </Listbox.Button>
+
+                <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                    <Listbox.Option
+                      key={num}
+                      value={num}
+                      className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-[#668E73] data-[focus]:text-white"
+                    >
+                      <div className="flex items-center">
+                        <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                          {num}
+                        </span>
+                      </div>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#668E73] group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                        <CheckIcon aria-hidden="true" className="size-5" />
+                      </span>
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </div>
+            </Listbox>
           </div>
 
           {/* Search Button */}
@@ -120,7 +194,7 @@ export const SearchSection = ({
             <button
               onClick={handleCheckAvailability}
               type="button"
-              className="w-full p-2 bg-[#668E73] text-white rounded hover:bg-[#557963] transition-colors"
+              className="w-full p-2 h-12 bg-[#668E73] text-white rounded hover:bg-[#557963] transition-colors"
             >
               Search
             </button>
