@@ -123,7 +123,7 @@ export const PropertyDetails = ({
                 }`}
                 onClick={() => setActiveTab("priceDetails")}
               >
-                Price Details
+                Détails de la réservation
               </button>
               <button
                 type="button"
@@ -132,9 +132,9 @@ export const PropertyDetails = ({
                 }`}
                 onClick={() => setActiveTab("roomInfo")}
               >
-                Room Info
+                Informations sur la chambre
               </button>
-              <button
+              {/* <button
                 type="button"
                 className={`py-2 px-4 ${
                   activeTab === "calendar" ? "text-[#668E73] border-b-2 border-[#668E73]" : ""
@@ -142,27 +142,65 @@ export const PropertyDetails = ({
                 onClick={() => setActiveTab("calendar")}
               >
                 Calendar
-              </button>
+              </button> */}
             </div>
 
             <div className="flex-1 overflow-y-auto">
               {activeTab === "roomInfo" && (
                 <div className="h-full">
                   <div className="h-[40vh] md:h-[50vh]">
+
                     <Slider {...sliderSettings} ref={(slider) => setSliderRef(slider)}>
                       {Object.values(room.images).map((image, index) => (
-                        <div key={index} className="h-full">
-                          <img
-                            src={image}
-                            alt={`${room.name} ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`${room.name} ${index + 1}`}
+                          className="w-full h-[350px] object-cover"
+                        />
                       ))}
                     </Slider>
+        
+                    <div className="mt-4">
+                      <Slider {...thumbnailSettings}>
+                        {Object.values(room.images).map((image, index) => (
+                          <div key={index} className="px-2">
+                            <img
+                              src={image}
+                              alt={`${room.name} Thumbnail ${index + 1}`}
+                              className="object-cover cursor-pointer h-[70px] w-full"
+                            />
+                          </div>
+                        ))}
+                      </Slider>
+                    </div>
+        
+                    <div className="features-container overflow-x-auto w-full mt-4">
+                      <div className="features-list flex">
+                        {room.features.map((feature, index) => (
+                          <div
+                            key={index}
+                            className="feature-item flex flex-col items-center text-center p-4 bg-[#668E73]"
+                            style={{ minWidth: "100px", flex: "0 0 auto" }}
+                          >
+                            <img
+                              src={feature.icon}
+                              alt={feature.title}
+                              style={{
+                                height: "30px",
+                                width: "30px",
+                                filter: "invert(100%)",
+                              }}
+                            />
+                            <span className="text-sm mt-2 text-white">{feature.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                   </div>
 
-                  <div className="mt-4">
+                  {/* <div className="mt-4">
                     <Slider {...thumbnailSettings}>
                       {Object.values(room.images).map((image, index) => (
                         <div key={index} className="px-2">
@@ -200,13 +238,13 @@ export const PropertyDetails = ({
                       </div>
                     </div>
                     <p className="text-gray-600 mt-4">{room.description}</p>
-                  </div>
+                  </div> */}
                 </div>
               )}
               
               {activeTab === "priceDetails" && roomPriceDetails && (
                 <div className="h-full overflow-y-auto">
-                  <h2 className="text-lg font-medium mb-2">Price Details</h2>
+                  <h2 className="text-lg font-medium mb-2">Détails du prix</h2>
                   <PriceDetails
                     priceDetails={roomPriceDetails}
                     selectedExtras={selectedExtras}
@@ -216,7 +254,7 @@ export const PropertyDetails = ({
                 </div>
               )}
               
-              {activeTab === "calendar" && (
+              {/* {activeTab === "calendar" && (
                 <div className="h-full overflow-y-auto">
                   <h2 className="text-lg font-medium mb-2">Calendar</h2>
                   <CalendarRoom 
@@ -226,7 +264,7 @@ export const PropertyDetails = ({
                     selectedEndDate={endDate}
                   />
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         ) : (
@@ -266,7 +304,7 @@ export const PropertyDetails = ({
                   {room.features.map((feature, index) => (
                     <div
                       key={index}
-                      className="feature-item flex flex-col items-center text-center p-4 bg-[#668E73] mr-2"
+                      className="feature-item flex flex-col items-center text-center p-4 bg-[#668E73]"
                       style={{ minWidth: "100px", flex: "0 0 auto" }}
                     >
                       <img
@@ -285,9 +323,7 @@ export const PropertyDetails = ({
               </div>
             </div>
   
-            <div className="w-full xl:w-3/5">
-              <p className="text-gray-600 mb-4">{room.description}</p>
-  
+            <div className="w-full xl:w-3/5">  
               <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
                 Disponibilités
               </h2>
@@ -297,11 +333,8 @@ export const PropertyDetails = ({
                 selectedStartDate={startDate}
                 selectedEndDate={endDate}
               />
-            </div>
-          </div>
-        )}
-
-        <button
+              <p className="text-gray-600 mb-4">{room.description}</p>
+              <button
           type="button"
           onClick={() => {
             if (isAvailable) onRoomSelect(room.id);
@@ -316,11 +349,14 @@ export const PropertyDetails = ({
           }`}
         >
           {formData.apartmentId === room.id
-            ? "Selected"
+            ? "Sélectionnée"
             : isAvailable
-            ? "Select this Room"
-            : "Room Unavailable"}
+            ? "Sélectionner cette chambre"
+            : "Chambre non disponible"}
         </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
