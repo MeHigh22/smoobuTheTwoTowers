@@ -254,35 +254,35 @@ const BookingForm = () => {
             </div>
 
             <div className="space-y-8">
-              {formData.apartmentId && showPriceDetails && (
-                <div className="flex gap-4" style={{ height: "calc(100vh - 200px)" }}>
-                  <div className="w-1/2 h-full">
-                    <div className="h-full overflow-auto">
-                      <PropertyDetails
-                        {...propertyDetailsProps}
-                        showOnlySelected={true}
-                        selectedRoomId={formData.apartmentId}
-                      />
-                    </div>
+            {formData.apartmentId && showPriceDetails && (
+              <div className="flex flex-col sm:flex-row gap-4 h-auto sm:h-[calc(100vh-200px)]">
+              <div className="w-full sm:w-1/2 h-full">
+                  <div className="h-full overflow-auto">
+                    <PropertyDetails
+                      {...propertyDetailsProps}
+                      showOnlySelected={true}
+                      selectedRoomId={formData.apartmentId}
+                    />
                   </div>
+                </div>
 
-                  <div className="w-1/2 h-full">
-                    <div className="border border-[#668E73] p-4 rounded h-full flex flex-col">
-                      <h2 className="text-xl font-semibold text-[#668E73] mb-6">
-                        Choix des extras
-                      </h2>
-                      <BookingSteps currentStep={currentStep} />
-                      <div className="flex-1 overflow-y-auto mt-4">
-                        {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
-                        {currentStep === 2 && <InfoSupSection {...infoSupSectionProps} />}
-                        {currentStep === 3 && <ContactSection {...contactSectionProps} />}
-                      </div>
-                      <div className="pt-4 mt-4 border-t border-gray-200">
-                        <NavigationButtons {...navigationButtonsProps} />
-                      </div>
+                <div className="w-full sm:w-1/2 h-full">
+                  <div className="border border-[#668E73] p-4 rounded h-full flex flex-col">
+                    <h2 className="text-xl font-semibold text-[#668E73] mb-6">
+                      Choix des extras
+                    </h2>
+                    <BookingSteps currentStep={currentStep} />
+                    <div className="flex-1 overflow-y-auto mt-4">
+                      {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
+                      {currentStep === 2 && <InfoSupSection {...infoSupSectionProps} />}
+                      {currentStep === 3 && <ContactSection {...contactSectionProps} />}
+                    </div>
+                    <div className="pt-4 mt-4 border-t border-gray-200">
+                      <NavigationButtons {...navigationButtonsProps} />
                     </div>
                   </div>
                 </div>
+              </div>
               )}
 
               <div className="w-full">
