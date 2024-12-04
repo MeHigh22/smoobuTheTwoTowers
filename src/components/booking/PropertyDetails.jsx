@@ -5,6 +5,9 @@ import { isRoomAvailable } from "../hooks/roomUtils";
 import { PriceDetails } from "./PriceDetails";
 import { CalendarRoom } from "./CalendarRoom";
 
+import Calendar from "../../assets/icons8-calendar-50.png";
+import Group from "../../assets/icons8-group-48.png";
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -81,6 +84,14 @@ export const PropertyDetails = ({
     }
     return true;
   });
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}.${month}.${year}`;
+  };
 
   const RoomCard = ({ room, isAvailable }) => {
     const roomPriceDetails = priceDetails && priceDetails[room.id];
@@ -244,13 +255,35 @@ export const PropertyDetails = ({
               
               {activeTab === "priceDetails" && roomPriceDetails && (
                 <div className="h-full overflow-y-auto">
-                  <h2 className="text-lg font-medium mb-2">Détails du prix</h2>
+                  <h2 className="text-lg font-medium uppercase mb-5 mt-5 underline">{room.name}</h2>
+
+                {/* Guest Count */}
+                  <div className="flex items-center justify-between mt-10">
+                    <img src={Group} alt="Profile Icon" className="w-6 h-6" />
+                    <span className="text-[18px] font-light text-black">
+                      {Number(formData.adults) + Number(formData.children)}{" "}
+                      {Number(formData.adults) + Number(formData.children) > 1
+                        ? "personnes"
+                        : "personne"}
+                    </span>
+                  </div>
+
+                  {/* Dates */}
+                  <div className="flex items-center justify-between mt-2 mb-10">
+                    <img src={Calendar} alt="Calendar Icon" className="w-6 h-6" />
+                    <div className="flex items-center text-[18px] font-light text-black">
+                      {startDate && <span>{formatDate(startDate)}</span>}
+                      {(startDate || endDate) && <span className="mx-2">→</span>}
+                      {endDate && <span>{formatDate(endDate)}</span>}
+                    </div>
+                  </div>
+
                   <PriceDetails
                     priceDetails={roomPriceDetails}
                     selectedExtras={selectedExtras}
                     appliedCoupon={appliedCoupon}
                   />
-                  <p className="text-gray-600 mt-4">{room.description}</p>
+                  {/* <p className="text-gray-600 mt-4">{room.description}</p> */}
                 </div>
               )}
               

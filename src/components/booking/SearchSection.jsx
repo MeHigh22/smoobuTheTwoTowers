@@ -196,7 +196,7 @@ export const SearchSection = ({
               type="button"
               className="w-full p-2 h-12 bg-[#668E73] text-white rounded hover:bg-[#557963] transition-colors"
             >
-              Search
+              Rechercher
             </button>
           </div>
         </div>
