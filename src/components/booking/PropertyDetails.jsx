@@ -25,6 +25,13 @@ export const PropertyDetails = ({
   showOnlySelected = false,
   showOnlyUnselected = false,
 }) => {
+
+  const scrollTo = (offset) => {
+    const y = window.innerHeight * (offset / 100);
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  };
+
+
   const getUnavailableDatesMessage = (roomId) => {
     if (!availableDates || !availableDates[roomId] || !startDate || !endDate) return null;
 
@@ -370,7 +377,10 @@ export const PropertyDetails = ({
               <button
           type="button"
           onClick={() => {
-            if (isAvailable) onRoomSelect(room.id);
+            if (isAvailable) {
+              onRoomSelect(room.id);
+              scrollTo(10);
+            }
           }}
           disabled={!isAvailable}
           className={`w-fit mt-5 py-2 px-5 rounded-full font-medium transition-colors ${

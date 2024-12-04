@@ -255,8 +255,8 @@ const BookingForm = () => {
 
             <div className="space-y-8">
             {formData.apartmentId && showPriceDetails && (
-              <div className="flex flex-col sm:flex-row gap-4 h-auto sm:h-[calc(100vh-200px)]">
-              <div className="w-full sm:w-1/2 h-full">
+              <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-200px)]">
+                <div className="w-full lg:w-1/2 h-full">
                   <div className="h-full overflow-auto">
                     <PropertyDetails
                       {...propertyDetailsProps}
@@ -266,7 +266,7 @@ const BookingForm = () => {
                   </div>
                 </div>
 
-                <div className="w-full sm:w-1/2 h-full">
+                <div className="w-full lg:w-1/2 h-full">
                   <div className="border border-[#668E73] p-4 rounded h-full flex flex-col">
                     <h2 className="text-xl font-semibold text-[#668E73] mb-6">
                       Choix des extras
