@@ -177,7 +177,7 @@ export const PropertyDetails = ({
                         key={index}
                         src={image}
                         alt={`${room.name} ${index + 1}`}
-                        className="w-full h-[270px] sm:h-[270px] md:h-[300px] lg:h-[300px] xl:h-[450px] object-cover"
+                        className="w-full h-[270px] sm:h-[270px] md:h-[300px] lg:h-[300px] xl:h-[400px] object-cover"
                       />
                     ))}
                   </Slider>
