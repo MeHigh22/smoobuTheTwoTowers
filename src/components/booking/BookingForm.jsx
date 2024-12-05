@@ -238,7 +238,7 @@ const BookingForm = () => {
   };
 
   return (
-    <div className="p-6 mx-auto h-[100vh] overflow-y-scroll w-full lg:w-[1024px] xl:w-[1440px]">
+    <div className=" mx-auto h-[100vh] overflow-y-scroll w-full">
       {error && <ErrorMessage message={error} />}
       {availabilityError && <ErrorMessage message={availabilityError} />}
       {successMessage && (
@@ -253,7 +253,7 @@ const BookingForm = () => {
               <RoomNavigation {...roomNavigationProps} />
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-8 px-[5%] py-[1%]">
             {formData.apartmentId && showPriceDetails && (
               <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-200px)]">
                 <div className="w-full lg:w-1/2 h-full">

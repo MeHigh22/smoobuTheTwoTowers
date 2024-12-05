@@ -225,9 +225,9 @@ export const PropertyDetails = ({
 
               {activeTab === "priceDetails" && roomPriceDetails && (
                 <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto">
-                  <h2 className="text-lg sm:text-base md:text-lg font-medium uppercase sm:mb-2 md:mb-5 sm:mt-2 md:mt-5 sm:my-3 md:my-4 underline">{room.name}</h2>
+                  <h2 className="text-lg sm:text-base md:text-lg font-medium uppercase sm:mb-2 md:mb-10 sm:mt-2 md:mt-10 sm:my-3 md:my-4 underline">{room.name}</h2>
 
-                  <div className="flex items-center justify-between sm:my-4 ">
+                  <div className="flex items-center justify-between sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     <span className="text-[18px] sm:text-sm md:text-base font-light text-black">
                       {Number(formData.adults) + Number(formData.children)}{" "}
@@ -235,7 +235,7 @@ export const PropertyDetails = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between mt-2 mb-10 sm:my-3 md:my-4">
+                  <div className="flex items-center justify-between sm:mb-2 md:mb-10 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Calendar} alt="Calendar Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     <div className="flex items-center text-[18px] sm:text-sm md:text-base font-light text-black">
                       {startDate && <span>{formatDate(startDate)}</span>}
@@ -278,7 +278,7 @@ export const PropertyDetails = ({
                     key={index}
                     src={image}
                     alt={`${room.name} ${index + 1}`}
-                    className="w-full h-[450px] object-cover"
+                    className="w-full h-[400px] object-cover"
                   />
                 ))}
               </Slider>
@@ -290,7 +290,7 @@ export const PropertyDetails = ({
                       <img
                         src={image}
                         alt={`${room.name} Thumbnail ${index + 1}`}
-                        className="object-cover cursor-pointer h-[100px] w-full"
+                        className="object-cover cursor-pointer h-[57px] w-full"
                       />
                     </div>
                   ))}
@@ -384,7 +384,7 @@ export const PropertyDetails = ({
           <h2 className="mb-6 text-xl font-semibold text-gray-500">
             Chambres non disponibles
           </h2>
-          <div className="grid grid-cols-1 gap-8">
+          <div className="grid grid-cols-1 gap-8 w-[90%] mx-auto">
             {groupedRooms.unavailable.map((room) => (
               <RoomCard key={room.id} room={room} isAvailable={false} />
             ))}

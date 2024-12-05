@@ -21,7 +21,7 @@ export const SearchSection = ({
 
   return (
     <div
-      className="w-full text-center"
+      className="w-4/5 m-auto text-center"
       style={{ backgroundColor: "#668E73", padding: "40px 20px" }}
     >
       {/* Title */}

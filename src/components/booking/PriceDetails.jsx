@@ -64,7 +64,7 @@ export const PriceDetails = ({
   }
 
   return (
-    <div className="p-4 mt-4 rounded-lg bg-gray-50" style={{ height: "270px", overflow: "scroll" }}>
+    <div className="p-4 mt-4 rounded-lg bg-gray-50" style={{ height: "350px", overflow: "scroll" }}>
       <h3 className="mb-2 font-bold">Détail des prix:</h3>
 
       {/* Base price */}
