@@ -1,4 +1,5 @@
 import React from "react";
+import { HeaderSection } from "./HeaderSection";
 import { SearchSection, RoomNavigation } from "./SearchSection";
 import { PropertyDetails } from "./PropertyDetails";
 import { BookingSteps } from "./BookingSteps";
@@ -239,12 +240,12 @@ const BookingForm = () => {
 
   return (
     <div className=" mx-auto h-[100vh] overflow-y-scroll w-full">
+      <HeaderSection />
       {error && <ErrorMessage message={error} />}
       {availabilityError && <ErrorMessage message={availabilityError} />}
       {successMessage && (
         <div className="mb-4 text-green-500">{successMessage}</div>
       )}
-      {(loading || availabilityLoading) && <LoadingSpinner />}
 
       {!showPayment ? (
           <form onSubmit={handleSubmit} className="mx-auto space-y-4">
@@ -254,6 +255,7 @@ const BookingForm = () => {
             </div>
 
             <div className="space-y-8 px-[5%] py-[1%]">
+            {(loading || availabilityLoading) && <LoadingSpinner />}
             {formData.apartmentId && showPriceDetails && (
               <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-200px)]">
                 <div className="w-full lg:w-1/2 h-full">
