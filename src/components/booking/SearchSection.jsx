@@ -22,7 +22,7 @@ export const SearchSection = ({
   return (
     <div
       className="w-4/5 m-auto text-center"
-      style={{ backgroundColor: "#668E73", padding: "40px 20px" }}
+      style={{ backgroundColor: "#668E73", padding: "60px 20px" }}
     >
       {/* Title */}
       <h1 className="mb-8 text-3xl font-light text-white">
@@ -30,7 +30,7 @@ export const SearchSection = ({
       </h1>
 
       {/* Search Form */}
-      <div className="p-6 mx-auto bg-white rounded-lg shadow">
+      <div className="p-6 mx-auto bg-[#fbfdfb] rounded-lg shadow">
         <div className="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
           {/* Arrival */}
           <div className="md:col-span-1">
@@ -47,7 +47,7 @@ export const SearchSection = ({
               locale="fr"
               dateFormat="dd/MM/yyyy"
               placeholderText="Sélectionnez une date"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              className="mt-1 block w-full rounded bg-[#fbfdfb] border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black h-12 p-2"
               filterDate={(date) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -71,7 +71,7 @@ export const SearchSection = ({
               minDate={startDate || new Date()}
               dateFormat="dd/MM/yyyy"
               placeholderText="Sélectionnez une date"
-              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+              className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-[#fbfdfb] h-12 p-2"
               isClearable={true}
               disabled={!startDate}
             />
@@ -101,7 +101,7 @@ export const SearchSection = ({
               <div className="relative">
                 <Listbox.Button
                   id="adults"
-                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-white h-12 p-2"
+                  className="mt-1 block w-full rounded border-[#668E73] border text-[14px] md:text-[16px] placeholder:text-[14px] md:placeholder:text-[16px] shadow-sm focus:border-[#668E73] focus:ring-1 focus:ring-[#668E73] text-black bg-[#fbfdfb] h-12 p-2"
                 >
                   <span className="flex items-center">
                     <span className="block ml-3 truncate">{formData.adults || "Select a number"}</span>
@@ -111,7 +111,7 @@ export const SearchSection = ({
                   </span>
                 </Listbox.Button>
 
-                <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-[#fbfdfb] rounded-md shadow-lg max-h-56 ring-1 ring-black/5 focus:outline-none sm:text-sm">
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                     <Listbox.Option
                       key={num}
@@ -207,7 +207,7 @@ export const SearchSection = ({
 
 export const RoomNavigation = ({ rooms, onRoomSelect }) => {
   return (
-    <div className="flex flex-wrap justify-center gap-4 mt-8">
+    <div className="flex flex-wrap justify-center gap-4 my-8 pb-[60px]">
       {rooms.map((room) => (
         <button
           key={room.id}

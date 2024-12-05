@@ -143,7 +143,7 @@ export const PropertyDetails = ({
 
         {formData.apartmentId === room.id ? (
           <div className="flex flex-col h-full" id="main-container">
-            <div className="flex justify-around border-b border-grey-300 mb-4">
+            <div className="flex justify-around border-b border-grey-300 mb-4 ">
               <button
                 type="button"
                 className={`py-2 px-4 ${
@@ -369,7 +369,7 @@ export const PropertyDetails = ({
   };
 
   return (
-    <div className="space-y-8 ">
+    <div className="space-y-8 bg-[#fbfdfb]">
       {filteredAvailableRooms.length > 0 && (
         <div>
           {!showOnlySelected && !showOnlyUnselected && (
@@ -382,13 +382,13 @@ export const PropertyDetails = ({
               <div key={room.id} className="space-y-4">
               <div className="text-left mb-4">
                   {/* Room Type - Larger text that becomes smaller on mobile */}
-                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
                     {room.type}
-                  </h3>
-                  {/* Room Name - Medium text that becomes smaller on mobile */}
-                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl">
-                    {room.name}
                   </h4>
+                  {/* Room Name - Medium text that becomes smaller on mobile */}
+                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                    {room.name}
+                  </h3>
                 </div>
               <RoomCard key={room.id} room={room} isAvailable={true} />
               </div>
@@ -398,7 +398,7 @@ export const PropertyDetails = ({
       )}
 
       {!showOnlySelected && groupedRooms.unavailable.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-0 py-10">
           {/* <h2 className="mb-6 text-xl font-semibold text-gray-500">
             Chambres non disponibles
           </h2> */}
@@ -407,13 +407,13 @@ export const PropertyDetails = ({
               <div key={room.id} className="space-y-4">
                 <div className="text-left mb-4">
                   {/* Room Type - Larger text that becomes smaller on mobile */}
-                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
                     {room.type}
-                  </h3>
-                  {/* Room Name - Medium text that becomes smaller on mobile */}
-                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl">
-                    {room.name}
                   </h4>
+                  {/* Room Name - Medium text that becomes smaller on mobile */}
+                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                    {room.name}
+                  </h3>
                 </div>
                 <RoomCard room={room} isAvailable={false} />
               </div>
