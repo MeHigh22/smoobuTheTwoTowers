@@ -24,8 +24,17 @@ export const PropertyDetails = ({
   loading,
   showOnlySelected = false,
   showOnlyUnselected = false,
+  hasSearched,
 }) => {
 
+
+  console.log("PropertyDetails render:", { 
+    startDate, 
+    endDate, 
+    hasSearched, 
+    hasAvailableDates: !!availableDates 
+  });
+  
   const scrollTo = () => {
     setTimeout(() => {
       const element = document.getElementById('main-container'); // Add this ID to your main container
@@ -73,7 +82,7 @@ export const PropertyDetails = ({
 
   const groupedRooms = Object.values(roomsData).reduce(
     (acc, room) => {
-      if (isRoomAvailable(room.id, startDate, endDate, availableDates)) {
+      if (isRoomAvailable(room.id, startDate, endDate, availableDates, hasSearched)) {
         acc.available.push(room);
       } else {
         acc.unavailable.push(room);

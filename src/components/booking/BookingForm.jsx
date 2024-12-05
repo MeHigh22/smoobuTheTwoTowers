@@ -58,7 +58,9 @@ const BookingForm = () => {
     availableDates,
     loading: availabilityLoading,
     error: availabilityError,
+    hasSearched,
     checkAvailability,
+    resetAvailability,
   } = useAvailabilityCheck(formData);
 
   const handleRoomSelect = async (roomId) => {
@@ -150,7 +152,7 @@ const BookingForm = () => {
       setDateError("");
       return;
     }
-
+  
     const selectedDate = new Date(date.setHours(12, 0, 0, 0));
     if (isStart) {
       setStartDate(selectedDate);
@@ -163,6 +165,11 @@ const BookingForm = () => {
         },
       });
       handleChange({ target: { name: "departureDate", value: "" } });
+      
+      // Reset availability states when dates change
+      setIsAvailable(false);
+      setShowPriceDetails(false);
+      
     } else {
       setEndDate(selectedDate);
       setDateError("");
@@ -172,6 +179,10 @@ const BookingForm = () => {
           value: selectedDate.toISOString().split("T")[0],
         },
       });
+      
+      // Reset availability states when dates change
+      setIsAvailable(false);
+      setShowPriceDetails(false);
     }
   };
 
@@ -183,6 +194,7 @@ const BookingForm = () => {
     handleDateSelect,
     dateError,
     handleCheckAvailability: handleAvailabilityCheck,
+    resetAvailability,
   };
 
   const propertyDetailsProps = {
@@ -196,6 +208,7 @@ const BookingForm = () => {
     onRoomSelect: handleRoomSelect,
     availableDates,
     loading: availabilityLoading,
+    hasSearched,
   };
 
   const extrasSectionProps = {
@@ -254,7 +267,7 @@ const BookingForm = () => {
             </div>
 
             <div className="space-y-8 px-[5%] py-[1%]">
-            {formData.apartmentId && showPriceDetails && (
+            {formData.apartmentId && (
               <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-200px)]">
                 <div className="w-full lg:w-1/2 h-full">
                   <div className="h-full overflow-auto">
