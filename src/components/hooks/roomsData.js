@@ -17,6 +17,7 @@ import wifi from "../../assets/Chambres/icons8-wifi-50.png";
 export const roomsData = {
   2428698: {
     id: 2428698,
+    type: "logement insolites",
     name: "La porte du Chalet",
     description: "Plongez-vous dans l’intimité de la Chambre de Blé – un refuge douillet au cœur d’une grange restaurée avec soin. Conçue pour accueillir deux adultes et jusqu’à deux enfants, cette chambre rustique allie harmonieusement le charme d’antan et les commodités modernes. Idéale pour une escapade en amoureux ou des vacances en famille, réservez dès maintenant et laissez-vous séduire par l’ambiance chaleureuse de la Chambre de Blé",
     images: {
@@ -46,6 +47,7 @@ export const roomsData = {
   },
   2428703: {
     id: 2428703,
+    type: "logement insolites",
     name: "La canne à sucre",
     description: "Plongez-vous dans l’intimité de la Chambre de Blé – un refuge douillet au cœur d’une grange restaurée avec soin. Conçue pour accueillir deux adultes et jusqu’à deux enfants, cette chambre rustique allie harmonieusement le charme d’antan et les commodités modernes. Idéale pour une escapade en amoureux ou des vacances en famille, réservez dès maintenant et laissez-vous séduire par l’ambiance chaleureuse de la Chambre de Blé",
     images: {
@@ -75,6 +77,7 @@ export const roomsData = {
   },
   2432648: {
     id: 2432648,
+    type: "gîte et chambre d'hôte",
     name: "La suite du Bar",
     description: "Plongez-vous dans l’intimité de la Chambre de Blé – un refuge douillet au cœur d’une grange restaurée avec soin. Conçue pour accueillir deux adultes et jusqu’à deux enfants, cette chambre rustique allie harmonieusement le charme d’antan et les commodités modernes. Idéale pour une escapade en amoureux ou des vacances en famille, réservez dès maintenant et laissez-vous séduire par l’ambiance chaleureuse de la Chambre de Blé",
     images: {

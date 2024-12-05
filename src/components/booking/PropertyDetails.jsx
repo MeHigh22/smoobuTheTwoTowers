@@ -129,15 +129,21 @@ export const PropertyDetails = ({
     return (
       <div
         id={`room-${room.id}`}
-        className={`p-6 border rounded shadow-sm ${
-          isAvailable ? "border-[#668E73]" : "border-gray-300"
-        } ${formData.apartmentId === room.id && showOnlySelected ? 'h-[calc(100vh-200px)] overflow-hidden' : 'h-fit'}`}
+        className={`py-8 ${
+          formData.apartmentId === room.id 
+            ? 'border border-[#668E73] p-4 rounded' 
+            : ''
+        } ${
+          formData.apartmentId === room.id && showOnlySelected 
+            ? 'h-[calc(100vh-200px)] overflow-hidden' 
+            : 'h-fit'
+        }`}
       >
         {!isAvailable && getUnavailableDatesMessage(room.id)}
 
         {formData.apartmentId === room.id ? (
           <div className="flex flex-col h-full" id="main-container">
-            <div className="flex justify-around border-b border-gray-300 mb-4">
+            <div className="flex justify-around border-b border-grey-300 mb-4">
               <button
                 type="button"
                 className={`py-2 px-4 ${
@@ -227,7 +233,7 @@ export const PropertyDetails = ({
                 <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto">
                   <h2 className="text-lg sm:text-base md:text-lg font-medium uppercase sm:mb-2 md:mb-10 sm:mt-2 md:mt-10 sm:my-3 md:my-4 underline">{room.name}</h2>
 
-                  <div className="flex items-center justify-between sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
+                  <div className="flex items-center justify-left sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     <span className="text-[18px] sm:text-sm md:text-base font-light text-black">
                       {Number(formData.adults) + Number(formData.children)}{" "}
@@ -235,7 +241,7 @@ export const PropertyDetails = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between sm:mb-2 md:mb-10 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
+                  <div className="flex items-center justify-left sm:mb-2 md:mb-10 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Calendar} alt="Calendar Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     <div className="flex items-center text-[18px] sm:text-sm md:text-base font-light text-black">
                       {startDate && <span>{formatDate(startDate)}</span>}
@@ -266,11 +272,11 @@ export const PropertyDetails = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col xl:flex-row gap-4">
+          <div className="flex flex-col xl:flex-row gap-10 w-[90%] mx-auto">
             <div className="w-full xl:w-2/5">
-              <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
+              {/* <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
                 {room.name}
-              </h2>
+              </h2> */}
   
               <Slider {...sliderSettings} ref={(slider) => setSliderRef(slider)}>
                 {Object.values(room.images).map((image, index) => (
@@ -302,7 +308,7 @@ export const PropertyDetails = ({
                   {room.features.map((feature, index) => (
                     <div
                       key={index}
-                      className="feature-item flex flex-col items-center text-center p-4 bg-[#668E73]"
+                      className="feature-item flex flex-col items-center text-center p-2 bg-[#668E73]"
                       style={{ minWidth: "100px", flex: "0 0 auto" }}
                     >
                       <img
@@ -322,16 +328,16 @@ export const PropertyDetails = ({
             </div>
   
             <div className="w-full xl:w-3/5">  
-              <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
+              {/* <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
                 Disponibilités
-              </h2>
+              </h2> */}
               <CalendarRoom 
                 roomId={room.id}
                 availableDates={availableDates}
                 selectedStartDate={startDate}
                 selectedEndDate={endDate}
               />
-              <p className="text-gray-600 mb-4">{room.description}</p>
+              <p className="text-gray-600 my-4">{room.description}</p>
               <button
           type="button"
           onClick={() => {
@@ -363,7 +369,7 @@ export const PropertyDetails = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       {filteredAvailableRooms.length > 0 && (
         <div>
           {!showOnlySelected && !showOnlyUnselected && (
@@ -371,9 +377,21 @@ export const PropertyDetails = ({
               Chambres disponibles
             </h2>
           )}
-          <div className="grid grid-cols-1 gap-8">
+          <div className="grid grid-cols-1 gap-20 w-[90%] mx-auto">
             {filteredAvailableRooms.map((room) => (
+              <div key={room.id} className="space-y-4">
+              <div className="text-left mb-4">
+                  {/* Room Type - Larger text that becomes smaller on mobile */}
+                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                    {room.type}
+                  </h3>
+                  {/* Room Name - Medium text that becomes smaller on mobile */}
+                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl">
+                    {room.name}
+                  </h4>
+                </div>
               <RoomCard key={room.id} room={room} isAvailable={true} />
+              </div>
             ))}
           </div>
         </div>
@@ -381,12 +399,24 @@ export const PropertyDetails = ({
 
       {!showOnlySelected && groupedRooms.unavailable.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-6 text-xl font-semibold text-gray-500">
+          {/* <h2 className="mb-6 text-xl font-semibold text-gray-500">
             Chambres non disponibles
-          </h2>
-          <div className="grid grid-cols-1 gap-8 w-[90%] mx-auto">
+          </h2> */}
+          <div className="grid grid-cols-1 gap-20 w-[90%] mx-auto">
             {groupedRooms.unavailable.map((room) => (
-              <RoomCard key={room.id} room={room} isAvailable={false} />
+              <div key={room.id} className="space-y-4">
+                <div className="text-left mb-4">
+                  {/* Room Type - Larger text that becomes smaller on mobile */}
+                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                    {room.type}
+                  </h3>
+                  {/* Room Name - Medium text that becomes smaller on mobile */}
+                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl">
+                    {room.name}
+                  </h4>
+                </div>
+                <RoomCard room={room} isAvailable={false} />
+              </div>
             ))}
           </div>
         </div>

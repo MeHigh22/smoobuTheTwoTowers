@@ -1287,7 +1287,7 @@ const handlePaymentSuccess = () => {
 
 
   const renderPaymentForm = () => (
-    <div className="w-2/5 mx-auto mt-8">
+    <div className="w-full mx-auto mt-8">
       <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
       {clientSecret && (
         <StripeWrapper
