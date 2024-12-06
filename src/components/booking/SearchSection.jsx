@@ -15,11 +15,18 @@ export const SearchSection = ({
   handleDateSelect,
   handleCheckAvailability,
   dateError,
+  resetAvailability
 }) => {
   const handleSearch = (e) => {
     e.preventDefault(); // Prevent form refresh
     handleCheckAvailability();
   };
+
+  const handleDateChange = (date, isStart) => {
+    resetAvailability(); // Reset availability when dates change
+    handleDateSelect(date, isStart);
+  };
+
 
   return (
     <div
@@ -49,7 +56,7 @@ export const SearchSection = ({
             </label>
             <DatePicker
               selected={startDate}
-              onChange={(date) => handleDateSelect(date, true)}
+              onChange={(date) => handleDateChange(date, true)}
               selectsStart
               startDate={startDate}
               endDate={endDate}
@@ -74,7 +81,7 @@ export const SearchSection = ({
             </label>
             <DatePicker
               selected={endDate}
-              onChange={(date) => handleDateSelect(date, false)}
+              onChange={(date) => handleDateChange(date, false)}
               selectsEnd
               startDate={startDate}
               endDate={endDate}
