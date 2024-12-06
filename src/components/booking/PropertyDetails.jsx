@@ -231,8 +231,8 @@ export const PropertyDetails = ({
 
               {activeTab === "priceDetails" && roomPriceDetails && (
                 <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto">
-                  <h2 className="text-lg sm:text-base md:text-lg font-medium uppercase sm:mb-2 md:mb-10 sm:mt-2 md:mt-10 sm:my-3 md:my-4 underline">{room.name}</h2>
-
+                  <p className="text-lg sm:text-base md:text-lg font-medium">{room.type}</p>
+                  <h2 className="text-lg sm:text-base md:text-lg font-medium uppercase sm:mb-2 md:mb-10 sm:my-3 md:my-4 underline">{room.name}</h2>
                   <div className="flex items-center justify-left sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     <span className="text-[18px] sm:text-sm md:text-base font-light text-black">
@@ -380,17 +380,17 @@ export const PropertyDetails = ({
           <div className="grid grid-cols-1 gap-20 w-[90%] mx-auto">
             {filteredAvailableRooms.map((room) => (
               <div key={room.id} className="space-y-4">
-              <div className="text-left mb-4">
-                  {/* Room Type - Larger text that becomes smaller on mobile */}
-                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
-                    {room.type}
-                  </h4>
-                  {/* Room Name - Medium text that becomes smaller on mobile */}
-                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
-                    {room.name}
-                  </h3>
-                </div>
-              <RoomCard key={room.id} room={room} isAvailable={true} />
+                {formData.apartmentId !== room.id && (
+                  <div className="text-left mb-4">
+                    <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
+                      {room.type}
+                    </h4>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                      {room.name}
+                    </h3>
+                  </div>
+                )}
+                <RoomCard key={room.id} room={room} isAvailable={true} />
               </div>
             ))}
           </div>
