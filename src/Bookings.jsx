@@ -118,6 +118,7 @@ const BookingForm = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
   const [availableDates, setAvailableDates] = useState({});
+  const hello = "Nein";
   
 
   const [startDate, setStartDate] = useState(null);
