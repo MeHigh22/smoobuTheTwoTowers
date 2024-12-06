@@ -42,8 +42,8 @@ export const HeaderSection = () => {
 
     return (
         <header className="w-full fixed top-0 left-0 bg-white z-50">
-            {/* Top Bar */}
-        <div className="bg-[#668E73] text-white h-auto md:h-[44px]">
+            {/* Top Bar */}           
+        <div className="bg-[#668E73] text-white h-auto md:h-[44px] font-montserrat">
             <div className="mx-auto flex flex-col md:flex-row justify-between items-center text-xs h-full px-4 py-2 md:py-0 md:px-[5%]">
                 {/* Contact Information */}
                 <div className="flex md:flex-row md:items-center md:space-x-6 w-full md:w-auto">
@@ -139,7 +139,7 @@ export const HeaderSection = () => {
         </div>
 
             {/* Main Navigation */}
-            <div className="h-auto md:h-[130px] bg-[#fbfdfb]">
+            <div className="h-auto md:h-[130px] bg-[#fbfdfb] font-montserrat">
                 <nav className="w-full px-4 lg:px-40 h-[100px] md:h-full">
                     <div className="flex items-center justify-between lg:justify-center relative w-full h-full">
                         <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">

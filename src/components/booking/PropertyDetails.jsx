@@ -200,9 +200,11 @@ export const PropertyDetails = ({
                         </div>
                       ))}
                     </Slider>
+
+
                   </div>
 
-                  <div className="features-container overflow-x-auto w-full mt-4 sm:mt-2 md:mt-3">
+                  <div className="features-container overflow-x-auto w-full mt-4 sm:mt-2 md:mt-3 font-cormorant">
                     <div className="features-list flex sm:flex-wrap md:flex-nowrap">
                       {room.features.map((feature, index) => (
                         <div
@@ -231,10 +233,10 @@ export const PropertyDetails = ({
 
               {activeTab === "priceDetails" && roomPriceDetails && (
                 <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto">
-                  <p className="text-lg sm:text-base md:text-lg font-medium">{room.type}</p>
-                  <h2 className="text-lg sm:text-base md:text-lg font-medium uppercase sm:mb-2 md:mb-10 sm:my-3 md:my-4 underline">{room.name}</h2>
+                  <p className="text-lg sm:text-base md:text-lg font-montserrat">{room.type}</p>
+                  <h2 className="text-lg sm:text-base md:text-[25px] font-medium uppercase sm:mb-2 md:mb-10 sm:my-3 md:my-4 font-cormorant">{room.name}</h2>
                   <div className="flex items-center justify-left sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
-                    <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                    <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-4" />
                     <span className="text-[18px] sm:text-sm md:text-base font-light text-black">
                       {Number(formData.adults) + Number(formData.children)}{" "}
                       {Number(formData.adults) + Number(formData.children) > 1 ? "personnes" : "personne"}
@@ -242,7 +244,7 @@ export const PropertyDetails = ({
                   </div>
 
                   <div className="flex items-center justify-left sm:mb-2 md:mb-10 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
-                    <img src={Calendar} alt="Calendar Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                    <img src={Calendar} alt="Calendar Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-4" />
                     <div className="flex items-center text-[18px] sm:text-sm md:text-base font-light text-black">
                       {startDate && <span>{formatDate(startDate)}</span>}
                       {(startDate || endDate) && <span className="mx-2 sm:mx-1 md:mx-1.5">→</span>}
@@ -303,7 +305,7 @@ export const PropertyDetails = ({
                 </Slider>
               </div>
   
-              <div className="features-container overflow-x-auto w-full mt-4">
+              <div className="features-container overflow-x-auto w-full mt-4 font-cormorant">
                 <div className="features-list flex">
                   {room.features.map((feature, index) => (
                     <div
@@ -337,7 +339,7 @@ export const PropertyDetails = ({
                 selectedStartDate={startDate}
                 selectedEndDate={endDate}
               />
-              <p className="text-gray-600 my-4">{room.description}</p>
+              <p className="text-gray-600 my-4 font-cormorant">{room.description}</p>
               <button
           type="button"
           onClick={() => {
@@ -347,7 +349,7 @@ export const PropertyDetails = ({
             }
           }}
           disabled={!isAvailable}
-          className={`w-fit mt-5 py-2 px-5 rounded-full font-medium transition-colors ${
+          className={`font-montserrat w-fit mt-5 py-2 px-5 rounded-full font-medium transition-colors ${
             isAvailable
               ? formData.apartmentId === room.id
                 ? "bg-[#445E54] text-white"
@@ -382,10 +384,10 @@ export const PropertyDetails = ({
               <div key={room.id} className="space-y-4">
                 {formData.apartmentId !== room.id && (
                   <div className="text-left mb-4">
-                    <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
+                    <h4 className="font-montserrat text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
                       {room.type}
                     </h4>
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                    <h3 className="font-cormorant text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
                       {room.name}
                     </h3>
                   </div>
@@ -407,11 +409,11 @@ export const PropertyDetails = ({
               <div key={room.id} className="space-y-4">
                 <div className="text-left mb-4">
                   {/* Room Type - Larger text that becomes smaller on mobile */}
-                  <h4 className="text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
+                  <h4 className="font-montserrat text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
                     {room.type}
                   </h4>
                   {/* Room Name - Medium text that becomes smaller on mobile */}
-                  <h3 className="text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                  <h3 className="font-cormorant text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
                     {room.name}
                   </h3>
                 </div>

@@ -21,7 +21,7 @@ export const SearchSection = ({
 
   return (
     <div
-      className="w-4/5 m-auto text-center"
+      className="w-4/5 m-auto text-center font-montserrat"
       style={{ backgroundColor: "#668E73", padding: "60px 20px" }}
     >
       {/* Title */}
@@ -207,7 +207,7 @@ export const SearchSection = ({
 
 export const RoomNavigation = ({ rooms, onRoomSelect }) => {
   return (
-    <div className="flex flex-wrap justify-center gap-4 my-8 pb-[60px]" id="main-container">
+    <div className="flex flex-wrap justify-center gap-4 my-8 pb-[60px] font-montserrat" id="main-container">
       {rooms.map((room) => (
         <button
           key={room.id}
