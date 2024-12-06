@@ -172,7 +172,7 @@ export const HeaderSection = () => {
 
                         {/* Desktop Navigation - hidden on mobile */}
                         <div className="hidden lg:flex justify-between w-full">
-                            <div className="flex space-x-10 gap-8 w-1/3 justify-center">
+                            <div className="flex space-x-10 gap-5 w-1/3 justify-center">
                                 <a href="#" className="text-gray-700 text-[16px] font-light">Accueil</a>
                                 <div className="relative group">
                                     <a href="#" className="text-gray-700 text-[16px] font-light flex items-center gap-2">
