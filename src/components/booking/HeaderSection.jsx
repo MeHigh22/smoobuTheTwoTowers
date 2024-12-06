@@ -27,7 +27,7 @@ export const HeaderSection = () => {
     ];
 
     return (
-        <header className="w-full">
+        <header className="w-full fixed top-0 left-0 z-50 bg-white">
             <div className="bg-[#668E73] text-white h-[44px] px-[3%]">
                 <div className="mx-auto flex justify-between items-center text-xs h-full">
                     <div className="hidden md:flex items-center space-x-6">

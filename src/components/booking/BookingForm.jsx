@@ -241,7 +241,7 @@ const BookingForm = () => {
   return (
     <div className="flex flex-col min-h-screen bg-[#fbfdfb]"> 
             <HeaderSection />
-            <div className=" mx-auto h-[100vh] overflow-y-scroll w-full">
+            <div className=" mx-auto h-[100vh] overflow-y-scroll w-full pt-[174px]">
               {error && <ErrorMessage message={error} />}
               {availabilityError && <ErrorMessage message={availabilityError} />}
               {successMessage && (
@@ -252,10 +252,10 @@ const BookingForm = () => {
                   <form onSubmit={handleSubmit} className="mx-auto space-y-4">
                     <div style={{ backgroundColor: "#668E73" }}>
                       <SearchSection {...searchSectionProps} />
-                      <RoomNavigation {...roomNavigationProps} />
+                      <RoomNavigation {...roomNavigationProps}/>
                     </div>
 
-                    <div className="space-y-8 px-[5%] py-[1%] bg-[#fbfdfb]">
+                    <div className="space-y-8 px-[5%] py-[1%] bg-[#fbfdfb]" >
                     {(loading || availabilityLoading) && <LoadingSpinner />}
                     {formData.apartmentId && showPriceDetails && (
                       <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-200px)]">

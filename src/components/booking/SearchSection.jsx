@@ -207,7 +207,7 @@ export const SearchSection = ({
 
 export const RoomNavigation = ({ rooms, onRoomSelect }) => {
   return (
-    <div className="flex flex-wrap justify-center gap-4 my-8 pb-[60px]">
+    <div className="flex flex-wrap justify-center gap-4 my-8 pb-[60px]" id="main-container">
       {rooms.map((room) => (
         <button
           key={room.id}

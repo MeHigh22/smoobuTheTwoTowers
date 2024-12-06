@@ -142,7 +142,7 @@ export const PropertyDetails = ({
         {!isAvailable && getUnavailableDatesMessage(room.id)}
 
         {formData.apartmentId === room.id ? (
-          <div className="flex flex-col h-full" id="main-container">
+          <div className="flex flex-col h-full">
             <div className="flex justify-around border-b border-grey-300 mb-4 ">
               <button
                 type="button"
