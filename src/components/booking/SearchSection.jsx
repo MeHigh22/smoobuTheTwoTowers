@@ -5,6 +5,8 @@ import { GuestSelect } from "./GuestSelect";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { adultes, childrenOptions } from "../utils/constants";
 
+import Bird from '../../assets/GlobalImg/bird.webp';
+
 export const SearchSection = ({
   formData,
   handleChange,
@@ -21,11 +23,19 @@ export const SearchSection = ({
 
   return (
     <div
-      className="w-4/5 m-auto text-center font-montserrat"
+      className="w-4/5 md:w-full lg:w-4/5 m-auto text-center font-montserrat relative"
       style={{ backgroundColor: "#668E73", padding: "60px 20px" }}
     >
+    {/* Squirrel Image */}
+    <div className="absolute top-[65px] left-[-30px] sm:top-[70px] sm:left-[-30px] md:top-8 md:left-[-20px] lg:top-4 lg:left-[-50px]">
+        <img 
+          src={Bird}
+          alt="Squirrel"
+          className="w-24 md:w-32 lg:w-40 h-auto"
+        />
+      </div>
       {/* Title */}
-      <h1 className="mb-8 text-3xl font-light text-white">
+      <h1 className="mb-8 text-[25px] sm:text-[30px] md:font-3xl font-light text-white font-cormorant">
         Sélectionnez vos dates
       </h1>
 

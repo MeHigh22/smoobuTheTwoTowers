@@ -233,7 +233,7 @@ export const PropertyDetails = ({
 
               {activeTab === "priceDetails" && roomPriceDetails && (
                 <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto">
-                  <p className="text-lg sm:text-base md:text-lg font-montserrat">{room.type}</p>
+                  <p className="text-lg sm:text-base md:text-lg font-montserrat text-[#D3B574]">{room.type}</p>
                   <h2 className="text-lg sm:text-base md:text-[25px] font-medium uppercase sm:mb-2 md:mb-10 sm:my-3 md:my-4 font-cormorant">{room.name}</h2>
                   <div className="flex items-center justify-left sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-4" />
@@ -384,10 +384,10 @@ export const PropertyDetails = ({
               <div key={room.id} className="space-y-4">
                 {formData.apartmentId !== room.id && (
                   <div className="text-left mb-4">
-                    <h4 className="font-montserrat text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
+                    <h4 className="font-montserrat text-xl md:text-1xl lg:text-2xl mb-4 text-[#D3B574]">
                       {room.type}
                     </h4>
-                    <h3 className="font-cormorant text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                    <h3 className="font-cormorant text-3xl text-gray-800 mb-2 md:text-2xl lg:text-[40px] font-light">
                       {room.name}
                     </h3>
                   </div>
@@ -409,11 +409,11 @@ export const PropertyDetails = ({
               <div key={room.id} className="space-y-4">
                 <div className="text-left mb-4">
                   {/* Room Type - Larger text that becomes smaller on mobile */}
-                  <h4 className="font-montserrat text-xl text-gray-600 md:text-2xl lg:text-3xl mb-4">
+                  <h4 className="font-montserrat text-xl text-[#D3B574] md:text-xl lg:text-2xl mb-4">
                     {room.type}
                   </h4>
                   {/* Room Name - Medium text that becomes smaller on mobile */}
-                  <h3 className="font-cormorant text-3xl font-bold text-gray-800 mb-2 md:text-4xl lg:text-5xl">
+                  <h3 className="font-cormorant text-3xl text-gray-800 mb-2 md:text-2xl lg:text-[40px] font-light">
                     {room.name}
                   </h3>
                 </div>
