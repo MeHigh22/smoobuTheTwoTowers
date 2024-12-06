@@ -13,7 +13,7 @@ import Netherland from '../../assets/icons8-netherlands-48.png';
 
 export const HeaderSection = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [currentLanguage, setCurrentLanguage] = useState('fr'); // Default to French
+    const [currentLanguage, setCurrentLanguage] = useState('fr');
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
     const languages = [
@@ -21,15 +21,6 @@ export const HeaderSection = () => {
         { code: 'en', name: 'EN', flag: GreatBritain },
         { code: 'nl', name: 'NL', flag: Netherland }
     ];
-
-
-    const handleLanguageChange = (langCode) => {
-        setCurrentLanguage(langCode);
-        setShowLanguageDropdown(false);
-        // Add your language change logic here
-    };
-
-    const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
     const menuItems = [
         { label: 'Accueil', url: '#' },
@@ -47,34 +38,132 @@ export const HeaderSection = () => {
         { label: 'Info & Presse', url: '#' }
     ];
 
+    const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
+
     return (
         <header className="w-full fixed top-0 left-0 bg-white z-50">
-            <div className="bg-[#668E73] text-white h-[44px] px-[5%] z-50">
-                <div className="mx-auto flex justify-between items-center text-xs h-full">
-                    <div className="hidden md:flex items-center space-x-6">
-                        <div className="flex items-center gap-2 text-[12px]">
-                            <img src={Phone} alt="phone" className="h-[18px] w-[18px] text-white" />
-                            <span className='font-light'>+32 475 20 16 19</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[12px]">
-                            <img src={Mail} alt="mail" className="h-[18px] w-[18px] text-white" />
-                            <span className='font-light'>fermedebasseilies@gmail.com</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[12px]">
-                            <img src={Pin} alt="location" className="h-[18px] w-[18px] text-white" />
-                            <span className='font-light'>Rue de Basseilles 1 - 5340 MOZET</span>
+            {/* Top Bar */}
+        <div className="bg-[#668E73] text-white h-auto md:h-[44px]">
+            <div className="mx-auto flex flex-col md:flex-row justify-between items-center text-xs h-full px-4 py-2 md:py-0 md:px-[5%]">
+                {/* Contact Information */}
+                <div className="flex md:flex-row md:items-center md:space-x-6 w-full md:w-auto">
+                    {/* Mobile: Icon only with click action, Desktop: Full content */}
+                    <div className="flex md:hidden justify-center gap-7 md:gap-0 md:justify-between w-full">
+                        <a href="tel:+32475201619" className="flex items-center">
+                            <img src={Phone} alt="phone" className="h-[18px] w-[18px]" />
+                        </a>
+                        <a href="mailto:fermedebasseilies@gmail.com" className="flex items-center">
+                            <img src={Mail} alt="mail" className="h-[18px] w-[18px]" />
+                        </a>
+                        <a href="https://maps.google.com/?q=Rue de Basseilles 1 - 5340 MOZET" target="_blank" className="flex items-center">
+                            <img src={Pin} alt="location" className="h-[18px] w-[18px]" />
+                        </a>
+                    </div>
+
+                    {/* Desktop only content */}
+                    <div className="hidden md:flex items-center gap-2 text-[12px]">
+                        <img src={Phone} alt="phone" className="h-[18px] w-[18px]" />
+                        <span className="font-light">+32 475 20 16 19</span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 text-[12px]">
+                        <img src={Mail} alt="mail" className="h-[18px] w-[18px]" />
+                        <span className="font-light">fermedebasseilies@gmail.com</span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 text-[12px]">
+                        <img src={Pin} alt="location" className="h-[18px] w-[18px]" />
+                        <span className="font-light">Rue de Basseilles 1 - 5340 MOZET</span>
+                    </div>
+                </div>
+
+                {/* Social and Language - Remains unchanged */}
+                <div className="flex space-x-4 items-center mt-2 md:mt-0">
+                    <div className="group">
+                        <button className="flex items-center gap-2 hover:text-gray-200">
+                            <img 
+                                src={currentLang.flag} 
+                                alt="Selected language" 
+                                className="h-[20px] w-[20px] rounded-sm"
+                            />
+                            <svg 
+                                className="w-4 h-4 transition-transform group-hover:rotate-180"
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    strokeWidth={2} 
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 absolute mt-2">
+                            <div className="flex flex-col gap-2 bg-white p-2 rounded shadow">
+                                {languages
+                                    .filter(lang => lang.code !== currentLanguage)
+                                    .map((lang) => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => setCurrentLanguage(lang.code)}
+                                            className="hover:text-gray-200"
+                                        >
+                                            <img 
+                                                src={lang.flag} 
+                                                alt={`Switch to ${lang.code}`} 
+                                                className="h-[20px] w-[20px] rounded-sm"
+                                            />
+                                        </button>
+                                    ))}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex space-x-4 items-center">
+                    <div className="flex items-center space-x-4">
+                        <a href="#" className="hover:text-gray-200">
+                            <img src={Facebook} alt="facebook" className="h-[18px] w-[18px]" />
+                        </a>
+                        <a href="#" className="hover:text-gray-200">
+                            <img src={Insta} alt="instagram" className="h-[18px] w-[18px]" />
+                        </a>
+                        <a href="#" className="hover:text-gray-200">
+                            <img src={Tiktok} alt="tiktok" className="h-[18px] w-[18px]" />
+                        </a>
+                    </div>
+                    
+                    <button className="bg-[#d3b574] text-black p-[10px] font-light text-[12px] whitespace-nowrap">
+                        Bon cadeau
+                    </button>
+                </div>
+            </div>
+        </div>
 
-                        <div className="group">
-                                <button className="flex items-center gap-2 hover:text-gray-200">
-                                    <img 
-                                        src={currentLang.flag} 
-                                        alt="Selected language" 
-                                        className="h-[20px] w-[20px] rounded-sm"
-                                    />
+            {/* Main Navigation */}
+            <div className="h-auto md:h-[130px] bg-[#fbfdfb]">
+                <nav className="w-full px-4 lg:px-40 h-[100px] md:h-full">
+                    <div className="flex items-center justify-between lg:justify-center relative w-full h-full">
+                        <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+                            <img src={Logo} alt="Logo" className="w-[80px] h-[80px] md:w-[100px] md:h-[100px]" />
+                        </div>
+
+                    {/* Hamburger Menu Button */}
+                    <button 
+                        className="lg:hidden p-2 ml-auto"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        <div className="w-6 h-0.5 bg-[#668E73] mb-1"></div>
+                        <div className="w-6 h-0.5 bg-[#668E73] mb-1"></div>
+                        <div className="w-6 h-0.5 bg-[#668E73]"></div>
+                    </button>
+
+                    {/* Desktop Navigation */}
+                    <div className="hidden lg:flex justify-between w-full items-center">
+                        <div className="flex space-x-10 gap-5 w-1/3 justify-center">
+                            <a href="#" className="text-gray-700 text-[16px] font-light">Accueil</a>
+                            <div className="relative group">
+                                <a href="#" className="text-gray-700 text-[16px] font-light flex items-center gap-2">
+                                    Nos Logements
                                     <svg 
                                         className="w-4 h-4 transition-transform group-hover:rotate-180"
                                         fill="none" 
@@ -88,129 +177,66 @@ export const HeaderSection = () => {
                                             d="M19 9l-7 7-7-7"
                                         />
                                     </svg>
-                                </button>
-                                <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 absolute mt-2">
-                                    <div className="flex flex-col gap-2">
-                                        {languages
-                                            .filter(lang => lang.code !== currentLanguage)
-                                            .map((lang) => (
-                                                <button
-                                                    key={lang.code}
-                                                    onClick={() => handleLanguageChange(lang.code)}
-                                                    className="hover:text-gray-200"
-                                                >
-                                                    <img 
-                                                        src={lang.flag} 
-                                                        alt={`Switch to ${lang.code}`} 
-                                                        className="h-[20px] w-[20px] rounded-sm"
-                                                    />
-                                                </button>
-                                            ))}
-                                    </div>
-                                </div>
-                        </div>
-
-                        <a href="#" className="hover:text-gray-200 my-auto">
-                            <img src={Facebook} alt="facebook" className="h-[18px] w-[18px]" />
-                        </a>
-                        <a href="#" className="hover:text-gray-200 my-auto">
-                            <img src={Insta} alt="instagram" className="h-[18px] w-[18px]" />
-                        </a>
-                        <a href="#" className="hover:text-gray-200 my-auto">
-                            <img src={Tiktok} alt="tiktok" className="h-[18px] w-[18px]" />
-                        </a>
-                        <button className='bg-[#d3b574] text-black p-[10px] font-light text-[12px]'>Bon cadeau</button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="h-[130px] py-[15px] bg-[#fbfdfb] flex items-center relative z-[-1]">
-                <nav className="w-full px-4 lg:px-40">
-                    <div className="flex items-center justify-between lg:justify-center relative">
-                        {/* Logo - centered on desktop, left on mobile */}
-                        <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
-                            <img src={Logo} alt="Logo" className="w-[100px] h-[100px]" />
-                        </div>
-
-                        {/* Hamburger Menu Button - only on mobile */}
-                        <div className="lg:hidden relative">
-                            <button 
-                                className="p-2 ml-auto"
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            >
-                                <div className="w-6 h-0.5 bg-[#668E73] mb-1"></div>
-                                <div className="w-6 h-0.5 bg-[#668E73] mb-1"></div>
-                                <div className="w-6 h-0.5 bg-[#668E73]"></div>
-                            </button>
-
-                            {/* Mobile Dropdown Menu */}
-                            {isMenuOpen && (
-                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-2 z-50">
-                                    {menuItems.map((item, index) => (
-                                        <div key={index} className="relative group">
-                                            <a href={item.url} className="block px-4 py-2 text-[#668E73] text-[16px] font-light hover:bg-gray-50">
-                                                {item.label}
-                                            </a>
-                                            {item.submenu && (
-                                                <div className="pl-6">
-                                                    {item.submenu.map((subItem, subIndex) => (
-                                                        <a 
-                                                            key={subIndex}
-                                                            href={subItem.url}
-                                                            className="block px-4 py-2 text-[#668E73] text-[14px] font-light hover:bg-gray-50"
-                                                        >
-                                                            {subItem.label}
-                                                        </a>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Desktop Navigation - hidden on mobile */}
-                        <div className="hidden lg:flex justify-between w-full">
-                            <div className="flex space-x-10 gap-5 w-1/3 justify-center">
-                                <a href="#" className="text-gray-700 text-[16px] font-light">Accueil</a>
-                                <div className="relative group">
-                                    <a href="#" className="text-gray-700 text-[16px] font-light flex items-center gap-2">
-                                        Nos Logements
-                                        <svg 
-                                            className="w-4 h-4 transition-transform group-hover:rotate-180"
-                                            fill="none" 
-                                            stroke="currentColor" 
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path 
-                                                strokeLinecap="round" 
-                                                strokeLinejoin="round" 
-                                                strokeWidth={2} 
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
+                                </a>
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                                    <a href="#" className="block px-4 py-2 text-[16px] text-gray-700 hover:bg-gray-100 font-light">
+                                        Logements Insolites
                                     </a>
-                                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                                        <a href="#" className="block px-4 py-2 text-[16px] text-gray-700 hover:bg-gray-100 font-light">
-                                            Logements Insolites
-                                        </a>
-                                        <a href="#" className="block px-4 py-2 text-[16px] text-gray-700 hover:bg-gray-100 font-light">
-                                            Gîte & Chambres d'Hôtes
-                                        </a>
-                                    </div>
+                                    <a href="#" className="block px-4 py-2 text-[16px] text-gray-700 hover:bg-gray-100 font-light">
+                                        Gîte & Chambres d'Hôtes
+                                    </a>
                                 </div>
-                                <a href="#" className="text-gray-700 text-[16px] font-light">Extras</a>
                             </div>
-                            <div className="flex space-x-6 w-1/3 justify-start">
-                                <a href="#" className="text-gray-700 text-[16px] font-light">Activités & Partenaires</a>
-                                <a href="#" className="text-gray-700 text-[16px] font-light">Qui Sommes-Nous ?</a>
-                                <a href="#" className="text-gray-700 text-[16px] font-light">Info & Presse</a>
-                            </div>
+                            <a href="#" className="text-gray-700 text-[16px] font-light">Extras</a>
+                        </div>
+                        <div className="flex space-x-6 w-1/3 justify-start">
+                            <a href="#" className="text-gray-700 text-[16px] font-light">Activités & Partenaires</a>
+                            <a href="#" className="text-gray-700 text-[16px] font-light">Qui Sommes-Nous ?</a>
+                            <a href="#" className="text-gray-700 text-[16px] font-light">Info & Presse</a>
                         </div>
                     </div>
-                </nav>
-            </div>
+
+                    {/* Mobile Menu */}
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 bg-white z-50 lg:hidden overflow-y-auto">
+                            <div className="p-4">
+                                <div className="flex justify-between items-center mb-6">
+                                    <img src={Logo} alt="Logo" className="w-[80px] h-[80px]" />
+                                    <button 
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="p-2"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                {menuItems.map((item, index) => (
+                                    <div key={index} className="py-3 border-b border-gray-100">
+                                        <a href={item.url} className="text-gray-700 text-lg font-light block">
+                                            {item.label}
+                                        </a>
+                                        {item.submenu && (
+                                            <div className="mt-2 pl-4">
+                                                {item.submenu.map((subItem, subIndex) => (
+                                                    <a 
+                                                        key={subIndex}
+                                                        href={subItem.url}
+                                                        className="text-gray-600 text-base font-light block py-2"
+                                                    >
+                                                        {subItem.label}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </nav>
+        </div>
         </header>
     );
 };
