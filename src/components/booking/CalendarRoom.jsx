@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 
+
 export const CalendarRoom = () => {
   useEffect(() => {
     // Dynamically load the script
@@ -20,8 +21,8 @@ export const CalendarRoom = () => {
   return (
     <div
       id="smoobuApartment2428698de"
-      className="calendarWidget overflow-scroll xl:overflow-hidden  h-auto"
-    >
+      className="calendarWidget overflow-scroll xl:overflow-hidden  h-auto relative"
+    >      
       <div
         className="calendarContent"
         data-load-calendar-url="https://login.smoobu.com/de/cockpit/widget/single-calendar/2428698"

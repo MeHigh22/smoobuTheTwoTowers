@@ -5,6 +5,10 @@ import { isRoomAvailable } from "../hooks/roomUtils";
 import { PriceDetails } from "./PriceDetails";
 import { CalendarRoom } from "./CalendarRoom";
 
+import Squirell from '../../assets/GlobalImg/squirrel.webp';
+import Fox from '../../assets/GlobalImg/fox.webp';
+
+
 import Calendar from "../../assets/icons8-calendar-50.png";
 import Group from "../../assets/icons8-group-48.png";
 
@@ -232,9 +236,19 @@ export const PropertyDetails = ({
               )}
 
               {activeTab === "priceDetails" && roomPriceDetails && (
-                <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto">
+                <div className="h-full overflow-y-auto sm:overflow-visible md:overflow-y-auto relative">
+                    {/* Squirrel Image */}
+                  <div className="absolute top-[100px] left-[250px] sm:top-[100px] sm:left-[250px] md:top-[150px] md:left-[450px] lg:top-[120px] lg:left-[220px] xl:top-[100px] xl:left-[450px]">
+                      <img 
+                        src={Fox}
+                        alt="Squirrel"
+                        className="w-24 md:w-32 lg:w-40 h-auto"
+                      />
+                  </div>
+                  <div className="my-5">
                   <p className="text-lg sm:text-base md:text-lg font-montserrat text-[#D3B574]">{room.type}</p>
                   <h2 className="text-lg sm:text-base md:text-[25px] font-medium uppercase sm:mb-2 md:mb-10 sm:my-3 md:my-4 font-cormorant">{room.name}</h2>
+                  </div>
                   <div className="flex items-center justify-left sm:mb-2 md:mb-4 sm:mt-2 md:mt-4 sm:my-3 md:my-4">
                     <img src={Group} alt="Profile Icon" className="w-6 h-6 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-4" />
                     <span className="text-[18px] sm:text-sm md:text-base font-light text-black">
@@ -379,11 +393,18 @@ export const PropertyDetails = ({
               Chambres disponibles
             </h2>
           )}
-          <div className="grid grid-cols-1 gap-20 w-[90%] mx-auto">
+          <div className="grid grid-cols-1 gap-20 w-[100%] mx-auto relative">
             {filteredAvailableRooms.map((room) => (
               <div key={room.id} className="space-y-4">
                 {formData.apartmentId !== room.id && (
                   <div className="text-left mb-4">
+                  <div className="absolute top-[100px] left-[250px] sm:top-[100px] sm:left-[250px] md:top-[150px] md:left-[450px] lg:top-[120px] lg:left-[220px] xl:top-[60px] xl:left-[680px]">
+                        <img 
+                          src={Squirell}
+                          alt="Squirrel"
+                          className="w-14 md:w-14 lg:w-24 h-auto"
+                        />
+                  </div>
                     <h4 className="font-montserrat text-xl md:text-1xl lg:text-2xl mb-4 text-[#D3B574]">
                       {room.type}
                     </h4>
@@ -404,9 +425,16 @@ export const PropertyDetails = ({
           {/* <h2 className="mb-6 text-xl font-semibold text-gray-500">
             Chambres non disponibles
           </h2> */}
-          <div className="grid grid-cols-1 gap-20 w-[90%] mx-auto">
+          <div className="grid grid-cols-1 gap-20 w-[100%] mx-auto relative">
             {groupedRooms.unavailable.map((room) => (
               <div key={room.id} className="space-y-4">
+                <div className="absolute top-[100px] left-[250px] sm:top-[100px] sm:left-[250px] md:top-[150px] md:left-[450px] lg:top-[120px] lg:left-[220px] xl:top-[60px] xl:left-[680px]">
+                        <img 
+                          src={Squirell}
+                          alt="Squirrel"
+                          className="w-14 md:w-14 lg:w-24 h-auto"
+                        />
+                  </div>
                 <div className="text-left mb-4">
                   {/* Room Type - Larger text that becomes smaller on mobile */}
                   <h4 className="font-montserrat text-xl text-[#D3B574] md:text-xl lg:text-2xl mb-4">

@@ -241,7 +241,7 @@ const BookingForm = () => {
   return (
     <div className="flex flex-col min-h-screen bg-[#fbfdfb]"> 
             <HeaderSection />
-            <div className=" mx-auto h-[100vh] overflow-y-scroll w-full pt-[174px]">
+            <div className=" mx-auto h-[100vh] w-full pt-[174px]">
               {error && <ErrorMessage message={error} />}
               {availabilityError && <ErrorMessage message={availabilityError} />}
               {successMessage && (
@@ -275,7 +275,7 @@ const BookingForm = () => {
                               Choix des extras
                             </h2>
                             <BookingSteps currentStep={currentStep} />
-                            <div className="flex-1 overflow-y-auto mt-4">
+                            <div className="flex-1 overflow-y-hidden mt-4">
                               {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
                               {currentStep === 2 && <InfoSupSection {...infoSupSectionProps} />}
                               {currentStep === 3 && <ContactSection {...contactSectionProps} />}
