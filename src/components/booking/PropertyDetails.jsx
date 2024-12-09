@@ -321,12 +321,13 @@ export const PropertyDetails = ({
               {/* <h2 className="text-[18px] md:text-[23px] font-normal text-black mb-2">
                 Disponibilités
               </h2> */}
-              <CalendarRoom 
+              {/* <CalendarRoom 
                 roomId={room.id}
                 availableDates={availableDates}
                 selectedStartDate={startDate}
                 selectedEndDate={endDate}
-              />
+              /> */}
+              <CalendarRoom roomId={room.id} />
               <p className="text-gray-600 my-4 font-cormorant">{room.description}</p>
               <button
                 type="button"

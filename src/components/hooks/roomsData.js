@@ -72,12 +72,11 @@ export const roomsData = {
       { icon: fire, title: "Brasero" },
     ],
     size: "40m²",
-    calendarIframe: {
-      smallDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428698/b0f41e1cdaa98e3e16052ad9121912d4c5971e3457de260cd25d5a54de7fc73e",
-      bigDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428698/b0f41e1cdaa98e3e16052ad9121912d4c5971e3457de260cd25d5a54de7fc73e",
-    },
+    calendarData: {
+      id: "1946282fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946282",
+      verification: "8dedff27d1d2b0d2872fb29c6ba8c480a5a23b80a7a712c846f6198df9fc9efb"
+    }
   },
 
   1644643: {
@@ -102,12 +101,11 @@ export const roomsData = {
       { icon: fire, title: "Brasero" },
     ],
     size: "30m²",
-    calendarIframe: {
-      smallDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-      bigDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-    },
+    calendarData: {
+      id: "1644643fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1644643",
+      verification: "d70371945b04df2e536bb400d92cacf6d8570999a385af194dd64661801f9b46"
+    }
   },
 
   1946276: {
@@ -133,12 +131,11 @@ export const roomsData = {
       { icon: wifi, title: "WiFi" },
     ],
     size: "30m²",
-    calendarIframe: {
-      smallDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-      bigDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-    },
+    calendarData: {
+      id: "1946276fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946276",
+      verification: "fcee1e857b4c7c0814ac06951737c53a3cb6a04b4ef66fed5717b2d013ed0b4b"
+    }
   },
 
   1946279: {
@@ -163,12 +160,11 @@ export const roomsData = {
       { icon: wifi, title: "WiFi" },
     ],
     size: "30m²",
-    calendarIframe: {
-      smallDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-      bigDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-    },
+    calendarData: {
+      id: "1946279fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946279",
+      verification: "5ef22b823e6c18979c1585d55bf5061d6ea312e1f2a2979fba3ae2657fde3d92"
+    }
   },
 
   1946270: {
@@ -195,11 +191,10 @@ export const roomsData = {
       { icon: wifi, title: "WiFi" },
     ],
     size: "30m²",
-    calendarIframe: {
-      smallDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-      bigDevices:
-        "https://login.smoobu.com/fr/cockpit/widget/show-calendar-iframe/2428703/38dab3c9ee90c8353a2ceed7b25848d794a3f8b15f44ef189b116150a43243f0",
-    },
+    calendarData: {
+      id: "1946270fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946270",
+      verification: "7d848002b5314b96a1b0f56b859443aaab0e1a892b6de144078389a1dea3cc4f"
+    }
   },
 };
