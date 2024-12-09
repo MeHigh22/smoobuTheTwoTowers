@@ -311,7 +311,7 @@ const BookingForm = () => {
           </form>
         ) : (
           <div className="fixed inset-0 flex items-center justify-center">
-  <div className="w-5/5 mx-auto">
+  <div className="w-full p-5 md:w-1/2 mx-auto">
     <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
     {clientSecret && (
       <StripeWrapper
