@@ -180,7 +180,7 @@ export const PropertyDetails = ({
             <div className="flex-1 overflow-y-none">
               {activeTab === "roomInfo" && (
                 <div className="h-full">
-                  <div className="h-[40vh] sm:h-auto md:h-[50vh]">
+                  {/* <div className="h-[40vh] sm:h-auto md:h-[50vh]">
                     <Slider {...sliderSettings} ref={(slider) => setSliderRef(slider)}>
                       {Object.values(room.images).map((image, index) => (
                         <img
@@ -191,10 +191,7 @@ export const PropertyDetails = ({
                         />
                       ))}
                     </Slider>
-
-
                   </div>
-
                   <div className="features-container overflow-x-auto w-full mt-4 sm:mt-2 md:mt-3 font-cormorant">
                     <div className="features-list flex sm:flex-wrap md:flex-nowrap">
                       {room.features.map((feature, index) => (
@@ -214,6 +211,53 @@ export const PropertyDetails = ({
                             className="sm:h-5 sm:w-5 md:h-6 md:w-6"
                           />
                           <span className="text-sm mt-2 text-white sm:text-xs md:text-sm sm:mt-1 md:mt-1.5">{feature.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div> */}
+                  <Slider {...sliderSettings} ref={(slider) => setSliderRef(slider)}>
+                    {Object.values(room.images).map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`${room.name} ${index + 1}`}
+                        className="w-full h-[400px] object-cover"
+                      />
+                    ))}
+                  </Slider>
+      
+                  <div className="mt-4">
+                    <Slider {...thumbnailSettings}>
+                      {Object.values(room.images).map((image, index) => (
+                        <div key={index} className="px-2">
+                          <img
+                            src={image}
+                            alt={`${room.name} Thumbnail ${index + 1}`}
+                            className="object-cover cursor-pointer h-[57px] w-full"
+                          />
+                        </div>
+                      ))}
+                    </Slider>
+                  </div>
+      
+                  <div className="features-container overflow-x-auto w-full mt-4 font-cormorant">
+                    <div className="features-list flex">
+                      {room.features.map((feature, index) => (
+                        <div
+                          key={index}
+                          className="feature-item flex flex-col items-center text-center p-2 bg-[#668E73]"
+                          style={{ minWidth: "100px", flex: "0 0 auto" }}
+                        >
+                          <img
+                            src={feature.icon}
+                            alt={feature.title}
+                            style={{
+                              height: "30px",
+                              width: "30px",
+                              filter: "invert(100%)",
+                            }}
+                          />
+                          <span className="text-sm mt-2 text-white">{feature.title}</span>
                         </div>
                       ))}
                     </div>

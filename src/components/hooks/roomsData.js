@@ -49,35 +49,10 @@ import spoon from "../../assets/Chambres/icons8-spoon-50.png";
 import toilet from "../../assets/Chambres/icons8-toilet-50.png";
 import wifi from "../../assets/Chambres/icons8-wifi-50.png";
 
+
+
+
 export const roomsData = {
-  1946282: {
-    id: 1946282,
-    type: "logement insolite",
-    name: "Le Dôme des Libellules",
-    description: "Plongez dans l’intimité magique du Dôme des Libellules – un refuge insolite au cœur de la nature, conçu pour une escapade romantique. Doté d’un lit King size chauffant et d’une terrasse privée, cet espace offre luxe et sérénité. Niché au coin d’un bois, le site isolé est parfait pour une déconnexion totale. Vous passerez une nuit inoubliable sous les étoiles, bercés par la magie de la nature. Un lit superposé est disponible dans le petit cabanon à côté, idéal pour accueillir des enfants. Profitez également du braséro – BBQ pour des soirées conviviales. Réservez dès maintenant et laissez-vous emporter par la tranquillité du Dôme des Libellules.",
-    images: {
-      main: dome_img_1,
-      secondary: dome_img_2,
-      tertiary: dome_img_3,
-      quaternary: dome_img_4,
-      quinary: dome_img_5
-    },
-    maxGuests: 4,
-    features: [
-      { icon: people, title: "Max 2 adultes et 2 enfants" },
-      { icon: bed, title: "Lit king size et matelas chauffant" },
-      { icon: dog, title: "Animaux non admis" },
-      { icon: toilet, title: "Toilette sêche" },
-      { icon: heater, title: "Chauffage électrique" },
-      { icon: fire, title: "Brasero" },
-    ],
-    size: "40m²",
-    calendarData: {
-      id: "1946282fr",
-      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946282",
-      verification: "8dedff27d1d2b0d2872fb29c6ba8c480a5a23b80a7a712c846f6198df9fc9efb"
-    }
-  },
 
   1644643: {
     id: 1644643,
@@ -108,33 +83,32 @@ export const roomsData = {
     }
   },
 
-  1946276: {
-    id: 1946276,
-    type: "Gîte & Chmabre d'hôte",
-    name: "La Chambre de Blé",
-    description: "Plongez-vous dans l'intimité de la Chambre de Blé - un refuge douillet au cœur d'une grange restaurée avec soin. Conçue pour accueillir deux adultes et jusqu'à deux enfants, cette chambre rustique allie harmonieusement le charme d'antan et les commodités modernes. Idéale pour une escapade en amoureux ou des vacances en famille, réservez dès maintenant et laissez-vous séduire par l'ambiance chaleureuse de la Chambre de Blé",
+  1946282: {
+    id: 1946282,
+    type: "logement insolite",
+    name: "Le Dôme des Libellules",
+    description: "Plongez dans l’intimité magique du Dôme des Libellules – un refuge insolite au cœur de la nature, conçu pour une escapade romantique. Doté d’un lit King size chauffant et d’une terrasse privée, cet espace offre luxe et sérénité. Niché au coin d’un bois, le site isolé est parfait pour une déconnexion totale. Vous passerez une nuit inoubliable sous les étoiles, bercés par la magie de la nature. Un lit superposé est disponible dans le petit cabanon à côté, idéal pour accueillir des enfants. Profitez également du braséro – BBQ pour des soirées conviviales. Réservez dès maintenant et laissez-vous emporter par la tranquillité du Dôme des Libellules.",
     images: {
-      main: Ble_img_1,
-      secondary: Ble_img_2,
-      tertiary: Ble_img_3,
-      quaternary: Ble_img_4,
-      quinary: Ble_img_5,
+      main: dome_img_1,
+      secondary: dome_img_2,
+      tertiary: dome_img_3,
+      quaternary: dome_img_4,
+      quinary: dome_img_5
     },
-    maxGuests: 2,
+    maxGuests: 4,
     features: [
-      { icon: people, title: "Max 4 personnes" },
-      { icon: bed, title: "1 lit king size et 2 lits simples" },
+      { icon: people, title: "Max 2 adultes et 2 enfants" },
+      { icon: bed, title: "Lit king size et matelas chauffant" },
       { icon: dog, title: "Animaux non admis" },
-      { icon: shower, title: "Une salle de bain et 1 toilette" },
+      { icon: toilet, title: "Toilette sêche" },
+      { icon: heater, title: "Chauffage électrique" },
       { icon: fire, title: "Brasero" },
-      { icon: spoon, title: "Cuisine équipée" },
-      { icon: wifi, title: "WiFi" },
     ],
-    size: "30m²",
+    size: "40m²",
     calendarData: {
-      id: "1946276fr",
-      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946276",
-      verification: "fcee1e857b4c7c0814ac06951737c53a3cb6a04b4ef66fed5717b2d013ed0b4b"
+      id: "1946282fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946282",
+      verification: "8dedff27d1d2b0d2872fb29c6ba8c480a5a23b80a7a712c846f6198df9fc9efb"
     }
   },
 
@@ -166,6 +140,38 @@ export const roomsData = {
       verification: "5ef22b823e6c18979c1585d55bf5061d6ea312e1f2a2979fba3ae2657fde3d92"
     }
   },
+
+
+  1946276: {
+    id: 1946276,
+    type: "Gîte & Chmabre d'hôte",
+    name: "La Chambre de Blé",
+    description: "Plongez-vous dans l'intimité de la Chambre de Blé - un refuge douillet au cœur d'une grange restaurée avec soin. Conçue pour accueillir deux adultes et jusqu'à deux enfants, cette chambre rustique allie harmonieusement le charme d'antan et les commodités modernes. Idéale pour une escapade en amoureux ou des vacances en famille, réservez dès maintenant et laissez-vous séduire par l'ambiance chaleureuse de la Chambre de Blé",
+    images: {
+      main: Ble_img_1,
+      secondary: Ble_img_2,
+      tertiary: Ble_img_3,
+      quaternary: Ble_img_4,
+      quinary: Ble_img_5,
+    },
+    maxGuests: 2,
+    features: [
+      { icon: people, title: "Max 4 personnes" },
+      { icon: bed, title: "1 lit king size et 2 lits simples" },
+      { icon: dog, title: "Animaux non admis" },
+      { icon: shower, title: "Une salle de bain et 1 toilette" },
+      { icon: fire, title: "Brasero" },
+      { icon: spoon, title: "Cuisine équipée" },
+      { icon: wifi, title: "WiFi" },
+    ],
+    size: "30m²",
+    calendarData: {
+      id: "1946276fr",
+      url: "https://login.smoobu.com/fr/cockpit/widget/single-calendar/1946276",
+      verification: "fcee1e857b4c7c0814ac06951737c53a3cb6a04b4ef66fed5717b2d013ed0b4b"
+    }
+  },
+
 
   1946270: {
     id: 1946270,

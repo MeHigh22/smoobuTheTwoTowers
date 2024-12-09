@@ -310,18 +310,20 @@ const BookingForm = () => {
             </div>
           </form>
         ) : (
-        <div className="w-2/5 mx-auto mt-8">
-          <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
-          {clientSecret && (
-            <StripeWrapper
-              clientSecret={clientSecret}
-              onSuccess={handlePaymentSuccess}
-              onError={(error) => setError(error)}
-            >
-              <PaymentForm />
-            </StripeWrapper>
-          )}
-        </div>
+          <div className="fixed inset-0 flex items-center justify-center">
+  <div className="w-5/5 mx-auto">
+    <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
+    {clientSecret && (
+      <StripeWrapper
+        clientSecret={clientSecret}
+        onSuccess={handlePaymentSuccess}
+        onError={(error) => setError(error)}
+      >
+        <PaymentForm />
+      </StripeWrapper>
+    )}
+  </div>
+</div>
       )}
     </div>
     </div>
