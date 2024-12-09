@@ -181,7 +181,7 @@ export const roomsData = {
       senary: Logis_img_6,
       septenary: Logis_img_7
     },
-    maxGuests: 2,
+    maxGuests: 8,
     features: [
       { icon: people, title: "Max 8 personnes" },
       { icon: bed, title: "2 lit king size et 4 lits simples" },
