@@ -37,7 +37,7 @@ const BookingForm = () => {
   const [formData, setFormData] = useState({
     arrivalDate: "",
     departureDate: "",
-    channelId: 3960043,
+    channelId: 2323525,
     apartmentId: 2402388,
     arrivalTime: "",
     departureTime: "",

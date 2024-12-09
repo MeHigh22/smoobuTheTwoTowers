@@ -19,7 +19,33 @@ const pendingBookings = new Map();
 
 // Discount settings
 const discountSettings = {
-  2428698: {
+  1946282: {
+    cleaningFee: 0,
+    prepayment: 0,
+    minDaysBetweenBookingAndArrival: 1,
+    extraGuestsPerNight: 20,
+    startingAtGuest: 3,
+    maxGuests: 4,
+    extraChildPerNight: 20,
+    lengthOfStayDiscount: {
+      minNights: 0,
+      discountPercentage: 0,
+    },
+  },
+  1644643: {
+    cleaningFee: 0,
+    prepayment: 0,
+    minDaysBetweenBookingAndArrival: 1,
+    extraGuestsPerNight: 20,
+    startingAtGuest: 2,
+    maxGuests: 2,
+    extraChildPerNight: 0,
+    lengthOfStayDiscount: {
+      minNights: 0,
+      discountPercentage: 0,
+    },
+  },
+  1946276: {
     cleaningFee: 0,
     prepayment: 0,
     minDaysBetweenBookingAndArrival: 1,
@@ -32,7 +58,7 @@ const discountSettings = {
       discountPercentage: 40,
     },
   },
-  2428703: {
+  1946279: {
     cleaningFee: 0,
     prepayment: 0,
     minDaysBetweenBookingAndArrival: 1,
@@ -45,17 +71,17 @@ const discountSettings = {
       discountPercentage: 40,
     },
   },
-  2432648: {
+  1946270: {
     cleaningFee: 0,
     prepayment: 0,
     minDaysBetweenBookingAndArrival: 1,
     extraGuestsPerNight: 20,
-    startingAtGuest: 2,
-    maxGuests: 4,
+    startingAtGuest: 5,
+    maxGuests: 8,
     extraChildPerNight: 20,
     lengthOfStayDiscount: {
-      minNights: 2,
-      discountPercentage: 40,
+      minNights: 3,
+      discountPercentage: 30,
     },
   },
 };
@@ -278,7 +304,7 @@ app.post(
            },
            {
              headers: {
-               "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+               "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
                "Content-Type": "application/json",
              },
            }
@@ -305,7 +331,7 @@ app.post(
                  },
                  {
                    headers: {
-                     "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+                     "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
                      "Content-Type": "application/json",
                    },
                  }
@@ -325,7 +351,7 @@ app.post(
                    },
                    {
                      headers: {
-                       "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+                       "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
                        "Content-Type": "application/json",
                      },
                    }
@@ -376,7 +402,7 @@ app.get('/api/apartments', async (req, res) => {
   try {
     const response = await axios.get('https://login.smoobu.com/api/apartments', {
       headers: {
-        'Api-Key': "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+        'Api-Key': "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
         'Cache-Control': 'no-cache',
         "Content-Type": "application/json",
       }
@@ -395,7 +421,7 @@ app.get('/api/apartments/:id', async (req, res) => {
   try {
     const response = await axios.get(`https://login.smoobu.com/api/apartments/${req.params.id}`, {
       headers: {
-        'Api-Key': "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+        'Api-Key': "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
         "Content-Type": "application/json",
       }
     });
@@ -424,7 +450,7 @@ app.get("/api/rates", async (req, res) => {
 
     const response = await axios.get("https://login.smoobu.com/api/rates", {
       headers: {
-        "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+        "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
         "Content-Type": "application/json",
       },
       params: {
@@ -670,7 +696,7 @@ app.post("/api/test-smoobu", async (req, res) => {
     const testBooking = {
       arrivalDate: "2024-11-10",
       departureDate: "2024-11-12",
-      channelId: 3960043,
+      channelId: 2323525,
       apartmentId: 2402388,
       firstName: "Test",
       lastName: "Booking",
@@ -692,7 +718,7 @@ app.post("/api/test-smoobu", async (req, res) => {
       testBooking,
       {
         headers: {
-          "Api-Key": "vm6Hj5pppW8JlK9lyLv4PcFqfB1B1KfiQ12P0wt8rb",
+          "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
           "Content-Type": "application/json",
         },
       }
