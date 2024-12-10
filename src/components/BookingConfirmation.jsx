@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import logoBaseilles from "../assets/logoBaseilles.webp"
 import "../assets/bookingConfirmation.css"
-
+import {roomsData} from "./hooks/roomsData";
 const BookingConfirmation = () => {
   const [status, setStatus] = useState("loading");
   const [bookingDetails, setBookingDetails] = useState(null);
@@ -81,17 +81,25 @@ const fetchBookingDetails = async (paymentIntentId) => {
 
   return (
     <div
-    style={{ minHeight: "100vh", minWidth: "100vw", display: "flex", alignItems: "center" }}
-     className="container">
+      style={{
+        minHeight: "100vh",
+        minWidth: "100vw",
+        display: "flex",
+        alignItems: "center",
+      }}
+      className="container"
+    >
       <div className="card">
         {/* Success Header */}
         <div className="header">
-        <div className="icon-container">
+          <div className="icon-container">
             <img src={logoBaseilles} alt="Logo Baseilles" className="icon" />
           </div>
           <div>
             <h1 className="title">Réservation Confirmée</h1>
-            <p className="subtitle">Une confirmation a été envoyée à {bookingDetails?.email}</p>
+            <p className="subtitle">
+              Une confirmation a été envoyée à {bookingDetails?.email}
+            </p>
           </div>
         </div>
 
@@ -100,44 +108,76 @@ const fetchBookingDetails = async (paymentIntentId) => {
           {/* Stay Details */}
           <div className="details-card">
             <h2 className="titleConfirmation">Détails du séjour</h2>
+            <p style={{ fontWeight: "bold", marginBottom: "1rem" }}>
+              {roomsData[bookingDetails?.apartmentId]?.name || "Chambre"}
+            </p>
             <p>Check-in: {formatDate(bookingDetails?.arrivalDate)}</p>
             <p>Heure d'arrivée: {bookingDetails?.arrivalTime}</p>
             <p>Check-out: {formatDate(bookingDetails?.departureDate)}</p>
-            <p>Voyageurs: {bookingDetails?.adults} adultes
-              {bookingDetails?.children > 0 && `, ${bookingDetails?.children} enfants`}</p>
+            <p>
+              Voyageurs: {bookingDetails?.adults} adultes
+              {bookingDetails?.children > 0 &&
+                `, ${bookingDetails?.children} enfants`}
+            </p>
           </div>
 
           {/* Guest Details */}
           <div className="details-card">
-            <h2 className="titleConfirmation">Informations du client</h2>
-            <p>Nom complet: {bookingDetails?.firstName} {bookingDetails?.lastName}</p>
-            <p>Email: {bookingDetails?.email}</p>
-            <p>Téléphone: {bookingDetails?.phone || "-"}</p>
-          </div>
-
-          {/* Price Details */}
-          <div className="details-card">
             <h2 className="titleConfirmation">Détails du prix</h2>
-            <p>Prix de base: {bookingDetails?.priceBreakdown?.basePrice?.toFixed(2)}€</p>
+            {/* Base Price - Updated to use correct value */}
+            <p>
+              Prix de base:{" "}
+              {bookingDetails?.priceDetails?.originalPrice?.toFixed(2)}€
+            </p>
+
+            {/* Extra Guest Fees */}
+            {bookingDetails?.priceDetails?.extraGuestsFee > 0 && (
+              <p>
+                Frais adultes supplémentaires:{" "}
+                {bookingDetails.priceDetails.extraGuestsFee.toFixed(2)}€
+              </p>
+            )}
+
+            {/* Children Fees */}
+            {bookingDetails?.priceDetails?.extraChildrenFee > 0 && (
+              <p>
+                Frais enfants:{" "}
+                {bookingDetails.priceDetails.extraChildrenFee.toFixed(2)}€
+              </p>
+            )}
+
+            {/* Extras if any */}
             {bookingDetails?.extras?.map((extra, index) => (
               <p key={index}>
                 {extra.name} (x{extra.quantity}): {extra.amount?.toFixed(2)}€
               </p>
             ))}
+
+            {/* Long Stay Discount */}
             {bookingDetails?.priceDetails?.discount > 0 && (
               <p className="discount-text">
-                Réduction long séjour ({bookingDetails.priceDetails.settings.lengthOfStayDiscount.discountPercentage}%): 
-                -{bookingDetails.priceDetails.discount.toFixed(2)}€
+                Réduction long séjour (
+                {
+                  bookingDetails.priceDetails.settings.lengthOfStayDiscount
+                    .discountPercentage
+                }
+                %): -{bookingDetails.priceDetails.discount.toFixed(2)}€
               </p>
             )}
+
+            {/* Coupon Discount */}
             {bookingDetails?.couponApplied && (
               <p className="discount-text">
-                Code promo ({bookingDetails.couponApplied.code}): 
-                -{bookingDetails.couponApplied.discount.toFixed(2)}€
+                Code promo ({bookingDetails.couponApplied.code}): -
+                {bookingDetails.couponApplied.discount.toFixed(2)}€
               </p>
             )}
+
             <div className="total-section">
-              <p className="total-text">Total: {bookingDetails?.price?.toFixed(2)}€</p>
+              {/* Final Price - Using the finalPrice from priceDetails */}
+              <p className="total-text">
+                Total: {bookingDetails?.priceDetails?.finalPrice?.toFixed(2)}€
+              </p>
               <p>Conditions générales: Acceptée</p>
             </div>
           </div>
@@ -146,14 +186,19 @@ const fetchBookingDetails = async (paymentIntentId) => {
           <div className="details-card">
             <h2 className="titleConfirmation">Adresse</h2>
             <p>{bookingDetails?.street}</p>
-            <p>{bookingDetails?.postalCode} {bookingDetails?.location}</p>
+            <p>
+              {bookingDetails?.postalCode} {bookingDetails?.location}
+            </p>
             <p>{bookingDetails?.country}</p>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="actions">
-          <button onClick={() => window.location.href = "/"} className="button-primary">
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="button-primary"
+          >
             Retour à l'accueil
           </button>
           <button onClick={() => window.print()} className="button-secondary">
