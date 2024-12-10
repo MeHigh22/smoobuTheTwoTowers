@@ -13,9 +13,11 @@ import { NavigationButtons } from "./NavigationButtons";
 import { ErrorMessage } from "./ErrorMessage";
 import { LoadingSpinner } from "./LoadingSpinner";
 import StripeWrapper from "../StripeWrapper";
+import { useNavigate } from "react-router-dom";
 import { roomsData } from "../hooks/roomsData";
 
 const BookingForm = () => {
+   const navigate = useNavigate();
   const {
     formData,
     currentStep,
