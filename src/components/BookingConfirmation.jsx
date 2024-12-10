@@ -8,23 +8,26 @@ const BookingConfirmation = () => {
   const [bookingDetails, setBookingDetails] = useState(null);
   const [searchParams] = useSearchParams();
   const paymentIntent = searchParams.get("payment_intent");
+  
+useEffect(() => {
+  const storedBookingData = localStorage.getItem("bookingData");
+  console.log("Stored booking data:", storedBookingData);
 
-  useEffect(() => {
-    const storedBookingData = localStorage.getItem("bookingData");
-    if (storedBookingData) {
-      try {
-        const parsedData = JSON.parse(storedBookingData);
-        setBookingDetails(parsedData);
-        setStatus("success");
-        localStorage.removeItem("bookingData");
-      } catch (error) {
-        console.error("Error parsing booking data:", error);
-        setStatus("error");
-      }
-    } else {
-      fetchBookingDetails(paymentIntent);
+  if (storedBookingData) {
+    try {
+      const parsedData = JSON.parse(storedBookingData);
+      console.log("Parsed booking data:", parsedData);
+      setBookingDetails(parsedData);
+      setStatus("success");
+      localStorage.removeItem("bookingData");
+    } catch (error) {
+      console.error("Error parsing booking data:", error);
+      setStatus("error");
     }
-  }, [paymentIntent]);
+  } else {
+    fetchBookingDetails(paymentIntent);
+  }
+}, [paymentIntent]);
 
 
   
@@ -124,13 +127,16 @@ const fetchBookingDetails = async (paymentIntentId) => {
           {/* Guest Details */}
           <div className="details-card">
             <h2 className="titleConfirmation">Détails du prix</h2>
-            {/* Base Price - Updated to use correct value */}
+            {console.log("Full booking details:", bookingDetails)}
+            {console.log("Price details:", bookingDetails?.priceDetails)}
+
+            {/* Base Price */}
             <p>
               Prix de base:{" "}
               {bookingDetails?.priceDetails?.originalPrice?.toFixed(2)}€
             </p>
 
-            {/* Extra Guest Fees */}
+            {/* Guest Fees */}
             {bookingDetails?.priceDetails?.extraGuestsFee > 0 && (
               <p>
                 Frais adultes supplémentaires:{" "}
@@ -146,13 +152,6 @@ const fetchBookingDetails = async (paymentIntentId) => {
               </p>
             )}
 
-            {/* Extras if any */}
-            {bookingDetails?.extras?.map((extra, index) => (
-              <p key={index}>
-                {extra.name} (x{extra.quantity}): {extra.amount?.toFixed(2)}€
-              </p>
-            ))}
-
             {/* Long Stay Discount */}
             {bookingDetails?.priceDetails?.discount > 0 && (
               <p className="discount-text">
@@ -165,18 +164,18 @@ const fetchBookingDetails = async (paymentIntentId) => {
               </p>
             )}
 
-            {/* Coupon Discount */}
-            {bookingDetails?.couponApplied && (
-              <p className="discount-text">
-                Code promo ({bookingDetails.couponApplied.code}): -
-                {bookingDetails.couponApplied.discount.toFixed(2)}€
-              </p>
-            )}
+            {/* Extras if any */}
+            {bookingDetails?.extras?.length > 0 &&
+              bookingDetails.extras.map((extra, index) => (
+                <p key={index}>
+                  {extra.name} (x{extra.quantity}): {extra.amount?.toFixed(2)}€
+                </p>
+              ))}
 
+            {/* Total */}
             <div className="total-section">
-              {/* Final Price - Using the finalPrice from priceDetails */}
               <p className="total-text">
-                Total: {bookingDetails?.priceDetails?.finalPrice?.toFixed(2)}€
+                Total: {bookingDetails?.price?.toFixed(2)}€
               </p>
               <p>Conditions générales: Acceptée</p>
             </div>
