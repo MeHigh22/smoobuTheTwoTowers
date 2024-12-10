@@ -254,7 +254,7 @@ const BookingForm = () => {
   return (
     <div className="flex flex-col min-h-screen bg-[#fbfdfb]">
           <HeaderSection />
-    <div className=" mx-auto h-[100vh] overflow-y-scroll w-full mt-[174px]">
+    <div className=" mx-auto h-[100vh] w-full mt-[174px]">
       {error && <ErrorMessage message={error} />}
       {availabilityError && <ErrorMessage message={availabilityError} />}
       {successMessage && (
