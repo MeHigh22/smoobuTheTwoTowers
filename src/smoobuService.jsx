@@ -14,6 +14,7 @@ export const fetchAvailability = async (apartmentId, startDate, endDate) => {
       headers: {
         "Content-Type": "application/json",
       },
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
