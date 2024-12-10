@@ -5,7 +5,10 @@ import { calculateExtrasTotal } from "../utils/booking";
 import { extraCategories } from "../extraCategories"
 import { useNavigate } from "react-router-dom";
 
+
 export const useBookingForm = () => {
+
+  const navigate = useNavigate();
   // Form State
   const [formData, setFormData] = useState({
     arrivalDate: "",
@@ -302,7 +305,7 @@ const handleCheckAvailability = async () => {
   };
 
   const handlePaymentSuccess = () => {
-    const navigate = useNavigate();
+
     const selectedExtrasArray = createSelectedExtrasArray();
     const extrasTotal = calculateExtrasTotal(selectedExtrasArray);
     const subtotal = priceDetails.finalPrice + extrasTotal;
