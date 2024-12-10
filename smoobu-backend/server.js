@@ -248,6 +248,7 @@ const calculatePriceWithSettings = (
   };
 };
 
+
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
@@ -260,7 +261,7 @@ app.post(
       event = stripe.webhooks.constructEvent(
         req.body,
         sig,
-        "whsec_d9b86273072de6b319134fbc08752e2b4e66bae72aaa2cf4cb7db1411974c20a"
+        "whsec_uzumVmrKDrksQlTpgo5gEUPk1HIxZwBv"
       );
 
       console.log("Webhook event verified:", event.type);
