@@ -285,7 +285,7 @@ const BookingForm = () => {
                 <div className="w-full h-full lg:w-1/2">
                   <div className="border border-[#668E73] p-4 rounded h-full flex flex-col">
                     <h2 className="text-xl font-semibold text-[#668E73] mb-6">
-                      Choix des extrass
+                      Choix des extras
                     </h2>
                     <BookingSteps currentStep={currentStep} />
                     <div className="flex-1 mt-4 overflow-y-auto">

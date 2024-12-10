@@ -167,6 +167,8 @@ const handleCheckAvailability = async () => {
 
     console.log("Rates response:", response.data);
 
+    
+
     if (response.data.priceDetails) {
       setPriceDetails(response.data.priceDetails);
       setShowPriceDetails(true);

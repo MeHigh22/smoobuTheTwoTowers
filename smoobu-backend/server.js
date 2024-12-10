@@ -248,6 +248,10 @@ const calculatePriceWithSettings = (
   };
 };
 
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working" });
+});
+
 // Webhook endpoint must come before JSON middleware
 app.post(
   "/webhook",
@@ -394,13 +398,16 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ["https://booking-rho-plum.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://booking-rho-plum.vercel.app",
+      "https://booking-crfjdmycx-charlesdelalaings-projects.vercel.app",
+      "http://localhost:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "stripe-signature"],
     credentials: true,
   })
 );
-
 
 app.get('/api/apartments', async (req, res) => {
   try {
