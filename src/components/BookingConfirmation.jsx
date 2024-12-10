@@ -127,50 +127,74 @@ const fetchBookingDetails = async (paymentIntentId) => {
           {/* Guest Details */}
           <div className="details-card">
             <h2 className="titleConfirmation">Détails du prix</h2>
-            {console.log("Full booking details:", bookingDetails)}
-            {console.log("Price details:", bookingDetails?.priceDetails)}
 
             {/* Base Price */}
             <p>
               Prix de base:{" "}
-              {bookingDetails?.priceDetails?.originalPrice?.toFixed(2)}€
+              {bookingDetails?.priceDetails[
+                bookingDetails?.apartmentId
+              ]?.originalPrice?.toFixed(2)}
+              €
             </p>
 
             {/* Guest Fees */}
-            {bookingDetails?.priceDetails?.extraGuestsFee > 0 && (
+            {bookingDetails?.priceDetails[bookingDetails?.apartmentId]
+              ?.extraGuestsFee > 0 && (
               <p>
                 Frais adultes supplémentaires:{" "}
-                {bookingDetails.priceDetails.extraGuestsFee.toFixed(2)}€
+                {bookingDetails.priceDetails[
+                  bookingDetails.apartmentId
+                ].extraGuestsFee.toFixed(2)}
+                €
               </p>
             )}
 
             {/* Children Fees */}
-            {bookingDetails?.priceDetails?.extraChildrenFee > 0 && (
+            {bookingDetails?.priceDetails[bookingDetails?.apartmentId]
+              ?.extraChildrenFee > 0 && (
               <p>
                 Frais enfants:{" "}
-                {bookingDetails.priceDetails.extraChildrenFee.toFixed(2)}€
+                {bookingDetails.priceDetails[
+                  bookingDetails.apartmentId
+                ].extraChildrenFee.toFixed(2)}
+                €
               </p>
             )}
 
             {/* Long Stay Discount */}
-            {bookingDetails?.priceDetails?.discount > 0 && (
+            {bookingDetails?.priceDetails[bookingDetails?.apartmentId]
+              ?.discount > 0 && (
               <p className="discount-text">
                 Réduction long séjour (
                 {
-                  bookingDetails.priceDetails.settings.lengthOfStayDiscount
-                    .discountPercentage
+                  bookingDetails.priceDetails[bookingDetails.apartmentId]
+                    .settings.lengthOfStayDiscount.discountPercentage
                 }
-                %): -{bookingDetails.priceDetails.discount.toFixed(2)}€
+                %): -
+                {bookingDetails.priceDetails[
+                  bookingDetails.apartmentId
+                ].discount.toFixed(2)}
+                €
               </p>
             )}
 
-            {/* Extras if any */}
-            {bookingDetails?.extras?.length > 0 &&
-              bookingDetails.extras.map((extra, index) => (
-                <p key={index}>
-                  {extra.name} (x{extra.quantity}): {extra.amount?.toFixed(2)}€
-                </p>
-              ))}
+            {/* Number of nights */}
+            <p>
+              Nombre de nuits:{" "}
+              {
+                bookingDetails?.priceDetails[bookingDetails?.apartmentId]
+                  ?.numberOfNights
+              }
+            </p>
+
+            {/* Price per night */}
+            <p>
+              Prix par nuit:{" "}
+              {bookingDetails?.priceDetails[
+                bookingDetails?.apartmentId
+              ]?.pricePerNight?.toFixed(2)}
+              €
+            </p>
 
             {/* Total */}
             <div className="total-section">
@@ -180,7 +204,6 @@ const fetchBookingDetails = async (paymentIntentId) => {
               <p>Conditions générales: Acceptée</p>
             </div>
           </div>
-
           {/* Address */}
           <div className="details-card">
             <h2 className="titleConfirmation">Adresse</h2>
