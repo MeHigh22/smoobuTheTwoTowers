@@ -26,20 +26,27 @@ const BookingConfirmation = () => {
     }
   }, [paymentIntent]);
 
-  const fetchBookingDetails = async (paymentIntentId) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/bookings/${paymentIntentId}`
-      );
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
-      setBookingDetails(data);
-      setStatus("success");
-    } catch (error) {
-      console.error("Error fetching booking details:", error);
-      setStatus("error");
-    }
-  };
+
+  
+const API_URL ="https://booking-9u8u.onrender.com";
+
+const fetchBookingDetails = async (paymentIntentId) => {
+  try {
+    const response = await fetch(`${API_URL}/api/bookings/${paymentIntentId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    setBookingDetails(data);
+    setStatus("success");
+  } catch (error) {
+    console.error("Error fetching booking details:", error);
+    setStatus("error");
+  }
+};
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);

@@ -248,7 +248,7 @@ const calculatePriceWithSettings = (
   };
 };
 
-app.use(express.json());
+
 
 app.use(
   cors({
@@ -262,6 +262,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(express.json());
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working" });
