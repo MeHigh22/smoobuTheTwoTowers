@@ -272,7 +272,7 @@ const BookingForm = () => {
             <div className="space-y-8 px-[5%] py-[1%]">
             {formData.apartmentId && (
               <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-200px)]">
-                <div className="w-full lg:w-1/2 h-full">
+                <div className="w-full h-full lg:w-1/2">
                   <div className="h-full overflow-auto">
                     <PropertyDetails
                       {...propertyDetailsProps}
@@ -282,13 +282,13 @@ const BookingForm = () => {
                   </div>
                 </div>
 
-                <div className="w-full lg:w-1/2 h-full">
+                <div className="w-full h-full lg:w-1/2">
                   <div className="border border-[#668E73] p-4 rounded h-full flex flex-col">
                     <h2 className="text-xl font-semibold text-[#668E73] mb-6">
-                      Choix des extras
+                      Choix des extrass
                     </h2>
                     <BookingSteps currentStep={currentStep} />
-                    <div className="flex-1 overflow-y-auto mt-4">
+                    <div className="flex-1 mt-4 overflow-y-auto">
                       {currentStep === 1 && <ExtrasSection {...extrasSectionProps} />}
                       {currentStep === 2 && <InfoSupSection {...infoSupSectionProps} />}
                       {currentStep === 3 && <ContactSection {...contactSectionProps} />}
@@ -311,7 +311,7 @@ const BookingForm = () => {
           </form>
         ) : (
           <div className="fixed inset-0 flex items-center justify-center">
-  <div className="w-full p-5 md:w-1/2 mx-auto">
+  <div className="w-full p-5 mx-auto md:w-1/2">
     <h3 className="mb-4 text-lg font-medium">Finaliser votre paiement</h3>
     {clientSecret && (
       <StripeWrapper
