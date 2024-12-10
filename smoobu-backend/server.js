@@ -248,6 +248,21 @@ const calculatePriceWithSettings = (
   };
 };
 
+app.use(express.json());
+
+app.use(
+  cors({
+    origin: [
+      "https://booking-rho-plum.vercel.app",
+      "https://booking-crfjdmycx-charlesdelalaings-projects.vercel.app",
+      "http://localhost:5173",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "stripe-signature"],
+    credentials: true,
+  })
+);
+
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working" });
 });
@@ -394,20 +409,6 @@ app.post(
 );
 
 // Use JSON parsing and CORS for all other routes
-app.use(express.json());
-
-app.use(
-  cors({
-    origin: [
-      "https://booking-rho-plum.vercel.app",
-      "https://booking-crfjdmycx-charlesdelalaings-projects.vercel.app",
-      "http://localhost:5173",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "stripe-signature"],
-    credentials: true,
-  })
-);
 
 app.get('/api/apartments', async (req, res) => {
   try {
@@ -593,6 +594,8 @@ app.get('/api/apartments/:id', async (req, res) => {
 // });
 
 app.get("/api/rates", async (req, res) => {
+    console.log("Received request at /api/rates");
+    console.log("Query params:", req.query);
   try {
     const { apartments, start_date, end_date, adults, children } = req.query;
 
