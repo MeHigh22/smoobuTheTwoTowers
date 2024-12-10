@@ -248,6 +248,148 @@ const calculatePriceWithSettings = (
   };
 };
 
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    let event;
+    console.log("Received webhook call");
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        "whsec_d9b86273072de6b319134fbc08752e2b4e66bae72aaa2cf4cb7db1411974c20a"
+      );
+
+      console.log("Webhook event verified:", event.type);
+
+      if (event.type === "payment_intent.succeeded") {
+        const paymentIntent = event.data.object;
+        const bookingReference = paymentIntent.metadata.bookingReference;
+        const bookingData = pendingBookings.get(bookingReference);
+
+        console.log("Retrieved booking data:", bookingData);
+
+        if (!bookingData) {
+          console.error(
+            "No booking data found for reference:",
+            bookingReference
+          );
+          return res.status(400).json({ error: "Booking data not found !" });
+        }
+
+        try {
+          // First create the main booking
+          const smoobuResponse = await axios.post(
+            "https://login.smoobu.com/api/reservations",
+            {
+              arrivalDate: bookingData.arrivalDate,
+              departureDate: bookingData.departureDate,
+              arrivalTime: bookingData.arrivalTime,
+              channelId: bookingData.channelId,
+              apartmentId: bookingData.apartmentId,
+              firstName: bookingData.firstName,
+              lastName: bookingData.lastName,
+              email: bookingData.email,
+              phone: bookingData.phone,
+              notice: bookingData.notice,
+              adults: Number(bookingData.adults),
+              children: Number(bookingData.children),
+              price: Number(bookingData.price),
+              priceStatus: 1,
+              deposit: Number(bookingData.deposit),
+              depositStatus: 1,
+              language: "en",
+            },
+            {
+              headers: {
+                "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          console.log("Smoobu booking created:", smoobuResponse.data);
+
+          // If there are extras, create them as price elements
+          if (bookingData.extras && bookingData.extras.length > 0) {
+            console.log("Creating extras as price elements...");
+            const reservationId = smoobuResponse.data.id;
+
+            for (const extra of bookingData.extras) {
+              try {
+                // Handle base extra
+                const extraResponse = await axios.post(
+                  `https://login.smoobu.com/api/reservations/${reservationId}/price-elements`,
+                  {
+                    type: "addon",
+                    name: extra.name,
+                    amount: extra.amount,
+                    quantity: extra.quantity,
+                    currencyCode: "EUR",
+                  },
+                  {
+                    headers: {
+                      "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+                console.log(`Added extra: ${extra.name}`, extraResponse.data);
+
+                // Handle extra person price if it exists
+                if (extra.extraPersonPrice && extra.extraPersonQuantity > 0) {
+                  const extraPersonResponse = await axios.post(
+                    `https://login.smoobu.com/api/reservations/${reservationId}/price-elements`,
+                    {
+                      type: "addon",
+                      name: `${extra.name} - Personne supplémentaire`,
+                      amount:
+                        extra.extraPersonPrice * extra.extraPersonQuantity,
+                      quantity: extra.extraPersonQuantity,
+                      currencyCode: "EUR",
+                    },
+                    {
+                      headers: {
+                        "Api-Key": "UZFV5QRY0ExHUfJi3c1DIG8Bpwet1X4knWa8rMkj6o",
+                        "Content-Type": "application/json",
+                      },
+                    }
+                  );
+                  console.log(
+                    `Added extra person charges for: ${extra.name}`,
+                    extraPersonResponse.data
+                  );
+                }
+              } catch (extraError) {
+                console.error(
+                  `Error adding extra ${extra.name}:`,
+                  extraError.response?.data || extraError.message
+                );
+              }
+            }
+          }
+
+          pendingBookings.delete(bookingReference);
+        } catch (error) {
+          console.error(
+            "Error creating Smoobu booking:",
+            error.response?.data || error.message
+          );
+        }
+      }
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error("Webhook Error:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  }
+);
+
+
 
 
 app.use(
