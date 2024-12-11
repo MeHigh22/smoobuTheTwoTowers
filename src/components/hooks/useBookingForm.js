@@ -308,10 +308,13 @@ const handleCheckAvailability = async () => {
     const selectedExtrasArray = createSelectedExtrasArray();
     const extrasTotal = calculateExtrasTotal(selectedExtrasArray);
     
-    // Calculate finalTotal
-    const basePrice = priceDetails.originalPrice;
-    const subtotal = basePrice + extrasTotal;
-    const longStayDiscount = priceDetails.discount || 0;
+    // Make sure we have the base room price
+    const basePrice = priceDetails[formData.apartmentId]?.originalPrice;
+    console.log('Base price:', basePrice); // Debug log
+
+    // Calculate totals
+    const subtotal = (basePrice || 0) + extrasTotal;
+    const longStayDiscount = priceDetails[formData.apartmentId]?.discount || 0;
     const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
     const finalTotal = subtotal - longStayDiscount - couponDiscount;
 
@@ -319,20 +322,31 @@ const handleCheckAvailability = async () => {
         ...formData,
         extras: selectedExtrasArray,
         priceBreakdown: {
-            basePrice: priceDetails.originalPrice
+            basePrice: basePrice || 0,
+            extrasTotal: extrasTotal
         },
         price: finalTotal,
         priceDetails: {
             settings: {
                 lengthOfStayDiscount: {
-                    discountPercentage: priceDetails.settings?.lengthOfStayDiscount?.discountPercentage || 0
+                    discountPercentage: priceDetails[formData.apartmentId]?.settings?.lengthOfStayDiscount?.discountPercentage || 0
                 }
             },
-            discount: priceDetails.discount || 0
+            discount: longStayDiscount
         }
     };
 
+    // Debug logs
+    console.log('Price calculation:', {
+        basePrice,
+        extrasTotal,
+        subtotal,
+        longStayDiscount,
+        couponDiscount,
+        finalTotal
+    });
     console.log('Storing booking data:', bookingData);
+
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
 
     const paymentIntent = clientSecret.split("_secret")[0];
