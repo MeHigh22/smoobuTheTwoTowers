@@ -424,112 +424,85 @@ const createSelectedExtrasArray = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Check if we have a selected room and price details
-    const selectedRoomPrice = priceDetails?.[formData.apartmentId];
-    if (!selectedRoomPrice) {
-      setError("Veuillez attendre le calcul du prix avant de continuer.");
-      return;
-    }
-  
-    setLoading(true);
-    try {
-      // Create the extras array without double-counting
-      const selectedExtrasArray = Object.entries(selectedExtras)
-        .filter(([_, quantity]) => quantity > 0)
-        .map(([extraId, quantity]) => {
-          // Skip if it's an extra person entry (we'll handle it with the main extra)
-          if (extraId.endsWith("-extra")) return null;
-  
-          const extra = Object.values(extraCategories)
-            .flatMap((category) => category.items)
-            .find((item) => item.id === extraId);
-  
-          if (!extra) return null;
-  
-          // Get the extra person quantity if it exists
-          const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
-  
-          return {
-            type: "addon",
-            name: extra.name,
-            amount: extra.price,
-            quantity: quantity,
-            currencyCode: "EUR",
-            extraPersonPrice: extra.extraPersonPrice,
-            extraPersonQuantity: extraPersonQuantity,
-            extraPersonAmount: extraPersonQuantity > 0 ? 
-              extra.extraPersonPrice * extraPersonQuantity : 0
-          };
-        })
-        .filter(Boolean);
-  
-      // Calculate extras total correctly
-      const extrasTotal = selectedExtrasArray.reduce((sum, extra) => {
-        const baseAmount = extra.amount * extra.quantity;
-        const extraPersonAmount = extra.extraPersonAmount || 0;
-        return sum + baseAmount + extraPersonAmount;
-      }, 0);
-  
-      // Get the base price from price details
-      const basePrice = selectedRoomPrice.originalPrice;
-      const subtotalBeforeDiscounts = basePrice + extrasTotal;
-  
-      // Get discounts
-      const longStayDiscount = selectedRoomPrice.discount || 0;
-      const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-  
-      // Calculate final total
-      const finalTotal = subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
-  
-      console.log("Payment calculation:", {
-        basePrice,
-        extrasTotal,
-        subtotalBeforeDiscounts,
-        longStayDiscount,
-        couponDiscount,
-        finalTotal,
-      });
-  
-      const response = await api.post("/create-payment-intent", {
-        price: finalTotal,
-        bookingData: {
-          ...formData,
-          price: finalTotal,
-          basePrice: basePrice,
-          extras: selectedExtrasArray,
-          couponApplied: appliedCoupon
-            ? {
-                code: appliedCoupon.code,
-                discount: couponDiscount,
-              }
-            : null,
-          priceDetails: {
-            ...selectedRoomPrice,
-            finalPrice: finalTotal,
-            calculatedDiscounts: {
-              longStay: longStayDiscount,
-              coupon: couponDiscount,
-            },
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!formData.price) {
+    setError("Veuillez attendre le calcul du prix avant de continuer.");
+    return;
+  }
+  setLoading(true);
+  try {
+    const selectedExtrasArray = createSelectedExtrasArray();
+
+    // Calculate total with extras
+    const extrasTotal = selectedExtrasArray.reduce(
+      (sum, extra) => sum + extra.amount + (extra.extraPersonAmount || 0),
+      0
+    );
+
+    const basePrice = priceDetails.originalPrice;
+    const subtotalBeforeDiscounts = basePrice + extrasTotal; // 400 + 105 = 505
+
+    // Apply long stay discount
+    const longStayDiscount = priceDetails.discount || 0; // 160
+    // Apply coupon discount
+    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0; // 10
+
+    // Calculate final total by subtracting both discounts
+    const finalTotal =
+      subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
+    // 505 - 160 - 10 = 335
+
+    console.log("Price calculation:", {
+      basePrice,
+      extrasTotal,
+      subtotalBeforeDiscounts,
+      longStayDiscount,
+      couponDiscount,
+      finalTotal,
+    });
+
+    const response = await api.post("/create-payment-intent", {
+      price: finalTotal, // Using the correct final total
+      bookingData: {
+        ...formData,
+        price: finalTotal, // Using the correct final total here too
+        basePrice: basePrice,
+        extras: selectedExtrasArray,
+        couponApplied: appliedCoupon
+          ? {
+              code: appliedCoupon.code,
+              discount: couponDiscount,
+            }
+          : null,
+        priceDetails: {
+          ...priceDetails,
+          finalPrice: finalTotal,
+          calculatedDiscounts: {
+            longStay: longStayDiscount,
+            coupon: couponDiscount,
           },
         },
-      });
-  
-      setClientSecret(response.data.clientSecret);
-      setShowPayment(true);
-      setError(null);
-    } catch (err) {
-      console.error("Error creating payment:", err);
-      setError(
-        err.response?.data?.error ||
-          "Une erreur s'est produite lors de la création du paiement"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+        metadata: {
+          basePrice: basePrice.toString(),
+          extrasTotal: extrasTotal.toString(),
+          longStayDiscount: longStayDiscount.toString(),
+          couponDiscount: couponDiscount.toString(),
+        },
+      },
+    });
+
+    console.log("Payment intent created:", response.data);
+    setClientSecret(response.data.clientSecret);
+    setShowPayment(true);
+    setError(null);
+  } catch (err) {
+    console.error("Error:", err);
+    setError(err.response?.data?.error || "Une erreur s'est produite");
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 const handlePaymentSuccess = () => {
