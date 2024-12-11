@@ -319,6 +319,7 @@ const handleCheckAvailability = async () => {
       totalPrice: finalTotal,
     };
 
+    console.log('Storing booking data:', bookingData);
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
 
     const paymentIntent = clientSecret.split("_secret")[0];

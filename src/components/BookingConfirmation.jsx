@@ -128,6 +128,22 @@ const fetchBookingDetails = async (paymentIntentId) => {
           <div className="details-card">
             <h2 className="titleConfirmation">Détails du prix</h2>
 
+              
+  {/* Add debug console logs here */}
+  {console.log('Price Breakdown:', {
+    originalPrice: bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.originalPrice,
+    extraGuestsFee: bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.extraGuestsFee,
+    extraChildrenFee: bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.extraChildrenFee,
+    discount: bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.discount,
+    finalPrice: bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.finalPrice,
+    displayedTotal: bookingDetails?.price
+  })}
+  
+  {console.log('Extras:', {
+    storedExtras: bookingDetails?.extras,
+    fullBookingDetails: bookingDetails
+  })}
+
             {/* Base Price */}
             <p>
               Prix de base:{" "}
