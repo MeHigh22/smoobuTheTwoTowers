@@ -305,26 +305,32 @@ const handleCheckAvailability = async () => {
   };
 
   const handlePaymentSuccess = () => {
-
     const selectedExtrasArray = createSelectedExtrasArray();
     const extrasTotal = calculateExtrasTotal(selectedExtrasArray);
-    const subtotal = priceDetails.finalPrice + extrasTotal;
-    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-    const finalTotal = subtotal - couponDiscount;
-
+    
     const bookingData = {
       ...formData,
       extras: selectedExtrasArray,
-      priceDetails: priceDetails,
-      totalPrice: finalTotal,
-    };
+      priceBreakdown: {
+          basePrice: priceDetails.originalPrice
+      },
+      price: finalTotal,
+      priceDetails: {
+          settings: {
+              lengthOfStayDiscount: {
+                  discountPercentage: priceDetails.settings?.lengthOfStayDiscount?.discountPercentage || 0
+              }
+          },
+          discount: priceDetails.discount || 0
+      }
+  };
 
     console.log('Storing booking data:', bookingData);
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
 
     const paymentIntent = clientSecret.split("_secret")[0];
     navigate(`/booking-confirmation?payment_intent=${paymentIntent}`);
-  };
+};
 
  // useBookingForm.js
 const handleApplyCoupon = (couponCode) => {
