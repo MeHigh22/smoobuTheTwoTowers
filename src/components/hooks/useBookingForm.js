@@ -308,22 +308,29 @@ const handleCheckAvailability = async () => {
     const selectedExtrasArray = createSelectedExtrasArray();
     const extrasTotal = calculateExtrasTotal(selectedExtrasArray);
     
+    // Calculate finalTotal
+    const basePrice = priceDetails.originalPrice;
+    const subtotal = basePrice + extrasTotal;
+    const longStayDiscount = priceDetails.discount || 0;
+    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+    const finalTotal = subtotal - longStayDiscount - couponDiscount;
+
     const bookingData = {
-      ...formData,
-      extras: selectedExtrasArray,
-      priceBreakdown: {
-          basePrice: priceDetails.originalPrice
-      },
-      price: finalTotal,
-      priceDetails: {
-          settings: {
-              lengthOfStayDiscount: {
-                  discountPercentage: priceDetails.settings?.lengthOfStayDiscount?.discountPercentage || 0
-              }
-          },
-          discount: priceDetails.discount || 0
-      }
-  };
+        ...formData,
+        extras: selectedExtrasArray,
+        priceBreakdown: {
+            basePrice: priceDetails.originalPrice
+        },
+        price: finalTotal,
+        priceDetails: {
+            settings: {
+                lengthOfStayDiscount: {
+                    discountPercentage: priceDetails.settings?.lengthOfStayDiscount?.discountPercentage || 0
+                }
+            },
+            discount: priceDetails.discount || 0
+        }
+    };
 
     console.log('Storing booking data:', bookingData);
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
