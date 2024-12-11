@@ -151,7 +151,7 @@ const fetchBookingDetails = async (paymentIntentId) => {
   <p>Prix de base: {bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.originalPrice?.toFixed(2)}€</p>
 
   {/* Room details */}
-  <p>Nombre de nuits: {bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.numberOfNights}</p>
+  <p>Nombre de nuitss: {bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.numberOfNights}</p>
   <p>Prix par nuit: {bookingDetails?.priceDetails[bookingDetails?.apartmentId]?.pricePerNight?.toFixed(2)}€</p>
 
   {/* Long Stay Discount */}
