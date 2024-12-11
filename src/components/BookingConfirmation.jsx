@@ -149,11 +149,83 @@ const BookingConfirmation = () => {
             </div>
           </div> */}
 
-           {/* Base price */}
-           <div className="flex items-center justify-between">
+           {/* Price Details */}
+          <div className="details-card">
+            <h2 className="titleConfirmation">Détails du prix</h2>
+            <div className="p-4 mt-4 rounded-lg bg-gray-50" style={{ height: "350px", overflow: "scroll" }}>
+              <h3 className="mb-2 font-bold">Détail des prix:</h3>
+
+              {/* Base price */}
+              <div className="flex items-center justify-between">
                 <span>Prix de base</span>
                 <span>{bookingDetails?.priceBreakdown?.basePrice?.toFixed(2)} EUR</span>
               </div>
+
+              {/* Extras */}
+              {bookingDetails?.extras?.map((extra, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between text-gray-600"
+                >
+                  <span>
+                    {extra.name} ({extra.quantity}x)
+                  </span>
+                  <span>{extra.amount?.toFixed(2)} EUR</span>
+                </div>
+              ))}
+
+              {/* Long stay discount */}
+              {bookingDetails?.priceDetails?.discount > 0 && (
+                <div className="flex items-center justify-between text-green-600">
+                  <span>
+                    Réduction long séjour (
+                    {bookingDetails.priceDetails.settings.lengthOfStayDiscount.discountPercentage}
+                    %)
+                  </span>
+                  <span>-{bookingDetails.priceDetails.discount.toFixed(2)} EUR</span>
+                </div>
+              )}
+
+              {/* Coupon discount */}
+              {bookingDetails?.couponApplied && (
+                <div className="flex items-center justify-between text-green-600">
+                  <span>Code promo ({bookingDetails.couponApplied.code})</span>
+                  <span>-{bookingDetails.couponApplied.discount.toFixed(2)} EUR</span>
+                </div>
+              )}
+
+              {/* Subtotal before discounts */}
+              <div className="flex items-center justify-between pt-2 mt-2 text-gray-600 border-t border-gray-200">
+                <span>Sous-total</span>
+                <span>{(bookingDetails?.priceBreakdown?.basePrice + (bookingDetails?.extras?.reduce((acc, extra) => acc + extra.amount, 0) || 0)).toFixed(2)} EUR</span>
+              </div>
+
+              {/* Total discounts */}
+              {(bookingDetails?.priceDetails?.discount > 0 || bookingDetails?.couponApplied) && (
+                <div className="flex items-center justify-between text-green-600">
+                  <span>Total des réductions</span>
+                  <span>-{((bookingDetails?.priceDetails?.discount || 0) + (bookingDetails?.couponApplied?.discount || 0)).toFixed(2)} EUR</span>
+                </div>
+              )}
+
+              {/* Final total */}
+              <div className="flex items-center justify-between pt-2 mt-2 font-bold border-t border-gray-200">
+                <span>Total</span>
+                <span>{bookingDetails?.price?.toFixed(2)} EUR</span>
+              </div>
+
+              {/* Additional information about payment */}
+              <div className="mt-4 text-sm text-gray-500">
+                <p>* Prix total incluant toutes les taxes et frais</p>
+                {bookingDetails?.priceDetails?.settings?.deposit && (
+                  <p className="mt-1">
+                    ** Acompte requis : {bookingDetails.priceDetails.settings.deposit.percentage}% (
+                    {((bookingDetails.price * bookingDetails.priceDetails.settings.deposit.percentage) / 100).toFixed(2)} EUR)
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
 
               {/* Extras */}
               {bookingDetails?.extras?.map((extra, index) => (
