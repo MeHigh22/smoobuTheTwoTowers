@@ -194,7 +194,7 @@ const handleCheckAvailability = async () => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-  
+
   // Check if we have a selected room and price details
   const selectedRoomPrice = priceDetails?.[formData.apartmentId];
   if (!selectedRoomPrice) {
@@ -204,69 +204,26 @@ const handleSubmit = async (e) => {
 
   setLoading(true);
   try {
-    // Create the extras array without double-counting
-    const selectedExtrasArray = Object.entries(selectedExtras)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([extraId, quantity]) => {
-        // Skip if it's an extra person entry (we'll handle it with the main extra)
-        if (extraId.endsWith("-extra")) return null;
+    const selectedExtrasArray = createSelectedExtrasArray();
 
-        const extra = Object.values(extraCategories)
-          .flatMap((category) => category.items)
-          .find((item) => item.id === extraId);
-
-        if (!extra) return null;
-
-        // Get the extra person quantity if it exists
-        const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
-
-        return {
-          type: "addon",
-          name: extra.name,
-          amount: extra.price,
-          quantity: quantity,
-          currencyCode: "EUR",
-          extraPersonPrice: extra.extraPersonPrice,
-          extraPersonQuantity: extraPersonQuantity,
-          extraPersonAmount: extraPersonQuantity > 0 ? 
-            extra.extraPersonPrice * extraPersonQuantity : 0
-        };
-      })
-      .filter(Boolean);
-
-    // Calculate extras total correctly
+    // New calculation here
+    const baseWithChildFee = selectedRoomPrice.finalPrice; // Already includes child fee
     const extrasTotal = selectedExtrasArray.reduce((sum, extra) => {
       const baseAmount = extra.amount * extra.quantity;
       const extraPersonAmount = extra.extraPersonAmount || 0;
       return sum + baseAmount + extraPersonAmount;
     }, 0);
 
-    // Get the base price from price details
-    const basePrice = selectedRoomPrice.originalPrice;
-    const subtotalBeforeDiscounts = basePrice + extrasTotal;
-
-    // Get discounts
-    const longStayDiscount = selectedRoomPrice.discount || 0;
     const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
 
-    // Calculate final total
-    const finalTotal = subtotalBeforeDiscounts - longStayDiscount - couponDiscount;
-
-    console.log("Payment calculation:", {
-      basePrice,
-      extrasTotal,
-      subtotalBeforeDiscounts,
-      longStayDiscount,
-      couponDiscount,
-      finalTotal,
-    });
+    const finalTotal = baseWithChildFee + extrasTotal - couponDiscount;
 
     const response = await api.post("/create-payment-intent", {
       price: finalTotal,
       bookingData: {
         ...formData,
         price: finalTotal,
-        basePrice: basePrice,
+        basePrice: baseWithChildFee,
         extras: selectedExtrasArray,
         couponApplied: appliedCoupon
           ? {
@@ -278,7 +235,7 @@ const handleSubmit = async (e) => {
           ...selectedRoomPrice,
           finalPrice: finalTotal,
           calculatedDiscounts: {
-            longStay: longStayDiscount,
+            longStay: selectedRoomPrice.discount || 0,
             coupon: couponDiscount,
           },
         },
