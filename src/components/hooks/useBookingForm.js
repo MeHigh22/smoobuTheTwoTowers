@@ -93,48 +93,79 @@ const calculateNumberOfNights = (startDate, endDate) => {
     }));
   };
 
+  // const createSelectedExtrasArray = () => {
+  //   return Object.entries(selectedExtras)
+  //     .filter(([_, quantity]) => quantity > 0)
+  //     .map(([extraId, quantity]) => {
+  //       const isExtraPerson = extraId.endsWith("-extra");
+  //       const baseExtraId = isExtraPerson
+  //         ? extraId.replace("-extra", "")
+  //         : extraId;
+
+  //       const extra = Object.values(extraCategories)
+  //         .flatMap((category) => category.items)
+  //         .find((item) => item.id === baseExtraId);
+
+  //       if (!extra) return null;
+
+  //       if (isExtraPerson) {
+  //         return {
+  //           type: "addon",
+  //           name: `${extra.name} - Personne supplémentaire`,
+  //           amount: extra.extraPersonPrice * quantity,
+  //           quantity: quantity,
+  //           currencyCode: "EUR",
+  //         };
+  //       }
+
+  //       const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
+  //       return {
+  //         type: "addon",
+  //         name: extra.name,
+  //         amount: extra.price * quantity,
+  //         quantity: quantity,
+  //         currencyCode: "EUR",
+  //         extraPersonPrice: extra.extraPersonPrice,
+  //         extraPersonQuantity: extraPersonQuantity,
+  //         extraPersonAmount:
+  //           extraPersonQuantity > 0
+  //             ? extra.extraPersonPrice * extraPersonQuantity
+  //             : 0,
+  //       };
+  //     })
+  //     .filter(Boolean);
+  // };
+
   const createSelectedExtrasArray = () => {
     return Object.entries(selectedExtras)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([extraId, quantity]) => {
-        const isExtraPerson = extraId.endsWith("-extra");
-        const baseExtraId = isExtraPerson
-          ? extraId.replace("-extra", "")
-          : extraId;
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([extraId, quantity]) => {
+            // Find the extra in the extraCategories data
+            const extra = Object.values(extraCategories)
+                .flatMap(category => category.items)
+                .find(item => item.id === extraId);
 
-        const extra = Object.values(extraCategories)
-          .flatMap((category) => category.items)
-          .find((item) => item.id === baseExtraId);
+            if (!extra) return null;
 
-        if (!extra) return null;
+            // Handle base price and extra person price if applicable
+            const baseAmount = extra.price * quantity;
+            const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
+            const extraPersonAmount = extra.extraPersonPrice ? 
+                (extra.extraPersonPrice * extraPersonQuantity) : 0;
 
-        if (isExtraPerson) {
-          return {
-            type: "addon",
-            name: `${extra.name} - Personne supplémentaire`,
-            amount: extra.extraPersonPrice * quantity,
-            quantity: quantity,
-            currencyCode: "EUR",
-          };
-        }
-
-        const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
-        return {
-          type: "addon",
-          name: extra.name,
-          amount: extra.price * quantity,
-          quantity: quantity,
-          currencyCode: "EUR",
-          extraPersonPrice: extra.extraPersonPrice,
-          extraPersonQuantity: extraPersonQuantity,
-          extraPersonAmount:
-            extraPersonQuantity > 0
-              ? extra.extraPersonPrice * extraPersonQuantity
-              : 0,
-        };
-      })
-      .filter(Boolean);
-  };
+            return {
+                type: "addon",
+                name: extra.name,
+                amount: baseAmount + extraPersonAmount,
+                quantity: quantity,
+                currencyCode: "EUR",
+                extraPersonPrice: extra.extraPersonPrice || 0,
+                extraPersonQuantity: extraPersonQuantity,
+                extraPersonAmount: extraPersonAmount
+            };
+        })
+        .filter(Boolean);
+};
 
 const handleCheckAvailability = async () => {
   if (!formData.arrivalDate || !formData.departureDate) {
