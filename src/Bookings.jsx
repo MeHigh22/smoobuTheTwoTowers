@@ -308,20 +308,17 @@ const createSelectedExtrasArray = () => {
   return Object.entries(selectedExtras)
     .filter(([_, quantity]) => quantity > 0)
     .map(([extraId, quantity]) => {
-      // Check if this is an extra person selection
       const isExtraPerson = extraId.endsWith("-extra");
       const baseExtraId = isExtraPerson
         ? extraId.replace("-extra", "")
         : extraId;
 
-      // Find the extra in all categories
       const extra = Object.values(extraCategories)
         .flatMap((category) => category.items)
         .find((item) => item.id === baseExtraId);
 
       if (!extra) return null;
 
-      // Return extra person details only when it's an extra person selection
       if (isExtraPerson) {
         return {
           type: "addon",
@@ -332,7 +329,6 @@ const createSelectedExtrasArray = () => {
         };
       }
 
-      // For regular extras, include extra person info in the same object
       const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
       return {
         type: "addon",
@@ -342,14 +338,13 @@ const createSelectedExtrasArray = () => {
         currencyCode: "EUR",
         extraPersonPrice: extra.extraPersonPrice,
         extraPersonQuantity: extraPersonQuantity,
-        // Include extra person amount in a separate field if there are extra persons
         extraPersonAmount:
           extraPersonQuantity > 0
             ? extra.extraPersonPrice * extraPersonQuantity
             : 0,
       };
     })
-    .filter(Boolean); // Remove any null entries
+    .filter(Boolean);
 };
 
   const handleExtraChange = (extraId, quantity) => {

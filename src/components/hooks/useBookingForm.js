@@ -2,23 +2,22 @@ import { useState } from "react";
 import { api } from "../utils/api";
 import { VALID_COUPONS } from "../utils/coupons";
 import { calculateExtrasTotal } from "../utils/booking";
-import { extraCategories } from "../extraCategories"
+import { extraCategories } from "../extraCategories";
 import { useNavigate } from "react-router-dom";
 
-
 export const useBookingForm = () => {
+  // Form State
 
   const navigate = useNavigate();
-  // Form State
   const [formData, setFormData] = useState({
     arrivalDate: "",
     departureDate: "",
-    channelId: 2323525,
+    channelId: 4106338,
     apartmentId: "",
     arrivalTime: "",
     departureTime: "",
     firstName: "",
-    lastName: "", 
+    lastName: "",
     email: "",
     phone: "",
     notice: "",
@@ -52,24 +51,20 @@ export const useBookingForm = () => {
   const [clientSecret, setClientSecret] = useState("");
   const [selectedExtras, setSelectedExtras] = useState({});
 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
+  const calculateNumberOfNights = (startDate, endDate) => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return Math.floor((end - start) / (1000 * 60 * 60 * 24));
+  };
 
-const [startDate, setStartDate] = useState(null);
-const [endDate, setEndDate] = useState(null);
-
-const calculateNumberOfNights = (startDate, endDate) => {
-  if (!startDate || !endDate) return 0;
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  return Math.floor((end - start) / (1000 * 60 * 60 * 24));
-};
-
-  
   // Coupon State
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
-
 
   // Handlers
   const handleChange = (e) => {
@@ -93,135 +88,103 @@ const calculateNumberOfNights = (startDate, endDate) => {
     }));
   };
 
-  // const createSelectedExtrasArray = () => {
-  //   return Object.entries(selectedExtras)
-  //     .filter(([_, quantity]) => quantity > 0)
-  //     .map(([extraId, quantity]) => {
-  //       const isExtraPerson = extraId.endsWith("-extra");
-  //       const baseExtraId = isExtraPerson
-  //         ? extraId.replace("-extra", "")
-  //         : extraId;
-
-  //       const extra = Object.values(extraCategories)
-  //         .flatMap((category) => category.items)
-  //         .find((item) => item.id === baseExtraId);
-
-  //       if (!extra) return null;
-
-  //       if (isExtraPerson) {
-  //         return {
-  //           type: "addon",
-  //           name: `${extra.name} - Personne supplémentaire`,
-  //           amount: extra.extraPersonPrice * quantity,
-  //           quantity: quantity,
-  //           currencyCode: "EUR",
-  //         };
-  //       }
-
-  //       const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
-  //       return {
-  //         type: "addon",
-  //         name: extra.name,
-  //         amount: extra.price * quantity,
-  //         quantity: quantity,
-  //         currencyCode: "EUR",
-  //         extraPersonPrice: extra.extraPersonPrice,
-  //         extraPersonQuantity: extraPersonQuantity,
-  //         extraPersonAmount:
-  //           extraPersonQuantity > 0
-  //             ? extra.extraPersonPrice * extraPersonQuantity
-  //             : 0,
-  //       };
-  //     })
-  //     .filter(Boolean);
-  // };
-
   const createSelectedExtrasArray = () => {
-    return Object.entries(selectedExtras)
-        .filter(([_, quantity]) => quantity > 0)
-        .map(([extraId, quantity]) => {
-            // Find the extra in the extraCategories data
-            const extra = Object.values(extraCategories)
-                .flatMap(category => category.items)
-                .find(item => item.id === extraId);
+    // First, gather all base extras with their extra person info
+    const extrasMap = new Map();
 
-            if (!extra) return null;
+    Object.entries(selectedExtras)
+      .filter(([_, quantity]) => quantity > 0)
+      .forEach(([extraId, quantity]) => {
+        const isExtraPerson = extraId.endsWith("-extra");
+        const baseExtraId = isExtraPerson
+          ? extraId.replace("-extra", "")
+          : extraId;
 
-            // Handle base price and extra person price if applicable
-            const baseAmount = extra.price * quantity;
-            const extraPersonQuantity = selectedExtras[`${extraId}-extra`] || 0;
-            const extraPersonAmount = extra.extraPersonPrice ? 
-                (extra.extraPersonPrice * extraPersonQuantity) : 0;
+        const extra = Object.values(extraCategories)
+          .flatMap((category) => category.items)
+          .find((item) => item.id === baseExtraId);
 
-            return {
-                type: "addon",
-                name: extra.name,
-                amount: baseAmount + extraPersonAmount,
-                quantity: quantity,
-                currencyCode: "EUR",
-                extraPersonPrice: extra.extraPersonPrice || 0,
-                extraPersonQuantity: extraPersonQuantity,
-                extraPersonAmount: extraPersonAmount
-            };
-        })
-        .filter(Boolean);
-};
+        if (!extra) return;
 
-const handleCheckAvailability = async () => {
-  if (!formData.arrivalDate || !formData.departureDate) {
-    setDateError("Please select both dates");
-    return;
-  }
+        if (isExtraPerson) {
+          // If this is an extra person entry, add it to the base extra
+          const baseExtra = extrasMap.get(baseExtraId);
+          if (baseExtra) {
+            baseExtra.extraPersonQuantity = quantity;
+            baseExtra.extraPersonAmount = extra.extraPersonPrice * quantity;
+          }
+        } else {
+          // This is a base extra
+          extrasMap.set(baseExtraId, {
+            type: "addon",
+            name: extra.name,
+            amount: extra.price * quantity,
+            quantity: quantity,
+            currencyCode: "EUR",
+            extraPersonPrice: extra.extraPersonPrice,
+            extraPersonQuantity: 0, // Will be updated if there's an extra person
+            extraPersonAmount: 0, // Will be updated if there's an extra person
+          });
+        }
+      });
 
-  const numberOfNights = calculateNumberOfNights(startDate, endDate);
-  console.log(`Number of nights: ${numberOfNights}`);
-  setLoading(true);
-  setError(null);
+    // Convert the map back to an array
+    return Array.from(extrasMap.values());
+  };
 
-  try {
-    console.log("Checking rates for:", {
-      dates: {
-        arrival: formData.arrivalDate,
-        departure: formData.departureDate,
-      },
-      guests: {
-        adults: formData.adults,
-        children: formData.children,
-      },
-    });
+  const handleCheckAvailability = async () => {
+    if (!formData.arrivalDate || !formData.departureDate) {
+      setDateError("Please select both dates");
+      return;
+    }
 
-    const response = await api.get("/rates", {
-      params: {
-        apartments: formData.apartmentId || ["1644643", "1946282", "1946279", "1946276", "1946270"],
-        start_date: formData.arrivalDate,
-        end_date: formData.departureDate,
-        adults: formData.adults,
-        children: formData.children,
-      },
-    });
+    const numberOfNights = calculateNumberOfNights(startDate, endDate);
+    console.log(`Number of nights: ${numberOfNights}`);
+    setLoading(true);
+    setError(null);
 
-    console.log("Rates response:", response.data);
+    try {
+      console.log("Checking rates for:", {
+        dates: {
+          arrival: formData.arrivalDate,
+          departure: formData.departureDate,
+        },
+        guests: {
+          adults: formData.adults,
+          children: formData.children,
+        },
+      });
 
-    
+      const response = await api.get("/rates", {
+        params: {
+          apartments: formData.apartmentId || ["2428698", "2428703", "2432648"],
+          start_date: formData.arrivalDate,
+          end_date: formData.departureDate,
+          adults: formData.adults,
+          children: formData.children,
+        },
+      });
 
-    if (response.data.priceDetails) {
-      setPriceDetails(response.data.priceDetails);
-      setShowPriceDetails(true);
-      setIsAvailable(true);
-    } else {
-      setError("No rates available for selected dates");
+      console.log("Rates response:", response.data);
+
+      if (response.data.priceDetails) {
+        setPriceDetails(response.data.priceDetails);
+        setShowPriceDetails(true);
+        setIsAvailable(true);
+      } else {
+        setError("No rates available for selected dates");
+        setShowPriceDetails(false);
+        setIsAvailable(false);
+      }
+    } catch (error) {
+      console.error("Error fetching rates:", error);
+      setError(error.response?.data?.error || "Unable to fetch rates");
       setShowPriceDetails(false);
       setIsAvailable(false);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching rates:", error);
-    setError(error.response?.data?.error || "Unable to fetch rates");
-    setShowPriceDetails(false);
-    setIsAvailable(false);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -338,100 +301,71 @@ const handleCheckAvailability = async () => {
   const handlePaymentSuccess = () => {
     const selectedExtrasArray = createSelectedExtrasArray();
     const extrasTotal = calculateExtrasTotal(selectedExtrasArray);
-    
-    // Make sure we have the base room price
-    const basePrice = priceDetails[formData.apartmentId]?.originalPrice;
-    console.log('Base price:', basePrice); // Debug log
-
-    // Calculate totals
-    const subtotal = (basePrice || 0) + extrasTotal;
-    const longStayDiscount = priceDetails[formData.apartmentId]?.discount || 0;
+    const subtotal = priceDetails.finalPrice + extrasTotal;
     const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-    const finalTotal = subtotal - longStayDiscount - couponDiscount;
+    const finalTotal = subtotal - couponDiscount;
 
     const bookingData = {
-        ...formData,
-        extras: selectedExtrasArray,
-        priceBreakdown: {
-            basePrice: basePrice || 0,
-            extrasTotal: extrasTotal
-        },
-        price: finalTotal,
-        priceDetails: {
-            settings: {
-                lengthOfStayDiscount: {
-                    discountPercentage: priceDetails[formData.apartmentId]?.settings?.lengthOfStayDiscount?.discountPercentage || 0
-                }
-            },
-            discount: longStayDiscount
-        }
+      ...formData,
+      extras: selectedExtrasArray,
+      priceDetails: priceDetails,
+      totalPrice: finalTotal,
     };
-
-    // Debug logs
-    console.log('Price calculation:', {
-        basePrice,
-        extrasTotal,
-        subtotal,
-        longStayDiscount,
-        couponDiscount,
-        finalTotal
-    });
-    console.log('Storing booking data:', bookingData);
 
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
 
     const paymentIntent = clientSecret.split("_secret")[0];
     navigate(`/booking-confirmation?payment_intent=${paymentIntent}`);
-};
+  };
 
- // useBookingForm.js
-const handleApplyCoupon = (couponCode) => {
-  console.log('handleApplyCoupon called with:', couponCode);
-  setCouponError(null);
+  // useBookingForm.js
+  const handleApplyCoupon = (couponCode) => {
+    console.log("handleApplyCoupon called with:", couponCode);
+    setCouponError(null);
 
-  if (!couponCode) {
-    console.log('No coupon code provided');
-    setCouponError("Veuillez entrer un code promo");
-    return;
-  }
+    if (!couponCode) {
+      console.log("No coupon code provided");
+      setCouponError("Veuillez entrer un code promo");
+      return;
+    }
 
-  const couponInfo = VALID_COUPONS[couponCode.toUpperCase()];
-  console.log('Found coupon info:', couponInfo);
+    const couponInfo = VALID_COUPONS[couponCode.toUpperCase()];
+    console.log("Found coupon info:", couponInfo);
 
-  if (!couponInfo) {
-    console.log('Invalid coupon code');
-    setCouponError("Code promo invalide");
-    return;
-  }
+    if (!couponInfo) {
+      console.log("Invalid coupon code");
+      setCouponError("Code promo invalide");
+      return;
+    }
 
-  setAppliedCoupon({
-    code: couponCode.toUpperCase(),
-    ...couponInfo,
-  });
-  console.log('Applied coupon:', {
-    code: couponCode.toUpperCase(),
-    ...couponInfo,
-  });
+    setAppliedCoupon({
+      code: couponCode.toUpperCase(),
+      ...couponInfo,
+    });
+    console.log("Applied coupon:", {
+      code: couponCode.toUpperCase(),
+      ...couponInfo,
+    });
 
-  setPriceDetails((prev) => {
-    const newPriceDetails = {
-      ...prev,
-      priceElements: [
-        ...(prev?.priceElements || []),
-        {
-          type: "coupon",
-          name: `Code promo ${couponCode.toUpperCase()}`,
-          amount: -couponInfo.discount,
-          currencyCode: couponInfo.currency,
-        },
-      ],
-    };
-    console.log('Updated price details:', newPriceDetails);
-    return newPriceDetails;
-  });
+    setPriceDetails((prev) => {
+      const newPriceDetails = {
+        ...prev,
+        priceElements: [
+          ...(prev?.priceElements || []),
+          {
+            type: "coupon",
+            name: `Code promo ${couponCode.toUpperCase()}`,
+            amount: -couponInfo.discount,
+            currencyCode: couponInfo.currency,
+          },
+        ],
+      };
+      console.log("Updated price details:", newPriceDetails);
+      return newPriceDetails;
+    });
 
-  setCoupon("");
-};
+    setCoupon("");
+  };
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
