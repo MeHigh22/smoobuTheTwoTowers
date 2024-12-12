@@ -210,6 +210,26 @@ const calculatePriceWithSettings = (
 
 // Webhook endpoint must come before JSON middleware
 // Helper function for delays
+
+// Move CORS configuration to the top, right after creating the app
+app.use(
+  cors({
+    origin: [
+      "https://smoobu-the-two-towers.vercel.app",  // Removed trailing slash
+      "http://localhost:5173"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Api-Key", "stripe-signature", "Cache-Control"],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  })
+);
+
+// Add express.json middleware after CORS
+app.use(express.json());
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 app.post(
@@ -386,19 +406,7 @@ app.post(
   }
 );
 
-// Use JSON parsing and CORS for all other routes
-app.use(express.json());
-app.use(
-  cors({
-    origin: [
-      "https://smoobu-the-two-towers.vercel.app/",
-      "http://localhost:5173",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+
 
 app.get("/api/apartments", async (req, res) => {
   try {
