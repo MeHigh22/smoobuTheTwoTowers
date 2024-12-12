@@ -214,7 +214,6 @@ const calculatePriceWithSettings = (
 // Move CORS configuration to the top, right after creating the app
 
 // Add express.json middleware after CORS
-app.use(express.json());
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -392,6 +391,7 @@ app.post(
   }
 );
 
+app.use(express.json());
 app.use(
   cors({
     origin: [
@@ -402,14 +402,8 @@ app.use(
     allowedHeaders: [
       "Content-Type",
       "Authorization",
-      "Api-Key",
-      "stripe-signature",
-      "Cache-Control",
     ],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
     credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   })
 );
 
