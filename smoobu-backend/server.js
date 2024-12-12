@@ -224,7 +224,7 @@ app.post(
       event = stripe.webhooks.constructEvent(
         req.body,
         sig,
-        "whsec_d9b86273072de6b319134fbc08752e2b4e66bae72aaa2cf4cb7db1411974c20a"
+        "we_1QVE0SIhkftuEy3noiP5fusQ"
       );
 
       console.log("Webhook event verified:", event.type);
