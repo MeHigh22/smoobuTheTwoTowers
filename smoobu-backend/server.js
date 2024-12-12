@@ -212,20 +212,6 @@ const calculatePriceWithSettings = (
 // Helper function for delays
 
 // Move CORS configuration to the top, right after creating the app
-app.use(
-  cors({
-    origin: [
-      "https://smoobu-the-two-towers.vercel.app",  // Removed trailing slash
-      "http://localhost:5173"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Api-Key", "stripe-signature", "Cache-Control"],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-  })
-);
 
 // Add express.json middleware after CORS
 app.use(express.json());
@@ -404,6 +390,27 @@ app.post(
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
   }
+);
+
+app.use(
+  cors({
+    origin: [
+      "https://smoobu-the-two-towers.vercel.app", // Removed trailing slash
+      "http://localhost:5173",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Api-Key",
+      "stripe-signature",
+      "Cache-Control",
+    ],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
 );
 
 
