@@ -396,8 +396,7 @@ app.post(
 app.use(
   cors({
     origin: [
-      "https://booking-rho-plum.vercel.app",
-      "https://booking-crfjdmycx-charlesdelalaings-projects.vercel.app",
+      "https://smoobu-the-two-towers.vercel.app/",
       "http://localhost:5173",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
