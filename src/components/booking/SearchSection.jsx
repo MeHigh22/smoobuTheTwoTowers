@@ -1,6 +1,7 @@
 import React from "react";
 import DatePicker from "react-datepicker";
 import { Listbox } from "@headlessui/react";
+import "react-datepicker/dist/react-datepicker.css";
 import { GuestSelect } from "./GuestSelect";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { adultes, childrenOptions } from "../utils/constants";
@@ -30,7 +31,7 @@ export const SearchSection = ({
 
   return (
     <div
-      className="w-4/5 md:w-full lg:w-4/5 m-auto text-center font-montserrat relative"
+      className="relative w-4/5 m-auto text-center md:w-full lg:w-4/5 font-montserrat"
       style={{ backgroundColor: "#668E73", padding: "60px 20px" }}
     >
     {/* Squirrel Image */}
@@ -38,7 +39,7 @@ export const SearchSection = ({
         <img 
           src={Bird}
           alt="Squirrel"
-          className="w-24 md:w-32 lg:w-40 h-auto"
+          className="w-24 h-auto md:w-32 lg:w-40"
         />
       </div>
       {/* Title */}
