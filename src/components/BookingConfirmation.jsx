@@ -9,6 +9,8 @@ const BookingConfirmation = () => {
   const [searchParams] = useSearchParams();
   const paymentIntent = searchParams.get("payment_intent");
 
+  const API_URL = "https://smoobuthetwotowers.onrender.com";
+
   useEffect(() => {
     const storedBookingData = localStorage.getItem("bookingData");
     if (storedBookingData) {
@@ -29,7 +31,7 @@ const BookingConfirmation = () => {
   const fetchBookingDetails = async (paymentIntentId) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/bookings/${paymentIntentId}`
+        `${API_URL}/api/bookings/${paymentIntentId}`
       );
       const data = await response.json();
       if (data.error) throw new Error(data.error);
