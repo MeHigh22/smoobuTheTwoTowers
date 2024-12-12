@@ -26,7 +26,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://booking-9u8u.onrender.com";
+  import.meta.env.VITE_API_URL || "https://smoobuthetwotowers.onrender.com";
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
